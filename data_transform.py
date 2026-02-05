@@ -17,7 +17,23 @@ def clean_author(author):
 
     return author.strip()
 
-def clean_genres(genres):
+def clean_text(s):
+    if pd.isna(s):
+        return None
+    
+    s = str(s)
+
+    s = fix_text(s)
+
+    s = unicodedata.normalize("NFC", s)
+
+    s = re.sub(r"[\u0000-\u001F\u007F]", "", s)
+
+    s = re.sub(r"\s+", " ", s).strip()
+
+    return s
+
+def parse_genres(genres):
     if pd.isna(genres):
         return None
     
@@ -26,127 +42,118 @@ def clean_genres(genres):
     except (ValueError, SyntaxError):
         return None
 
-# def clean_text(s):
-#     if s is None:
-#         return None
-#     s = re.sub(r"[^\x20-\x7E]", "", s)
-#     return s.strip() or None
+def parse_series(series):
+    if pd.isna(series):
+        return None, None
+    
+    series = str(series).strip()
 
-def loading_authors():
+    # Match "Series Name #Number"
+    m = re.match(r"^(.*?)\s*#\s*(\d+)$", series)
+
+    if m:
+        name = m.group(1).strip()
+        num = int(m.group(2))
+        return name, num
+
+    # No number → series name only
+    return series, None
+
+
+def load_map(conn, table):
+    with conn.cursor() as cur:
+        cur.execute(f"SELECT id, name FROM {table}")
+        return dict(cur.fetchall())
+    
+def main():
     df = pd.read_csv("books_1.Best_Books_Ever.csv", encoding="utf-8", encoding_errors="strict")
 
-    authors_series = (
-        df["author"]
-        .dropna()
-        .astype(str)
-        .apply(fix_text)
-        .apply(clean_author)
-        .apply(lambda x: unicodedata.normalize("NFC", x))
-    )
+    # Basic Cleanup
+    df["author"] = df["author"].apply(fix_text).apply(clean_author)
+    df["publisher"] = df["publisher"].apply(clean_text)
+    df["genres"] = df["genres"].apply(parse_genres)
+    df[["series" , "series_num"]] = df["series"].apply(parse_series).apply(pd.Series)
+    df["series"] = df["series"].apply(clean_text)
+    df["series_num"] = pd.to_numeric(df["series_num"], errors="coerce")
 
-    authors_df = (
-        authors_series
+    authors = df["author"].dropna().drop_duplicates().tolist()
+    
+    publishers = df["publisher"].dropna().drop_duplicates().tolist()
+
+    series_names = df["series"].dropna().drop_duplicates().tolist()
+
+    genres = (
+        df["genres"]
+        .explode()
+        .dropna()
         .drop_duplicates()
-        .to_frame(name="name")
-        .reset_index(drop=True)
+        .tolist()
     )
     
-    print(authors_df[
-    authors_df["name"].str.contains("├|Ã|Â|�", regex=True, na=False)
-])
-    conn = psycopg.connect(
-        "dbname=bookclub user=postgres host=localhost"
-    )
+    df["publishDate"] = pd.to_datetime(df["publishDate"], errors="coerce").dt.date
 
-    insert_sql = """
+    sql_author = """
     INSERT INTO library_author (name)
     VALUES (%s)
-    ON CONFLICT (name) DO NOTHING
+    ON CONFLICT (name) DO NOTHING;
     """
 
-    print(authors_df[authors_df["name"].str.contains("Benjamin Alire", na=False)].head(5))
-    # Delete mojibake string
-    # delete_sql = "DELETE FROM library_author WHERE octet_length(name) > length(name) * 2.5;"
-    
-    with conn:
-        with conn.cursor() as cur:
-            cur.executemany(
-                insert_sql,
-                authors_df.itertuples(index=False, name=None)
-            )
-            # cur.execute(delete_sql)
+    sql_publisher = """
+    INSERT INTO library_publisher (name)
+    VALUES (%s)
+    ON CONFLICT (name) DO NOTHING;
+    """
 
-def loading_genres():
-    df = pd.read_csv("books_1.Best_Books_Ever.csv", encoding="utf-8", dtype=str)
-
-    # print(df["genres"].head())
-
-    df["genres_list"] = df["genres"].apply(clean_genres)
-    
-    genres_df = (
-        df[["genres_list"]]
-        .explode("genres_list")
-        .dropna()
-        .rename(columns={"genres_list": "name"})
-    )
-    
-    genres_df["name"] = (
-        genres_df["name"]
-        .str.strip()
-        .str.title()
-    )
-
-    genres_df = genres_df.drop_duplicates().reset_index(drop=True)
-
-    insert_sql = """
+    sql_genres = """
     INSERT INTO library_genres (name)
     VALUES (%s)
-    ON CONFLICT (name) DO NOTHING
+    ON CONFLICT (name) DO NOTHING;
     """
 
-    # Delete mojibake string
-    delete_sql = "DELETE FROM library_genres WHERE octet_length(name) > length(name) * 2.5;"
+    sql_series = """
+    INSERT INTO library_series (name)
+    VALUES (%s)
+    ON CONFLICT (name) DO NOTHING;
+    """
 
-    conn = psycopg.connect(
-        "dbname=bookclub user=postgres host=localhost"
+    sql = """
+    INSERT INTO book (
+    title, description, pub_date, author_id,
+    pages, series_id, series_order, publisher_id, cover_url
     )
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    RETURNING id;
+    """
 
-    with conn:
+    with psycopg.connect("dbname=bookclub user=postgres host=localhost") as conn:
         with conn.cursor() as cur:
-            cur.executemany(
-                insert_sql,
-                genres_df[["name"]].itertuples(index=False, name=None)
-            )
-            cur.execute(delete_sql)
+            cur.executemany(sql_author, [(a,) for a in authors])
+            cur.executemany(sql_publisher, [(a,) for a in publishers])
+            cur.executemany(sql_genres, [(a,) for a in genres])
+            cur.executemany(sql_series, [(a,) for a in series_names])
+      
+        author_map = load_map(conn, "library_author")
+        publisher_map = load_map(conn, "library_publisher")
+        series_map = load_map(conn, "library_series")
+        genre_map = load_map(conn, "library_genres")
 
-def loading_publisher():
-    df = pd.read_csv("books_1.Best_Books_Ever.csv", encoding="utf-8", dtype=str)
 
-    publisher_df = (
-        df[["publisher"]]
-        .dropna()
-        .drop_duplicates()
-        .reset_index(drop=True)
-        .rename(columns={"publisher": "name"})
-    )
+        book_rows = []
 
-    sorted_df = publisher_df.sort_values(by="name", key=lambda x: x.str.len())
-    print(sorted_df.iloc[-1].str.len())
-    
-    # insert_sql = """
-    # INSERT INTO library_publisher (name)
-    # VALUES (%s)
-    # ON CONFLICT (name) DO NOTHING
-    # """
-
-    # conn = psycopg.connect(
-    #     "dbname=bookclub user=postgres host=localhost"
-    # )
-
-    # with conn:
-    #     with conn.cursor() as cur:
-    #         cur.executemany(
-    #             insert_sql,
-    #             publisher_df[["name"]].itertuples(index=False, name=None))
-            
-loading_authors()
+        for _, row in df.iterrows():
+            book_rows.append((
+                row["title"],
+                row["description"],
+                row["publishDate"],
+                author_map.get(row["author"]),
+                pd.to_numeric(row["pages"], errors="coerce"),
+                series_map.get(row["series"]),
+                row["series_num"],
+                publisher_map.get(row["publisher"]),
+                row["coverImg"],
+            ))
+        
+        with conn.cursor() as cur:
+            cur.executemany(sql, book_rows)
+        
+main()
