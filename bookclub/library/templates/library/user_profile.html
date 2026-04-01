@@ -1,0 +1,129 @@
+{% extends 'library/layout.html' %}
+{% load static %}
+{% block body %}
+<div class="container mt-5 px-4">
+    <div class="row row-cols-1 row-cols-md-2 justify-content-center gx-5 gy-3 ">
+        <div class="col col-md-2">
+            <img class="m-auto p-2" src="{% static 'library/images/person.svg' %}" alt="author-picture" style="max-width: 120px;">
+        </div>
+        <div class="col-auto col-md-auto author-border">
+            <div class="px-3 pt-2">
+                {% if request.user.is_authenticated %}
+                {% if follow_bool %}
+                <h1 class="book-title">{{user.username}} <span><button class="btn btn-primary" id="follow" data-userid="{{user.id}}">Following</button></span></h1>
+                {% else %}
+                <h1 class="book-title">{{user.username}} <span><button class="btn btn-outline-primary" id="follow" data-userid="{{user.id}}">Follow</button></span></h1>
+                {% endif %}
+                {% else %}
+                <h1 class="book-title">{{user.username}}</h1>
+                {% endif %}
+                <div class="book-desc">
+                    <p class="mb-0">Information about the user</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5" style="max-width: 1200px;">
+    <h2 class="ms border-bottom p-2">User Reviews</h2>
+    {% if reviews %}
+    <div class="row row-cols-2" >
+    {% for review in reviews %}
+        <div class="col">
+        <div class="card mb-3 clickme border">
+            <div class="col">
+                <div class="card-body">
+                <h5 class="card-title">
+                    <div class="star-outer">
+                    <div class="star-inner" data-rating="{{review.rating}}"></div></div>
+                    <a href="{% url 'book' review.book_id.id %}" class="ms-auto oneliner book-link">{{review.book_id.title}}</a></h5>
+                <p class="card-text twoliner">{{review.text}}</p>
+                <p class="card-text"><small class="text-muted">Review on {{review.date}}</small><button type="button" class="btn btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#exampleModal" id="read-review" data-username="{{review.user_id.username}}">Read Review</button></p>
+                </div>
+            </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    {% else %}
+        <h3 class="text-center my-3">No reviews yet.</h3>
+    {% endif %}
+</div>
+
+<div class="container mt-3" style="max-width: 1200px;">
+    <h2 class="ms border-bottom p-2">Following</h2>
+    <div class="container overflow-auto">
+    {% if followers %}
+        <div class="row gx-2 gy-2 row-cols-1 row-cols-sm-2 row-cols-lg-4 flex-nowrap">
+    {% for follow in followers %}
+        <div class="col d-flex align-items-strecth justify-content-center">
+        <div class="card text-center mx-2 bg-primary shadow" style="width: 120px;">
+            <img class="card-img-top mt-3 mx-auto px-2" src="{% static 'library/images/person.svg' %}" alt="book cover" style="max-width: 80px;">
+            <div class="d-flex card-body flex-column justify-content-end " style="max-width:200px;">
+                <div class="twoliner">
+                <a class="book-link fw-bolder fs-5 text-center" href="{% url 'user_profile' follow.id %}">{{follow.following}}</a>
+                </div>
+            </div>
+        </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <h3 class="text-center ms-3 mt-3">No follows yet.</h3>
+    {% endif %}
+    </div>
+</div>
+
+<div class="container mt-3" style="max-width: 1200px;">
+    <h2 class="ms border-bottom p-2">User Lists</h2>
+    {% if lists %}
+    <div class="row row-cols-4 ms-5 gx-5 gy-2 mt-3">
+    {% for list in lists %}
+        <div class="col">
+            <h3 class="" ><i class="bi bi-arrow-return-right"></i> <button class="btn p-0 m-o" data-bs-toggle="modal" data-bs-target="#listModal" data-listid="{{list.id}}" id="list-button" style="max-width: 180px;"><h3 class="oneliner">{{list.name}}</h3></button></h3>
+        </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <h3 class="text-center ms-3 mt-3">No lists yet.</h3>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg model-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+            <img class="mx-3" src="{% static 'library/images/person.svg' %}" alt="profile" style="max-width:40px;">
+            <h3 class="modal-title fs-5" id="exampleModalLabel"><span id="modal-username"></span>'s Review</h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-2">
+            <div class="star-outer">
+                <div class="star-inner" id="modal-star"></div></div></div>
+            <p id="reviewmodal-text"></p>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg model-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title fs-3 my-0 ms-auto" id="listModalLabel"></h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="list-content" >
+
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block script %}
+<script src="{% static 'library/follow.js' %}" type="module"></script>
+<script src="{% static 'library/profile.js' %}" type="module"></script>
+{% endblock %}

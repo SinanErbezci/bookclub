@@ -1,0 +1,42 @@
+{% extends "library/layout.html" %}
+{% load static %}
+{% block body %}
+<div class="container mt-5 px-4">
+    <div class="row row-cols-1 row-cols-md-2 justify-content-center gx-5 gy-3 ">
+        <div class="col col-md-2">
+            <img class="m-auto p-2" src="{% static 'library/images/person.svg' %}" alt="author-picture" style="max-width: 120px;">
+        </div>
+        <div class="col-auto col-md-auto author-border">
+            <div class="px-3 pt-2">
+                <h1 class="book-title">{{author.name}}</h1>
+                <div class="book-desc">
+                    <p class="mb-0">Information about the author</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<h1 class="form-title mt-5 mb-3">Books by {{author.name}}</h1>
+<div class="container mb-4 overflow-auto">
+    {% if over %}
+        <div class="row gx-2 gy-2 row-cols-1 row-cols-sm-2 row-cols-lg-4 flex-nowrap">
+    {% else %}
+        <div class="row gx-2 gy-2 row-cols-1 row-cols-sm-2 row-cols-lg-4 flex-nowrap justify-content-center">
+    {% endif %}
+        {% for book in books %}
+        <div class="col d-flex align-items-strecth justify-content-center">
+            <div class="card text-center mx-2 bg-primary shadow">
+                <img class="card-img-top book-cover mx-auto" src="{{book.cover}}" alt="book cover">
+                <div class="d-flex card-body flex-column justify-content-end " style="max-width:200px;">
+                    <div class="twoliner">
+                        <a class="book-link fw-bolder fs-5 text-center" href="{% url 'book' book.id %}">{{book.title}}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

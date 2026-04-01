@@ -1,0 +1,162 @@
+{% extends "library/layout.html" %}
+{% load static %}
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-auto pt-2">
+            <img class="card-img-top book-cover mx-auto" src="{{book.cover}}" alt="book cover">
+            <div class="d-flex flex-column justify-content-center align-items-center">
+            <div class="star-outer mt-2">
+                <div class="star-inner" data-rating="{{book.rating}}"></div>
+            </div>
+            <p>{{book.rating}} ({{book.num_ratings}} Reviews) </p>
+        </div>
+        </div>
+        <div class="col-8 pt-2 author-border">
+            <div class="px-3">
+                {% if request.user.is_authenticated %}
+                <span class="d-none" id="csrf_token">{{csrf_token}}</span>
+                    {% if listed %}
+                <h2 class="book-title">{{book.title}}<button href="#" class="btn btn-primary ms-2" rel="popover" id="list-action" data-bs-toggle="popover" data-listid={{listid}}>Remove from List</button>
+                    {% else %}
+                <h2 class="book-title">{{book.title}}<button href="#" class="btn btn-outline-primary ms-2" rel="popover" id="list-action" data-bs-toggle="popover" data-listid={{listid}}>Add your list</button></h2>
+                    {% endif %}
+                {% else %}
+                <h2 class="book-title">{{book.title}}</h2>
+                {% endif %}
+                <h5>by <a class="book-link" href="{% url 'author' book.author.id %}">{{book.author}}</a></h5>
+                <div class="book-desc">
+                    <p class="mb-0 collapse" id="collapse-desc">{{book.description}}</p>
+                </div>
+                <button class="show-more btn btn-primary" data-bs-toggle="collapse" href="#collapse-desc" 
+                aria-expanded="false" aria-controls="collapse-desc"><i class="bi bi-caret-down-fill"></i> Read more  <i class="bi bi-caret-down-fill"></i></button>
+                <p><span class="text-decoration-underline">Publisher:</span> {{book.publisher}} | <span class="text-decoration-underline">Publish Date:</span> {{book.pub_date}}</p>
+                <div class="mb-2 overflow-auto">
+                <p class="text-nowrap"><span class="text-decoration-underline">Genres:</span>
+                {% for genre in book.genres.all %}
+                <span class="mx-2 fw-bolder"><a class="book-link" href="{% url 'genre' genre.id %}">{{genre.name}}</a></span>
+                {% empty %}
+                    <span>no genre</span>
+                {% endfor %}
+                </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4" style="max-width: 1000px;">
+    <div class="row ms-5">
+    <h2 class="ms">Reviews</h2>
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    </div>
+    {% if user_review %}
+        <div class="row ms-5">
+            <h3 class="mt-2 text-decoration-underline text-center">Your Review</h3>
+            <div class="card mb-3 clickme border">
+                <div class="col">
+                    <div class="card-body">
+                    <h5 class="card-title text-center">
+                        <div class="star-outer">
+                        <div class="star-inner" data-rating="{{user_review.rating}}"></div>
+                    </div></h5>
+                    <p class="card-text twoliner">{{user_review.text}}</p>
+                    <p class="card-text"><small class="text-muted">Review on {{user_review.date}}</small><button type="button" class="btn btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#exampleModal" id="read-review" data-username="{{user_review.user_id.username}}">Read Review</button></p>
+                    </div>
+                </div>
+                </div>
+        </div>
+        <div class="ms-5 mb-3 border-bottom border-primary border-2"></div>
+    {% endif %}
+    {% if reviews %}
+        {% for review in reviews %}
+        <div class="row ms-5">
+            <div class="card mb-3 clickme border">
+                <div class="row flex-nowrap">
+                <div class="col-md-2 d-flex flex-column justify-content-center align-items-center ">
+                    <img class="m-auto" src="{% static 'library/images/person.svg' %}" alt="profile" style="max-width:80px;">
+                    <p class="mx-auto oneliner"><a class="book-link" href="{% url 'user_profile' review.user_id.id %}">{{review.user_id.username}}</a></p>
+                </div>
+                <div class="col-md-9">
+                    <div class="card-body">
+                    <h5 class="card-title">
+                        <div class="star-outer">
+                        <div class="star-inner" data-rating="{{review.rating}}"></div>
+                    </div></h5>
+                    <p class="card-text twoliner">{{review.text}}</p>
+                    <p class="card-text"><small class="text-muted">Review on {{review.date}}</small><button type="button" class="btn btn-primary ms-3" data-bs-toggle="modal" data-bs-target="#exampleModal" id="read-review" data-username="{{review.user_id.username}}">Read Review</button></p>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        {% if user_review %}
+            <h3 class="text-center mt-3">No other reviews yet.</h3>
+        {% else %}
+            <h3 class="text-center mt-3">No reviews yet.</h3>
+        {% endif %}
+    {% endif %}
+</div>
+{% if user.is_authenticated and not user_review %}
+<div class="container text-center">
+<button type="button" class="btn btn-primary btn-lg mt-3 text-center " data-bs-toggle="modal" data-bs-target="#formModal">Write a Review</button>
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg model-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="formModalLabel">Write a Review</h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p class="form-feedback text-center"></p>
+            <form method="post" id="review-form">
+                {% csrf_token %}
+            <div class="rating-star mb-3">
+                <input type="number" name="rating" hidden>
+                <i class="bi bi-star"></i>
+                <i class="bi bi-star"></i>
+                <i class="bi bi-star"></i>
+                <i class="bi bi-star"></i>
+                <i class="bi bi-star"></i>
+            </div> 
+                <div class="mb-3">
+                    <label for="reviewform-text" class="form-label">Write your review here:</label>
+                    <textarea class="form-control" name="text" rows="10" id="reviewform-text" placeholder="Your review should be minimum 50 and maximum 500 characters." maxlength="500"></textarea>
+                </div>
+                <button  class="btn btn-primary" id="review-submit">Submit your Review</button>
+            </form>
+        </div>
+      </div>
+    </div>
+</div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg model-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+            <img class="mx-3" src="{% static 'library/images/person.svg' %}" alt="profile" style="max-width:40px;">
+            <h3 class="modal-title fs-5" id="exampleModalLabel"><span id="modal-username"></span>'s Review</h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-2">
+            <div class="star-outer">
+                <div class="star-inner" id="modal-star"></div></div></div>
+            <p id="reviewmodal-text"></p>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'library/browse.js' %}" type="module"></script>
+{% endblock %}
+

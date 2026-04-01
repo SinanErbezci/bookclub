@@ -1,1 +1,31 @@
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# --- Virtual envs ---
+venv/
+.venv/
+bookclub_venv/
+env/
+ENV/
+
+# --- Env / secrets ---
+.env
+*.env
+
+# --- Django ---
+staticfiles/
+media/
+local_settings.py
+
+# --- IDE ---
+.vscode/
+.idea/
+
+# --- Data (optional) ---
 books_1.Best_Books_Ever.csv
+etl_rejects*.csv

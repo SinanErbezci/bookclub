@@ -1,0 +1,23 @@
+{% extends "library/layout.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block body %}
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <div class="form-wrap container mt-2 mt-5 shadow px-5 pt-3 border border-5">
+    <h1 class="form-title">Sign Up</h1>
+    <form action="{% url 'signup' %}" method="post">
+        {% csrf_token %}
+        {{form}}
+        <input class="btn btn-primary btn-lg mx-auto" type="submit" value="Sign Up">
+    </form>
+    <p class="text-center mt-2">Already have an account? <a href="{% url 'login' %}">Log In here.</a></p>
+    </div>
+    
+    <div class="pattern mt-4"></div>
+{% endblock %}
+
