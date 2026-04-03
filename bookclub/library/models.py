@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 # Create your models here.
 
@@ -21,35 +20,35 @@ class User(AbstractUser):
     
 
 class Author(models.Model):
-    name = models.TextField(unique=True)
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
 
 class Genre(models.Model):
-    name = models.TextField(unique=True)
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
 
 class Series(models.Model):
-    name = models.TextField(unique=True)
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
     
 class Publisher(models.Model):
-    name = models.TextField(unique=True)
+    name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
     
 
 class Book(models.Model):
-    source = models.CharField(max_length=50, null=True, blank=True)
+    source = models.CharField(max_length=50)
     source_row_id = models.TextField()
 
-    title = models.TextField()
+    title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     pub_date = models.DateField(null=True, blank=True)
     author = models.ForeignKey(Author, related_name='books', on_delete=models.CASCADE)
@@ -67,15 +66,6 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
-    def serialize(self):
-        return {
-        "id": self.id,
-        "book_name": self.title,
-        "pic_src": self.cover,
-        "author_id": self.author.id,
-        "author_name": self.author.name,
-    }
-
     class Meta:
         indexes = [
             models.Index(fields=["title"])
@@ -89,20 +79,39 @@ class Book(models.Model):
         ]
 
 class Review(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
     rating = models.SmallIntegerField(validators=[
         MaxValueValidator(5), MinValueValidator(1)
     ])
-    text = models.TextField(max_length=1000)
-    date = models.DateField(auto_now_add=True)
+    text = models.CharField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["book", "user"],
+                name= "uniq_review_book_user"
+            )
+        ]
 
 class UserFollower(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE , related_name="following")
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followers")
 
     class Meta:
-        unique_together = ("follower", "following")
+        constraints  = [
+            models.UniqueConstraint(
+                fields=["follower", "following"],
+                name = "uniq_user_follow"
+            ),
+            models.CheckConstraint(
+                # in sql -> NOT (follower_id = following_id)
+                condition=~models.Q(follower=models.F("following")),
+                name="prevent_self_follow"
+            ),
+        ]
 
     def clean(self):
         if self.follower == self.following:
@@ -112,10 +121,24 @@ class UserFollower(models.Model):
 class List(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lists")
     name = models.CharField(max_length=100)
-
-class ListBook(models.Model):
-    book_list = models.ForeignKey(List, on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("book_list", "book")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "name"],
+                name="uniq_list_owner_name"
+            )
+        ]
+class ListBook(models.Model):
+    book_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name="list_books")
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="in_lists")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["book_list", "book"],
+                name="uniq_book_list"
+            )
+        ]

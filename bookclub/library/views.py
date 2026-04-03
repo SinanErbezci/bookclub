@@ -7,6 +7,8 @@ from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views import generic
+from rest_framework import generics
+from .serializer import BookSerializer
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
@@ -18,6 +20,14 @@ from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
 
+# API Views
+class BookListAPIView(generics.ListAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+
+class BookDetailAPIView(generics.RetrieveAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
 
 def index(request):
     hello = "hello, world"

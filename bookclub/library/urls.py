@@ -28,7 +28,11 @@ urlpatterns = [
     path("follow/<int:user_id>", views.follow, name="follow"),
 
     # API List
-    path("listing", views.listing, name="listing")
+    path("listing", views.listing, name="listing"),
+
+    # API urls
+    path("api/books/", views.BookListAPIView.as_view(), name="book-list"),
+    path("api/book/<int:pk>", views.BookDetailAPIView.as_view(), name="book-detail"),
 
 
 ]
