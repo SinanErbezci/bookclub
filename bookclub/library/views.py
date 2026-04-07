@@ -110,22 +110,28 @@ def browse(request):
     content["recently"] = Book.objects.all().order_by("-pk")[:4]
 
     # Randomly select author
-    random_author = Author.objects.order_by("?").prefetch_related("books").first()
+    random_author = (
+        Author.objects
+        .prefetch_related("books")
+        .order_by("?")
+        .first()
+    )
+
+    books_author = list(random_author.books.all()[:5])
+
     content["author"] = random_author
-    content["author_books"] = random_author.books.all()
-    if random_author.count() > 4:
-        content["author_over"] = True
-    else:
-        content["author_over"] = False
+    content["author_books"] = books_author
+    content["author_over"] = len(books_author) > 4
 
     # Randomly select genre
-    random_genre = Genre.objects.order_by("?").prefetch_related("books").first()
+    random_genre = Genre.objects.prefetch_related("books").order_by("?").first()
+
+    books_genre = list(random_genre.books.all()[:5])
+
     content["genre"] = random_genre
-    content["genre_books"] = random_genre.books.all()[:10]
-    if random_genre.books.count() > 4:
-        content["genre_over"] = True
-    else:
-        content["genre_over"] = False
+    content["genre_books"] = books_genre
+    content["genre_over"] = len(books_author) > 4
+
     
     
     return render(request, "library/browse.html", content)
