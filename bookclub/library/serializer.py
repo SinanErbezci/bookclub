@@ -3,6 +3,14 @@ from .models import Book
 
 
 class BookSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
     class Meta:
         model = Book
-        fields = "__all__"
+        fields = [
+            "id",
+            "title",
+            "author",
+            "rating",
+            "num_ratings",
+        ]

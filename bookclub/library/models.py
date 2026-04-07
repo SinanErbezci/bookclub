@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
+from decimal import Decimal
 # Create your models here.
 
 class User(AbstractUser):
@@ -60,8 +61,13 @@ class Book(models.Model):
     cover = models.URLField(blank=True, null=True)
     num_ratings = models.IntegerField(default=0)
     rating = models.DecimalField(
-        default=0, max_digits=3, decimal_places=1,
-        validators=[MinValueValidator(0), MaxValueValidator(10)])
+        max_digits=3,
+        decimal_places=1,
+        default=Decimal("0.0"),
+        validators=[
+            MinValueValidator(Decimal("0.0")),
+            MaxValueValidator(Decimal("10.0")),
+    ])
 
     def __str__(self):
         return self.title

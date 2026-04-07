@@ -1,5 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import BookViewSet
 from . import views
+
+router = DefaultRouter()
+router.register(r"books", BookViewSet, basename="book")
 
 urlpatterns = [
     # Landing Page
@@ -31,8 +36,7 @@ urlpatterns = [
     path("listing", views.listing, name="listing"),
 
     # API urls
-    path("api/books/", views.BookListAPIView.as_view(), name="book-list"),
-    path("api/book/<int:pk>", views.BookDetailAPIView.as_view(), name="book-detail"),
+    path("api/", include(router.urls))
 
 
-]
+] + router.urls

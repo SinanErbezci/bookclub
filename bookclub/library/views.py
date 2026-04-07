@@ -7,44 +7,57 @@ from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views import generic
-from rest_framework import generics
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.filters import SearchFilter, OrderingFilter
+from .pagination import BookPagination
 from .serializer import BookSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from .models import Book, Author, User, Genre, Review, UserFollower, List, ListBook
 from .forms import CreateUserFrom
 # from .documents import BookDocument, AuthorDocument, GenreDocument
-from random import choice
+from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
+from .serializer import BookSerializer
+from rest_framework.response import Response
+from django.db.models import Max
+
 
 # API Views
-class BookListAPIView(generics.ListAPIView):
-    queryset = Book.objects.all()
+class BookViewSet(ReadOnlyModelViewSet):
     serializer_class = BookSerializer
+    pagination_class = BookPagination
+    filter_backends = [
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter,
+        ]
 
-class BookDetailAPIView(generics.RetrieveAPIView):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
+    filterset_fields = {
+        "author": ["exact"],
+        "rating": ["gte", "lte"],
+    }
+
+    search_fields = ["title"]
+
+    ordering_fields = ["rating", "title", "num_ratings"]
+    ordering = ["-rating"]
+        
+    def get_queryset(self):
+        return (
+            Book.objects
+            .select_related("author", "publisher", "series")
+            .prefetch_related("genres")
+        )
 
 def index(request):
     hello = "hello, world"
     output = {"hello" : hello}
     return render(request, "library/index.html",output)
-
-def create_book(request):
-    if request.method == "POST":
-        form =  ContactForm(request.POST)
-        if form.is_valid():
-            print("sender",form.cleaned_data["sender"])
-        return HttpResponseRedirect(reverse("index"))
-    else:
-        form = ContactForm()
-
-    return render(request, "library/create_book.html", {"form" : form})
-
 
 # User views
 def login_view(request):
@@ -97,23 +110,19 @@ def browse(request):
     content["recently"] = Book.objects.all().order_by("-pk")[:4]
 
     # Randomly select author
-    pks = Author.objects.values_list('pk', flat=True)
-    random_pk = choice(pks)
-    random_obj = Author.objects.get(pk=random_pk)
-    content["author"] = random_obj
-    content["author_books"] = random_obj.books.all()
-    if random_obj.books.count() > 4:
+    random_author = Author.objects.order_by("?").prefetch_related("books").first()
+    content["author"] = random_author
+    content["author_books"] = random_author.books.all()
+    if random_author.count() > 4:
         content["author_over"] = True
     else:
         content["author_over"] = False
 
     # Randomly select genre
-    pks = Genre.objects.values_list('pk', flat=True)
-    random_pk = choice(pks)
-    random_obj = Genre.objects.get(pk=random_pk)
-    content["genre"] = random_obj
-    content["genre_books"] = random_obj.books.all()[:10]
-    if random_obj.books.count() > 4:
+    random_genre = Genre.objects.order_by("?").prefetch_related("books").first()
+    content["genre"] = random_genre
+    content["genre_books"] = random_genre.books.all()[:10]
+    if random_genre.books.count() > 4:
         content["genre_over"] = True
     else:
         content["genre_over"] = False
@@ -123,16 +132,16 @@ def browse(request):
 
 def browse_book(request, book_id):
 
-    if request.method == "POST":
+    if request.method == "POST" and request.user.is_authenticated:
         text = request.POST["text"]
         rating = request.POST["rating"]
         rating = int(rating)
 
-        user_review = Review.objects.filter(book_id_id = book_id, user_id_id = request.user.id)
-        if user_review:
+        user_review = Review.objects.filter(book_id = book_id, user_id = request.user.id)
+        if user_review.exists():
             print("user has review")
             return redirect("index")
-        review = Review(book_id_id=book_id, user_id_id=request.user.id, rating=rating, text=text)
+        review = Review(book_id=book_id, user_id=request.user.id, rating=rating, text=text)
         review.save()
         messages.success(request, "You've succesfully submitted your review.")
         
@@ -141,7 +150,7 @@ def browse_book(request, book_id):
         num_ratings = book.num_ratings
         book_rating = book.rating
         new_total = num_ratings * book_rating + rating
-        new_rating =  Decimal(new_total/(num_ratings + 1)).quantize(Decimal("1.0"))
+        new_rating = (Decimal(new_total) / Decimal(num_ratings + 1)).quantize(Decimal("1.0"))
         book.num_ratings = num_ratings + 1
         book.rating = new_rating
         book.save()
@@ -150,22 +159,18 @@ def browse_book(request, book_id):
     content = {}
     if book_id:
         if request.user.is_authenticated:
-            user_review = Review.objects.filter(book_id_id = book_id, user_id_id = request.user.id)
-            onlist = ListBook.objects.filter(book__id = book_id, owner_list__owner__id = request.user.id)
-            if onlist:
-                content["listed"] = True
-                content["listid"] = onlist[0].id
-            else:
-                content["listed"] = False
-                
-            if user_review:
-                content["user_review"] = user_review[0]
-            else:
-                content["user_review"] = None
+            user_review = Review.objects.filter(book_id = book_id, user_id = request.user.id)
+            onlist = ListBook.objects.filter(book__id = book_id, book_list__owner_id = request.user.id)
 
-        book = Book.objects.get(pk=book_id)
+            content["listed"] = onlist.exists()
+            content["listid"] = onlist.first().id if content["listed"] else None
+
+                
+            content["user_review"] = user_review.first().id if user_review.exists() else None
+
+        book = get_object_or_404(Book, pk=book_id)
         content["book"] = book
-        reviews = Review.objects.filter(book_id = book).exclude(user_id_id = request.user.id)
+        reviews = Review.objects.filter(book = book).exclude(user_id = request.user.id)
         content["reviews"] = reviews
 
 
@@ -274,7 +279,6 @@ def browse_genre(request, genre_id):
 #     return JsonResponse(result, safe=False)
 
 @login_required
-@csrf_exempt 
 def follow(request, user_id):
     if request.method == "POST":
         follower = User.objects.get(pk=request.user.id)
@@ -294,8 +298,8 @@ def profile(request):
         user = User.objects.get(pk=request.user.id)
         reviews = Review.objects.all().filter(user_id = user)
         followers = UserFollower.objects.all().filter(follower = user)
-        List = List.objects.all().filter(owner = user)
-        content = {"user": user, "reviews":reviews, "followers":followers, "List":List}
+        lists = List.objects.all().filter(owner = user)
+        content = {"user": user, "reviews":reviews, "followers":followers, "List":lists}
         return render(request, "library/profile.html",content)
     else:
         return redirect("index")
@@ -309,47 +313,46 @@ def user_profile(request,user_id):
         try:
             follow_bool = UserFollower.objects.get(follower__id = request.user.id, following__id = user_id)
             follow_bool = True
-        except:
+        except UserFollower.DoesNotExist:
             follow_bool = False
         content["follow_bool"] = follow_bool
         
     user = User.objects.get(pk=user_id)
     reviews = Review.objects.all().filter(user_id = user)
-    List = List.objects.all().filter(owner = user)
+    lists = List.objects.all().filter(owner = user)
 
     content["user"] =  user
     content["reviews"] = reviews
-    content["List"] = List
+    content["List"] = lists
 
     return render(request, "library/user_profile.html", content)
 
 @login_required
 def listing(request):
     if request.method == "GET":
-        if request.GET.get("q"):
+        list_id = request.GET.get("q")
         # give books of a list
-            books = ListBook.objects.all().filter(owner_list__id = int(request.GET.get("q")))
-            return JsonResponse([book.book.serialize() for book in books], safe=False)
-        else:
-        # give users all the list
-            output = {}
-            user_List = List.objects.filter(owner__id = request.user.id)
-            if user_List:
-                for item in user_List:
-                    output[item.id] = item.name
-            return JsonResponse(output)
+        if list_id:
+            books = Book.objects.filter(in_lists__book_list_id=list_id)
+            serializer = BookSerializer(books, many=True)
+            return Response(serializer.data)
+
+        user_lists = List.objects.filter(owner=request.user)
+        output = {lst.id: lst.name for lst in user_lists}
+        return JsonResponse(output)
+    
     elif request.method == "POST":
         if request.GET.get("q") == "create":
         # create new list and add the book to the list
             new_list = List.objects.create(owner_id=request.user.id, name=request.POST["list-name"])
-            new_book_list = ListBook.objects.create(owner_list = new_list, book_id=request.POST["book"])
+            new_book_list = ListBook.objects.create(book_list = new_list, book_id=request.POST["book"])
         elif request.GET.get("q") == "add":
         # add book to a list
-            new_book_list = ListBook.objects.create(owner_list_id = request.POST["list-id"], book_id = request.POST["book"])
+            new_book_list = ListBook.objects.create(book_list_id = request.POST["list-id"], book_id = request.POST["book"])
             print(new_book_list)
         elif request.GET.get("q") == "remove":
         # remove from the list
-            remove_book_list = ListBook.objects.filter(owner_list_id = request.POST["list"], book_id = request.POST["book"])
+            remove_book_list = ListBook.objects.filter(book_list_id = request.POST["list"], book_id = request.POST["book"])
             remove_book_list.delete()
 
         if "HTTP_REFERER" in request.META:
