@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView
 from . import views
 
 router = DefaultRouter()
@@ -36,7 +36,9 @@ urlpatterns = [
     path("listing", views.listing, name="listing"),
 
     # API urls
-    path("api/", include(router.urls))
+    path("api/", include(router.urls)),
+    path("api/authors/random/", RandomAuthorAPIView.as_view()),
+    path("api/genres/random/", RandomGenreAPIView.as_view()),
 
 
 ] + router.urls

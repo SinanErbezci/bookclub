@@ -29,3 +29,5 @@ local_settings.py
 # --- Data (optional) ---
 books_1.Best_Books_Ever.csv
 etl_rejects*.csv
+
+.DS_Store

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404,redirect
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.db import IntegrityError
+from django.db.models import Count
 from django.contrib import messages
 from django.contrib.auth import authenticate,login, logout
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
@@ -10,7 +11,6 @@ from django.views import generic
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .pagination import BookPagination
-from .serializer import BookSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -22,8 +22,9 @@ from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
-from .serializer import BookSerializer
+from .serializer import BookSerializer, AuthorSerializer
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.db.models import Max
 
 
@@ -53,6 +54,35 @@ class BookViewSet(ReadOnlyModelViewSet):
             .select_related("author", "publisher", "series")
             .prefetch_related("genres")
         )
+
+class RandomAuthorAPIView(APIView):
+        def get(self, request):
+            count = Author.objects.count()
+            random_index = randint(0, count - 1)
+
+            author = (
+                Author.objects
+                .prefetch_related("books")
+                .annotate(book_count=Count("books"))
+            )[random_index]
+
+            serializer = AuthorSerializer(author)
+            return Response(serializer.data)
+
+class RandomGenreAPIView(APIView):
+        def get(self, request):
+            count = Genre.objects.count()
+            random_index = randint(0, count - 1)
+
+            genre = (
+                Genre.objects
+                .prefetch_related("books")
+                .annotate(book_count=Count("books"))
+            )[random_index]
+
+            serializer = AuthorSerializer(genre)
+            return Response(serializer.data)
+
 
 def index(request):
     hello = "hello, world"
