@@ -2,6 +2,8 @@ import BookCard from "../components/BookCard";
 import { Link } from "react-router-dom";
 
 function FeaturedAuthor({ author }) {
+  if (!author) return <div>Loading...</div>;
+  
   const books = author.books.slice(0, 5);
   const isScrollable = author.book_count > 4;
 

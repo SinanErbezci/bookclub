@@ -1,14 +1,16 @@
 import BookCard from "../components/BookCard";
 
-function FeaturedGenre({ recentBook }) {
-  const books = recentBook.books.slice(0, 5);
-  const isScrollable = recentBook.book_count > 4;
+function RecentlyAdded({ books }) {
+  if (!books || books.length === 0) {
+    return <div>Loading...</div>;
+  }
+
+  const displayBooks = books.slice(0, 5);
+  const isScrollable = books.length > 4;
 
   return (
     <section>
-      <h1>
-            Recently Added Books
-      </h1>
+      <h1>Recently Added Books</h1>
 
       <div
         style={{
@@ -16,7 +18,7 @@ function FeaturedGenre({ recentBook }) {
           overflowX: isScrollable ? "auto" : "hidden",
         }}
       >
-        {books.map((book) => (
+        {displayBooks.map((book) => (
           <BookCard key={book.id} book={book} />
         ))}
       </div>
@@ -24,4 +26,4 @@ function FeaturedGenre({ recentBook }) {
   );
 }
 
-export default FeaturedGenre;
+export default RecentlyAdded;

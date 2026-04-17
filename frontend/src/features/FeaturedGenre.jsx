@@ -1,8 +1,11 @@
 import BookCard from "../components/BookCard";
 
 function FeaturedGenre({ genre }) {
+  if (!genre) return <div>Loading...</div>;
+  
   const books = genre.books.slice(0, 5);
   const isScrollable = genre.book_count > 4;
+
 
   return (
     <section>

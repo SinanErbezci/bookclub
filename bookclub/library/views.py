@@ -45,7 +45,7 @@ class BookViewSet(ReadOnlyModelViewSet):
 
     search_fields = ["title"]
 
-    ordering_fields = ["rating", "title", "num_ratings"]
+    ordering_fields = ["rating", "title", "num_ratings", "id"]
     ordering = ["-rating"]
         
     def get_queryset(self):
