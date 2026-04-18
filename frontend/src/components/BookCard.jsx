@@ -1,27 +1,32 @@
+import { Link } from "react-router-dom";
+
 function BookCard({ book }) {
   return (
-    <div className="card text-center mx-2 bg-primary shadow">
-      <img
-        className="card-img-top mx-auto"
-        src={book.cover}
-        alt="book cover"
-        style={{ width: "200px", height: "300px" }}
-      />
+    <Link to={`/books/${book.id}`} className="card-link me-4">
+      <div className="book-card">
 
-      <div className="card-body">
-        <a className="fw-bold" href={`/books/${book.id}`}>
-          {book.title}
-        </a>
+        {/* IMAGE */}
+        <img
+          src={book.cover}
+          alt={book.title}
+          className="book-card-img"
+        />
 
-        {book.author_name && (
-          <div>
-            <a href={`/authors/${book.author}`}>
-              {book.author_name}
-            </a>
+        {/* TEXT */}
+        <div className="book-card-body">
+
+          <div className="book-card-title twoliner">
+            {book.title}
           </div>
-        )}
+
+          <div className="book-card-author oneliner">
+            {book.author_name}
+          </div>
+
+        </div>
+
       </div>
-    </div>
+    </Link>
   );
 }
 

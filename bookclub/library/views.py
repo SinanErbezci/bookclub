@@ -56,32 +56,26 @@ class BookViewSet(ReadOnlyModelViewSet):
         )
 
 class RandomAuthorAPIView(APIView):
-        def get(self, request):
-            count = Author.objects.count()
-            random_index = randint(0, count - 1)
+    def get(self, request):
+        author = Author.objects.order_by("?").first()
+        books = author.books.all()[:4]
 
-            author = (
-                Author.objects
-                .prefetch_related("books")
-                .annotate(book_count=Count("books"))
-            )[random_index]
-
-            serializer = AuthorSerializer(author)
-            return Response(serializer.data)
+        return Response({
+            "id": author.id,
+            "name": author.name,
+            "books": BookSerializer(books, many=True).data
+        })
 
 class RandomGenreAPIView(APIView):
-        def get(self, request):
-            count = Genre.objects.count()
-            random_index = randint(0, count - 1)
+    def get(self, request):
+        genre = Genre.objects.order_by("?").first()
+        books = genre.books.all()[:4]
 
-            genre = (
-                Genre.objects
-                .prefetch_related("books")
-                .annotate(book_count=Count("books"))
-            )[random_index]
-
-            serializer = AuthorSerializer(genre)
-            return Response(serializer.data)
+        return Response({
+            "id": genre.id,
+            "name": genre.name,
+            "books": BookSerializer(books, many=True).data
+        })
 
 
 def index(request):
@@ -134,7 +128,9 @@ def signup(request):
 
     return render(request, "library/signup.html", {"form": form})
 
+# legacy
 def browse(request):
+
     content = {}
     # Last added books
     content["recently"] = Book.objects.all().order_by("-pk")[:4]
@@ -147,20 +143,18 @@ def browse(request):
         .first()
     )
 
-    books_author = list(random_author.books.all()[:5])
+    books_author = list(random_author.books.all()[:4])
 
     content["author"] = random_author
     content["author_books"] = books_author
-    content["author_over"] = len(books_author) > 4
 
     # Randomly select genre
     random_genre = Genre.objects.prefetch_related("books").order_by("?").first()
 
-    books_genre = list(random_genre.books.all()[:5])
+    books_genre = list(random_genre.books.all()[:4])
 
     content["genre"] = random_genre
     content["genre_books"] = books_genre
-    content["genre_over"] = len(books_author) > 4
 
     
     

@@ -28,10 +28,16 @@ function Browse() {
   if (!author || !genre) return <div>Loading...</div>;
 
   return (
-    <div>
-      <RecentlyAdded books={books} />
-      <FeaturedAuthor author={author} />
-      <FeaturedGenre genre={genre} />
+    <div className="container mt-4">
+      <div className="mb-5">
+        <RecentlyAdded books={books} />
+      </div>
+      <div className="mb-5">
+        <FeaturedAuthor author={author} />
+      </div>
+      <div className="mb-5">
+        <FeaturedGenre genre={genre} />
+      </div>
     </div>
   );
 }

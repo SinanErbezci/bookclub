@@ -1,31 +1,23 @@
 import BookCard from "../components/BookCard";
 
 function FeaturedGenre({ genre }) {
-  if (!genre) return <div>Loading...</div>;
-  
-  const books = genre.books.slice(0, 5);
-  const isScrollable = genre.book_count > 4;
-
+  if (!genre) return null;
 
   return (
-    <section>
-      <h1>
-        Check out genre of{" "}
-        <a href={`/genres/${genre.id}`}>
-          {genre.name}
-        </a>
-      </h1>
+    <section className="featured-section">
 
-      <div
-        style={{
-          display: "flex",
-          overflowX: isScrollable ? "auto" : "hidden",
-        }}
-      >
-        {books.map((book) => (
+      <h2 className="form-title mt-5 mb-3">
+        Genre: {genre.name}
+      </h2>
+
+      <div className="recent-scroll-container">
+        <div className="recent-scroll-row justify-content-center">
+        {genre.books?.map(book => (
           <BookCard key={book.id} book={book} />
         ))}
+        </div>
       </div>
+
     </section>
   );
 }

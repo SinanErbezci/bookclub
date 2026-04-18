@@ -5,91 +5,138 @@ function NavBar() {
 
   return (
     <header>
-      <nav className="navbar navbar-expand-xl flex-nowrap">
-        <div className="container-fluid">
+      <nav className="navbar navbar-expand-xl">
+        <div className="container nav-contain d-flex align-items-center">
 
-          {/* Logo */}
-          <Link to="/">
-            <img className="brand-img me-2 ms-3" src="/images/logo.svg" alt="logo" />
+          {/* LOGO */}
+          <Link to="/" className="brand-name">
+              Book<span>Club</span>
           </Link>
 
-          {/* Search */}
-          <div className="container search-bar">
-            <div className="input-group search-bar-input">
-              <input
-                className="form-control"
-                type="search"
-                placeholder="Search"
-              />
-              <button className="btn search-btn" type="button">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
+          {/* SEARCH (DESKTOP ONLY) */}
+          <div className="search-wrapper d-none d-xl-flex">
+            <div className="search-bar">
+              <div className="search-bar-input">
+                <input
+                  type="search"
+                  placeholder="Search books..."
+                />
+                <button className="search-btn">
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                </button>
+              </div>
             </div>
           </div>
+          {/* NAV OPTIONS (DESKTOP) */}
+          <div className="nav-options d-none d-xl-flex ms-auto">
 
-          {/* Offcanvas */}
-          <div className="offcanvas offcanvas-end" id="top-navbar">
-            <div className="d-flex justify-content-between p-3">
-              <img className="brand-img" src="/images/logo.svg" alt="logo" />
-              <button className="btn-close" data-bs-dismiss="offcanvas"></button>
-            </div>
+            {isAuthenticated ? (
+              <>
+                <Link className="nav-link" to="/profile">
+                  Profile <i className="fa-solid fa-user"></i>
+                </Link>
 
-            <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+                <Link className="nav-link" to="/">
+                  Browse
+                </Link>
 
-              {isAuthenticated ? (
-                <>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/profile">
-                      Profile <i className="fa-solid fa-user"></i>
-                    </Link>
-                  </li>
+                <Link className="nav-link" to="/logout">
+                  <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link className="nav-link" to="/signup">
+                  Sign Up
+                </Link>
 
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/">
-                      Browse
-                    </Link>
-                  </li>
+                <Link className="nav-link nav-login" to="/login">
+                  Log In
+                </Link>
+              </>
+            )}
 
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/search">
-                      Search <i className="fa-solid fa-magnifying-glass"></i>
-                    </Link>
-                  </li>
-
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/logout">
-                      <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                    </Link>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/signup">
-                      Sign Up
-                    </Link>
-                  </li>
-
-                  <li className="nav-item">
-                    <Link className="nav-link nav-login" to="/login">
-                      Log In
-                    </Link>
-                  </li>
-                </>
-              )}
-
-            </ul>
           </div>
 
-          {/* Toggle */}
+          {/* MOBILE TOGGLE */}
           <button
-            className="navbar-toggler ms-3"
+            className="navbar-toggler d-xl-none"
             type="button"
             data-bs-toggle="offcanvas"
-            data-bs-target="#top-navbar"
+            data-bs-target="#mobileMenu"
           >
             <span className="navbar-toggler-icon"></span>
           </button>
+
+          {/* MOBILE MENU */}
+          <div
+            className="offcanvas offcanvas-end d-xl-none"
+            id="mobileMenu"
+          >
+            <div className="offcanvas-header">
+              <div className="brand-name">
+                BookClub
+              </div>
+              <button
+                className="btn-close"
+                data-bs-dismiss="offcanvas"
+              ></button>
+            </div>
+
+            <div className="offcanvas-body">
+
+              {/* MOBILE SEARCH */}
+              <div className="search-bar mb-3">
+                <div className="search-bar-input">
+                  <input type="search" placeholder="Search..." />
+                  <button className="search-btn">
+                    <i className="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
+              </div>
+
+              <ul className="navbar-nav">
+
+                {isAuthenticated ? (
+                  <>
+                    <li className="nav-item">
+                      <Link className="nav-link" to="/profile">
+                        Profile <i className="fa-solid fa-user"></i>
+                      </Link>
+                    </li>
+
+                    <li className="nav-item">
+                      <Link className="nav-link" to="/">
+                        Browse
+                      </Link>
+                    </li>
+
+                    <li className="nav-item">
+                      <Link className="nav-link" to="/logout">
+                        Logout <i className="fa-solid fa-arrow-right-from-bracket"></i>
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li className="nav-item">
+                      <Link className="nav-link" to="/signup">
+                        Sign Up
+                      </Link>
+                    </li>
+
+                    <li className="nav-item">
+                      <Link className="nav-link nav-login" to="/login">
+                        Log In
+                      </Link>
+                    </li>
+                  </>
+                )}
+
+              </ul>
+
+            </div>
+          </div>
 
         </div>
       </nav>

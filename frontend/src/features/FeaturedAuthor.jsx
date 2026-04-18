@@ -1,32 +1,23 @@
 import BookCard from "../components/BookCard";
-import { Link } from "react-router-dom";
 
 function FeaturedAuthor({ author }) {
-  if (!author) return <div>Loading...</div>;
-  
-  const books = author.books.slice(0, 5);
-  const isScrollable = author.book_count > 4;
+  if (!author) return null;
 
   return (
-    <section>
-      <h1>
-        Check out books from{" "}
-        <Link to={`/authors/${author.id}`}>
-            {author.name}
-        </Link>
-      </h1>
+    <section className="featured-section">
 
-      <div
-        style={{
-          display: "flex",
-          overflowX: isScrollable ? "auto" : "hidden",
-          justifyContent: isScrollable ? "flex-start" : "center",
-        }}
-      >
-        {books.map((book) => (
+      <h2 className="form-title mt-5 mb-3">
+        Author: {author.name}
+      </h2>
+
+      <div className="recent-scroll-container">
+        <div className="recent-scroll-row justify-content-center">
+        {author.books?.map(book => (
           <BookCard key={book.id} book={book} />
         ))}
+        </div>
       </div>
+
     </section>
   );
 }

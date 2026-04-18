@@ -62,25 +62,7 @@ frontend/
 ├── package.json
 └── vite.config.js / webpack.config.js
 
-
-Split your assets (this is standard practice)
-Keep in src/assets:
-logos
-icons used in components
-
-Example:
-
-src/assets/
-  bookclub_icon.svg
-Keep in public/images:
-backgrounds
-css images
-patterns
-
-Example:
-
-public/images/
-  patterns2.png
-  star_icon.svg
-
-  
+### Javascript notes
+#### Optional chaning
+author.books?.map(...)
+"Only continue if the thing before ? exists"
