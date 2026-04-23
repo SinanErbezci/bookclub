@@ -1,17 +1,12 @@
-// src/components/SkeletonRow.jsx
 import SkeletonCard from "./SkeletonCard";
 
-function SkeletonRow() {
+function SkeletonRow({ count = 4 }) {
   return (
-    <div className="recent-scroll-container">
-      <div className="recent-scroll-row">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div className="book-card-wrapper" key={i}>
-            <SkeletonCard />
-          </div>
-        ))}
-      </div>
-    </div>
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </>
   );
 }
 

@@ -1,32 +1,29 @@
-import { Link } from "react-router-dom";
-
-function BookCard({ book }) {
+function BookCard({ book, showAuthor = false }) {
   return (
-    <Link to={`/books/${book.id}`} className="card-link me-4">
-      <div className="book-card">
+    <div className="book-card">
+      <img
+        src={book.cover}
+        alt={book.title}
+        className="book-card-img"
+      />
 
-        {/* IMAGE */}
-        <img
-          src={book.cover}
-          alt={book.title}
-          className="book-card-img"
-        />
-
-        {/* TEXT */}
-        <div className="book-card-body">
-
-          <div className="book-card-title twoliner">
+      <div className="book-card-body">
+        <div className="twoliner">
+          <a href={`/books/${book.id}`} className="book-link book-card-title">
             {book.title}
-          </div>
-
-          <div className="book-card-author oneliner">
-            {book.author_name}
-          </div>
-
+          </a>
         </div>
 
+        {showAuthor && (
+          <a
+            href={`/authors/${book.author}`}
+            className="book-link book-card-author"
+          >
+            {book.author_name}
+          </a>
+        )}
       </div>
-    </Link>
+    </div>
   );
 }
 

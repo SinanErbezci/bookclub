@@ -2,37 +2,34 @@ import { useEffect, useState } from "react";
 import { getRandomAuthor } from "../api/authors";
 import BookCard from "../components/BookCard";
 import SkeletonRow from "../components/SkeletonRow";
+import CarouselSection from "./CarouselSection";
 
 function FeaturedAuthor() {
   const [author, setAuthor] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
+      setLoading(true);
+
       const data = await getRandomAuthor();
       setAuthor(data);
+
+      setLoading(false);
     }
 
     fetchData();
   }, []);
 
-  if (!author) {
-    return <SkeletonRow />;
-  }
-
   return (
-    <div className="fade-in">
-    <section>
-      <h2>Author: {author.name}</h2>
-
-      <div className="recent-scroll-container">
-        <div className="recent-scroll-row">
-        {author.books.map(book => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
-      </div>
-    </section>
-    </div>
+    <CarouselSection 
+    title={`Genre: ${author?.name}`}
+    items={author?.books}
+    loading={loading}
+    renderItem={(book) => (
+      <BookCard key={book.id} book={book} />
+    )}
+    />
   );
 }
 
