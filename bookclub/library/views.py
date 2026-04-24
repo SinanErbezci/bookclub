@@ -22,7 +22,7 @@ from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
-from .serializer import BookSerializer, AuthorSerializer
+from .serializer import BookSerializer, AuthorSerializer, BookListSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Max
@@ -30,8 +30,8 @@ from django.db.models import Max
 
 # API Views
 class BookViewSet(ReadOnlyModelViewSet):
-    serializer_class = BookSerializer
     pagination_class = BookPagination
+
     filter_backends = [
         DjangoFilterBackend,
         SearchFilter,
@@ -41,6 +41,7 @@ class BookViewSet(ReadOnlyModelViewSet):
     filterset_fields = {
         "author": ["exact"],
         "rating": ["gte", "lte"],
+        "genres__id": ["exact"],
     }
 
     search_fields = ["title"]
@@ -55,6 +56,11 @@ class BookViewSet(ReadOnlyModelViewSet):
             .prefetch_related("genres")
         )
 
+    def get_serializer_class(self):
+        if self.action == "list":
+            return BookListSerializer
+        return BookSerializer
+    
 class RandomAuthorAPIView(APIView):
     def get(self, request):
         author = Author.objects.order_by("?").first()
@@ -63,7 +69,7 @@ class RandomAuthorAPIView(APIView):
         return Response({
             "id": author.id,
             "name": author.name,
-            "books": BookSerializer(books, many=True).data
+            "books": BookListSerializer(books, many=True).data
         })
 
 class RandomGenreAPIView(APIView):
@@ -74,7 +80,7 @@ class RandomGenreAPIView(APIView):
         return Response({
             "id": genre.id,
             "name": genre.name,
-            "books": BookSerializer(books, many=True).data
+            "books": BookListSerializer(books, many=True).data
         })
 
 

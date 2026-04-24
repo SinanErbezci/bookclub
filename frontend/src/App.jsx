@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Browse from "./pages/Browse";
 import BookPage from "./pages/BookPage";
 import AuthorPage from "./pages/AuthorPage";
@@ -12,7 +12,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Browse />} />
-        <Route path="/books/:id" element={<BookPage />} />
+        <Route path="/book/:id" element={<BookPage />} />
         <Route path="/authors/:id" element={<AuthorPage />} />
         <Route path="/genres/:id" element={<GenrePage />} />
       </Routes>
@@ -21,3 +21,10 @@ function App() {
 }
 
 export default App; 
+
+// | Concept | Meaning                    |
+// | ------- | -------------------------- |
+// | Router  | enables navigation system  |
+// | Routes  | decides which page to show |
+// | Route   | defines URL → component    |
+// | :id     | dynamic variable from URL  |
