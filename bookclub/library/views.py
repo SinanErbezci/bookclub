@@ -22,7 +22,7 @@ from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
-from .serializer import BookSerializer, AuthorSerializer, BookListSerializer
+from .serializer import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Max
@@ -61,6 +61,16 @@ class BookViewSet(ReadOnlyModelViewSet):
             return BookListSerializer
         return BookSerializer
     
+class AuthorViewSet(ReadOnlyModelViewSet):
+    queryset = Author.objects.all()
+
+    def get_serializer_class(self):
+        return AuthorSerializer
+    
+class GenreViewSet(ReadOnlyModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
 class RandomAuthorAPIView(APIView):
     def get(self, request):
         author = Author.objects.order_by("?").first()
@@ -82,6 +92,7 @@ class RandomGenreAPIView(APIView):
             "name": genre.name,
             "books": BookListSerializer(books, many=True).data
         })
+
 
 
 def index(request):

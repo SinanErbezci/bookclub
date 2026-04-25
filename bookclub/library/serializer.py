@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Author
+from .models import Book, Author, Genre
 
 
 class BookSerializer(serializers.ModelSerializer):
@@ -46,9 +46,17 @@ class BookListSerializer(serializers.ModelSerializer):
         ]
 
 class AuthorSerializer(serializers.ModelSerializer):
-    books = BookSerializer(many=True, read_only=True)
-    book_count = serializers.IntegerField(read_only=True)
+    books = serializers.SerializerMethodField()
 
+    def get_books(self, obj):
+        books = obj.books.all()[:12]
+        return BookListSerializer(books, many=True).data
+    
     class Meta:
         model = Author
-        fields = ["id", "name", "books", "book_count"]
+        fields = ["id", "name", "books"]
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ["id", "name"]

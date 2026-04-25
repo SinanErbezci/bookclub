@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import SkeletonRow from "../components/SkeletonRow";
+import SkeletonRow from "./SkeletonRow";
 
 function CarouselSection({
   title,

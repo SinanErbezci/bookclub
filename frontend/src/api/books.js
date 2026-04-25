@@ -37,3 +37,13 @@ export async function getBooksByGenre(genreId) {
   const data = await handleResponse(res);
   return data.results;
 }
+
+export async function getBooksByGenrePaginated(genreId, page = 1) {
+  const res = await fetch(
+    `${BASE_URL}/books/?genres__id=${genreId}&page=${page}`
+  );
+
+  const data = await handleResponse(res);
+
+  return data; // includes results + next
+}

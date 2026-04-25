@@ -54,7 +54,7 @@ nav {
 
 .navbar {
     padding: 12px 24px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .nav-contain {
@@ -70,17 +70,17 @@ nav {
 }
 
 .nav-link {
-    display: flex;             
-    align-items: center;      
-    height: 100%;               
-    padding: 10px 14px;        
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 10px 14px;
 
     font-weight: 500;
     font-size: 1.25rem;
     color: var(--FONTCOLOR);
     border-radius: 999px;
 
-    transition: 
+    transition:
         background-color 0.2s ease,
         color 0.2s ease;
 }
@@ -108,7 +108,7 @@ nav {
     color: white;
 }
 
-/* Search Bar */ 
+/* Search Bar */
 
 /* SEARCH WRAPPER (controls positioning) */
 .search-wrapper {
@@ -158,7 +158,7 @@ nav {
     border-radius: unset;
 }
 
-.search-bar-input *, 
+.search-bar-input *,
 .search-bar-results {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -228,10 +228,10 @@ nav {
     object-fit: contain;
 } */
 .brand-name {
-    display: flex;              
-    align-items: center;        
-    height: 100%;               
-    padding: 8px 14px;          
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 8px 14px;
 
     font-family: var(--FONT);
     font-size: 1.5rem;
@@ -242,17 +242,17 @@ nav {
     text-decoration: none;
     border-radius: 8px;
 
-    transition: 
+    transition:
         background-color 0.2s ease,
         color 0.2s ease;
 }
 
-.brand-name:hover{
+.brand-name:hover {
     background-color: var(--FONTCOLOR);
     color: white;
 }
 
-.brand-name:active{
+.brand-name:active {
     transform: scale(0.98);
 }
 
@@ -504,6 +504,7 @@ nav {
     .search-bar {
         margin-left: 0 auto;
     }
+
     .dropdown {
         position: static;
     }
@@ -567,11 +568,12 @@ Soft Gold: #D4AF37 */
     gap: 12px;
     width: 100%;
 }
+
 /* Carousel Viewport */
 .carousel-container {
     overflow: hidden;
     position: relative;
-    
+
     width: 100%;
     max-width: 900px;
     padding-bottom: 12px;
@@ -584,12 +586,13 @@ Soft Gold: #D4AF37 */
     align-items: stretch;
     justify-content: flex-start;
     gap: 16px;
-    
+
     transition: transform 0.3s ease;
 }
 
 .carousel-row.centered {
-    justify-content: center;  /* center items */
+    justify-content: center;
+    /* center items */
 }
 
 /* arrows */
@@ -617,6 +620,7 @@ Soft Gold: #D4AF37 */
 .carousel-container::-webkit-scrollbar {
     display: none;
 }
+
 .carousel-container {
     scrollbar-width: none;
 }
@@ -626,7 +630,8 @@ Soft Gold: #D4AF37 */
     width: 180px;
     height: 360px;
 
-    flex-shrink: 0; /* CRITICAL */
+    flex-shrink: 0;
+    /* CRITICAL */
 
     display: flex;
     flex-direction: column;
@@ -641,7 +646,7 @@ Soft Gold: #D4AF37 */
 
 .book-card:hover {
     transform: scale(1.05);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 .book-card-img {
@@ -696,12 +701,10 @@ Soft Gold: #D4AF37 */
     left: -150%;
     width: 150%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255,255,255,0.25),
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.25),
+            transparent);
     animation: shimmer 1.2s infinite;
 }
 
@@ -737,7 +740,8 @@ Soft Gold: #D4AF37 */
 
 .skeleton-title {
     width: 85%;
-    height: 36px; /* matches 1.8rem better */
+    height: 36px;
+    /* matches 1.8rem better */
 }
 
 .skeleton-author {
@@ -781,6 +785,7 @@ Soft Gold: #D4AF37 */
 .skeleton-desc.short {
     width: 60%;
 }
+
 /* Book Page Styling */
 
 .book-layout {
@@ -863,6 +868,7 @@ Soft Gold: #D4AF37 */
     max-width: 1100px;
     margin: 40px auto 0;
 }
+
 .read-more-btn {
     border: none;
     background: none;
@@ -877,6 +883,80 @@ Soft Gold: #D4AF37 */
     text-decoration: underline;
 }
 
+/* Author Page */
+.author-header {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+
+    max-width: 900px;
+    margin: 0 auto 40px;
+}
+
+/* avatar */
+.author-avatar {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+}
+
+.author-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: contain;
+}
+/* text block */
+.author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.author-meta {
+    margin-top: 6px;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.author-desc {
+    margin-top: 10px;
+    line-height: 1.5;
+    opacity: 0.8;
+}
+
+/* books section alignment */
+.author-books-section {
+    max-width: 1100px;
+    margin: 0 auto;
+
+    border-top: 1px solid var(--BORDERCOLOR1);
+    padding-top: 24px;
+}
+
+/* Genre Page */
+.genre-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.genre-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.load-more-wrapper {
+    text-align: center;
+    margin-top: 20px;
+}
 /* * {
     outline: 1px solid red;
 } */

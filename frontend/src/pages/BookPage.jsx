@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getBookById, getBooksByGenre } from "../api/books";
-import CarouselSection from "../features/CarouselSection";
+import CarouselSection from "../components/CarouselSection";
 import BookCard from "../components/BookCard";
 import BookPageSkeleton from "../components/BookPageSkeleton";
 function BookPage() {
@@ -91,7 +91,7 @@ function BookPage() {
 
           <h5 className="book-author">
             by{" "}
-            <a href={`/author/${book.author}`} className="book-link">
+            <a href={`/authors/${book.author}`} className="book-link">
               {book.author_name}
             </a>
           </h5>

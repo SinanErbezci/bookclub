@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getRandomAuthor } from "../api/authors";
 import BookCard from "../components/BookCard";
 import SkeletonRow from "../components/SkeletonRow";
-import CarouselSection from "./CarouselSection";
+import CarouselSection from "../components/CarouselSection";
 
 function FeaturedAuthor() {
   const [author, setAuthor] = useState(null);
@@ -23,7 +23,7 @@ function FeaturedAuthor() {
 
   return (
     <CarouselSection 
-    title={`Genre: ${author?.name}`}
+    title={`Author: ${author?.name}`}
     items={author?.books}
     loading={loading}
     renderItem={(book) => (

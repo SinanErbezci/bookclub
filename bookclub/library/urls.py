@@ -1,10 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet
 from . import views
 
 router = DefaultRouter()
 router.register(r"books", BookViewSet, basename="book")
+router.register(r"authors", AuthorViewSet)
+router.register(r"genres", GenreViewSet)
 
 urlpatterns = [
     # Landing Page
@@ -37,8 +39,6 @@ urlpatterns = [
 
     # API urls
     path("api/", include(router.urls)),
-    path("api/authors/random/", RandomAuthorAPIView.as_view()),
-    path("api/genres/random/", RandomGenreAPIView.as_view()),
-
-
-] + router.urls
+    path("api/random/author/", RandomAuthorAPIView.as_view()),
+    path("api/random/genre/", RandomGenreAPIView.as_view()),
+]
