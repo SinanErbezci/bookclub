@@ -391,7 +391,7 @@ nav {
     line-clamp: 2;
     -webkit-box-orient: vertical;
 }
-
+/*
 .star-outer {
     position: relative;
     display: inline-block;
@@ -405,7 +405,8 @@ nav {
     overflow: hidden;
     width: 0;
 }
-
+*/
+/*
 .star-outer::before {
     content: url("../assets/star_icon.svg") url("../assets/star_icon.svg") url("../assets/star_icon.svg") url("../assets/star_icon.svg") url("../assets/star_icon.svg");
 
@@ -414,7 +415,7 @@ nav {
 .star-inner::before {
     content: url("../assets/star_icon_fill.svg") url("../assets/star_icon_fill.svg") url("../assets/star_icon_fill.svg") url("../assets/star_icon_fill.svg") url("../assets/star_icon_fill.svg");
 }
-
+*/
 .book-title {
     font-weight: 800;
 }
@@ -976,6 +977,86 @@ Soft Gold: #D4AF37 */
 
 .read-more-btn:hover::after {
     width: 100%;
+}
+
+.review-card {
+    border: 1px solid var(--BORDERCOLOR1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--BGCOLOR2);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.review-text {
+    margin: 6px 0;
+}
+
+.review-form {
+    margin-bottom: 20px;
+}
+
+.review-form textarea {
+    width: 100%;
+    min-height: 100px;
+    margin-top: 8px;
+}
+
+.star-input {
+    margin-bottom: 10px;
+}
+
+.star {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.2s;
+}
+
+.star.active {
+    color: #f5c518;
+}
+
+.review-card {
+    border: 1px solid var(--BORDERCOLOR1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--BGCOLOR2);
+}
+
+.review-card.mine {
+    border: 2px solid var(--ACCENTCOLOR);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.review-text {
+    margin: 6px 0;
+}
+
+.star-input {
+    margin-bottom: 10px;
+}
+
+.star {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.2s;
+}
+
+.star.active {
+    color: #f5c518;
 }
 /* Author Page */
 .author-header {

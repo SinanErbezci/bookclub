@@ -3,11 +3,15 @@ import Browse from "./pages/Browse";
 import BookPage from "./pages/BookPage";
 import AuthorPage from "./pages/AuthorPage";
 import GenrePage from "./pages/GenrePage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignUpPage";
 import NavBar from "./components/NavBar";
+import { AuthProvider } from "./context/AuthContext";
+import { useEffect } from "react";
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <NavBar />
 
       <Routes>
@@ -15,8 +19,10 @@ function App() {
         <Route path="/book/:id" element={<BookPage />} />
         <Route path="/authors/:id" element={<AuthorPage />} />
         <Route path="/genres/:id" element={<GenrePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
       </Routes>
-    </>
+    </AuthProvider>
   );
 }
 

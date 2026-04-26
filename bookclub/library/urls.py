@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView
 from . import views
 
 router = DefaultRouter()
@@ -12,11 +12,6 @@ router.register(r"reviews", ReviewViewSet, basename="reviews")
 urlpatterns = [
     # Landing Page
     path("", views.index, name="index"),
-
-    # Account login
-    path("login", views.login_view, name="login"),
-    path("logout", views.logout_view, name="logout"),
-    path("signup", views.signup, name="signup"),
 
     # Browse Section
     path("browse/", views.browse, name="browse"),
@@ -42,4 +37,10 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/random/author/", RandomAuthorAPIView.as_view()),
     path("api/random/genre/", RandomGenreAPIView.as_view()),
+
+    path("api/login/", LoginAPIView.as_view()),
+    path("api/logout/", LogoutAPIView.as_view()),
+    path("api/me/", MeAPIView.as_view()),
+    path("api/signup/", SignupAPIView.as_view()),
+    path("api/csrf/", CSRFAPIView.as_view()),
 ]

@@ -3,11 +3,14 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonRespons
 from django.db import IntegrityError
 from django.db.models import Count
 from django.contrib import messages
-from django.contrib.auth import authenticate,login, logout
+from django.contrib.auth import authenticate,login, logout, get_user_model
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .pagination import BookPagination, ReviewPagination
@@ -27,7 +30,7 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.db.models import Max, Avg
 
@@ -45,6 +48,74 @@ def update_book_rating(book):
     book.rating = agg["avg"] or 0
     book.save()
 
+User = get_user_model()
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CSRFAPIView(APIView):
+    permission_classes = []  # AllowAny
+
+    def get(self, request):
+        return JsonResponse({"detail": "CSRF cookie set"})
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return Response({"error": "Invalid credentials"}, status=400)
+
+        login(request, user)
+
+        return Response({
+            "id": user.id,
+            "username": user.username
+        })
+
+
+class LogoutAPIView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({"message": "Logged out"})
+
+
+class MeAPIView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"user": None})
+
+        return Response({
+            "id": request.user.id,
+            "username": request.user.username
+        })
+
+class SignupAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response({"error": "Username and password required"}, status=400)
+
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Username already taken"}, status=400)
+
+        user = User.objects.create_user(username=username, password=password)
+
+        # auto login after signup
+        login(request, user)
+
+        return Response({
+            "id": user.id,
+            "username": user.username
+        })
+    
 class BookViewSet(ReadOnlyModelViewSet):
     pagination_class = BookPagination
 

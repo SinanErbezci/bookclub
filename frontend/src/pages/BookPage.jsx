@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getBookById, getBooksByGenre } from "../api/books";
 import CarouselSection from "../components/CarouselSection";
+import ReviewSection from "../features/reviews/ReviewSection";
 import BookCard from "../components/BookCard";
 import BookPageSkeleton from "../components/BookPageSkeleton";
 import placeholder_book from "../assets/placeholder_book.png";
+
 function BookPage() {
   const { id } = useParams();
   const [book, setBook] = useState(null);
@@ -153,18 +155,23 @@ function BookPage() {
           )}
         </div>
       </div>
-        <div className="book-suggestion-section">
-          <CarouselSection
-            title="Similar Books"
-            items={similarBooks}
-            loading={loadingSimilar}
-            renderItem={(book) => (
-              <BookCard key={book.id} book={book} />
-            )}
-          />
-        </div>
+
+      <ReviewSection
+        bookId={id}   // pass logged-in user
+      />
+
+      <div className="book-suggestion-section">
+        <CarouselSection
+          title="Similar Books"
+          items={similarBooks}
+          loading={loadingSimilar}
+          renderItem={(book) => (
+            <BookCard key={book.id} book={book} />
+          )}
+        />
       </div>
-      );
+    </div>
+  );
 }
 
-      export default BookPage;
+export default BookPage;

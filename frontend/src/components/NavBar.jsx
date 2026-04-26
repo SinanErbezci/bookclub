@@ -1,8 +1,19 @@
 import { Link } from "react-router-dom";
-
+import { useAuth } from "../context/AuthContext";
+import { logoutUser } from "../api/auth";
 function NavBar() {
   const isAuthenticated = true;
+  const { user, setUser } = useAuth();
 
+  console.log(user?.username)
+  async function handleLogout() {
+    try {
+      await logoutUser();
+      setUser(null); // 🔥 critical
+    } catch (err) {
+      console.error(err);
+    }
+  }
   return (
     <header>
       <nav className="navbar navbar-expand-xl">
@@ -10,7 +21,7 @@ function NavBar() {
 
           {/* LOGO */}
           <Link to="/" className="brand-name">
-              Book<span>Club</span>
+            Book<span>Club</span>
           </Link>
 
           {/* SEARCH (DESKTOP ONLY) */}
@@ -40,9 +51,9 @@ function NavBar() {
                   Browse
                 </Link>
 
-                <Link className="nav-link" to="/logout">
+                <button className="nav-link" onClick={handleLogout}>
                   <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                </Link>
+                </button>
               </>
             ) : (
               <>
