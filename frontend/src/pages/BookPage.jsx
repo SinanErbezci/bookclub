@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { getBookById, getBooksByGenre } from "../api/books";
 import CarouselSection from "../components/CarouselSection";
 import BookCard from "../components/BookCard";
 import BookPageSkeleton from "../components/BookPageSkeleton";
+import placeholder_book from "../assets/placeholder_book.png";
 function BookPage() {
   const { id } = useParams();
   const [book, setBook] = useState(null);
@@ -35,29 +36,29 @@ function BookPage() {
   }, [id]);
 
   useEffect(() => {
-  async function fetchSimilar() {
-    if (!book?.genres?.length) return;
+    async function fetchSimilar() {
+      if (!book?.genres?.length) return;
 
-    try {
-      setLoadingSimilar(true);
+      try {
+        setLoadingSimilar(true);
 
-      const genreId = book.genres[0].id;  // 🔥 first genre
-      const data = await getBooksByGenre(genreId);
+        const genreId = book.genres[0].id;  // 🔥 first genre
+        const data = await getBooksByGenre(genreId);
 
-      // remove current book
-      const filtered = data.filter((b) => b.id !== book.id);
+        // remove current book
+        const filtered = data.filter((b) => b.id !== book.id);
 
-      setSimilarBooks(filtered);
+        setSimilarBooks(filtered);
 
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingSimilar(false);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingSimilar(false);
+      }
     }
-  }
 
-  fetchSimilar();
-}, [book]);
+    fetchSimilar();
+  }, [book]);
 
   if (loading) {
     return <BookPageSkeleton />;
@@ -75,9 +76,13 @@ function BookPage() {
         {/* LEFT: COVER + RATING */}
         <div className="book-cover-wrapper">
           <img
-            src={book.cover}
+            src={book.cover || placeholder_book}
             alt={book.title}
             className="book-cover-img"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = placeholder_book;
+            }}
           />
 
           <div className="book-rating">
@@ -91,9 +96,9 @@ function BookPage() {
 
           <h5 className="book-author">
             by{" "}
-            <a href={`/authors/${book.author}`} className="book-link">
+            <Link to={`/authors/${book.author}`} className="author-link">
               {book.author_name}
-            </a>
+            </Link>
           </h5>
 
           {/* META INFO */}
@@ -113,45 +118,53 @@ function BookPage() {
           {/* GENRES */}
           <div className="book-genres">
             {book.genres?.map((genre) => (
-              <span key={genre.id} className="genre-tag">
+              <Link
+                key={genre.id}
+                to={`/genres/${genre.id}`}
+                className="genre-tag"
+              >
                 {genre.name}
-              </span>
+              </Link>
             ))}
           </div>
 
           {/* DESCRIPTION */}
           {book.description && (
-            <div className="book-description">
-              <p>
-                {displayText}
-                {!expanded && isLong && "..."}
-              </p>
+            <>
+              <div className={`book-description ${expanded ? "expanded" : ""}`}>
+                <p>
+                  {displayText}
+                  {!expanded && isLong && "..."}
+                </p>
+              </div>
 
               {isLong && (
                 <button
                   className="read-more-btn"
                   onClick={() => setExpanded(!expanded)}
                 >
-                  {expanded ? "Show less" : "Read more"}
+                  {expanded ? "Read less" : "Read more"}
+                  <span className={`arrow ${expanded ? "open" : ""}`}>
+                    ↓
+                  </span>
                 </button>
               )}
-            </div>
+            </>
           )}
         </div>
-
       </div>
-    <div className="book-suggestion-section">
-    <CarouselSection
-      title="Similar Books"
-      items={similarBooks}
-      loading={loadingSimilar}
-      renderItem={(book) => (
-        <BookCard key={book.id} book={book} />
-      )}
-    />
-  </div>
-    </div>
-  );
+        <div className="book-suggestion-section">
+          <CarouselSection
+            title="Similar Books"
+            items={similarBooks}
+            loading={loadingSimilar}
+            renderItem={(book) => (
+              <BookCard key={book.id} book={book} />
+            )}
+          />
+        </div>
+      </div>
+      );
 }
 
-export default BookPage;
+      export default BookPage;

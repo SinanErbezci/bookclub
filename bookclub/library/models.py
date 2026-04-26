@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 # Create your models here.
@@ -61,12 +61,12 @@ class Book(models.Model):
     cover = models.URLField(blank=True, null=True)
     num_ratings = models.IntegerField(default=0)
     rating = models.DecimalField(
-        max_digits=3,
+        max_digits=2,
         decimal_places=1,
         default=Decimal("0.0"),
         validators=[
             MinValueValidator(Decimal("0.0")),
-            MaxValueValidator(Decimal("10.0")),
+            MaxValueValidator(Decimal("5.0")),
     ])
 
     def __str__(self):
@@ -74,7 +74,9 @@ class Book(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["title"])
+            models.Index(fields=["title"]),
+            models.Index(fields=["author"]),
+            models.Index(fields=["-rating"]),
         ]
 
         constraints = [
@@ -90,17 +92,21 @@ class Review(models.Model):
     rating = models.SmallIntegerField(validators=[
         MaxValueValidator(5), MinValueValidator(1)
     ])
-    text = models.CharField(max_length=1000)
+    text = models.TextField(validators=[MaxLengthValidator(2000), MinValueValidator(10)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        indexes = [
+            models.Index(fields=["book", "-created_at"])
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["book", "user"],
                 name= "uniq_review_book_user"
             )
         ]
+        ordering = ["-created_at"]
 
 class UserFollower(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE , related_name="following")
@@ -137,6 +143,8 @@ class List(models.Model):
                 name="uniq_list_owner_name"
             )
         ]
+
+        ordering = ["-created_at"]
 class ListBook(models.Model):
     book_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name="list_books")
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="in_lists")

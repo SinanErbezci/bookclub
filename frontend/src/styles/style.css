@@ -16,6 +16,7 @@
     --COLOR-GOLD: #D4AF37;
     --FONTCOLOR: #333;
     --BGCOLOR2: #fafaf0;
+    --BGCOLOR3: #f0ead6;
 
     --bs-font-sans-serif: "Libre Baskerville", serif;
     --bs-body-bg: #F5EFDC;
@@ -42,6 +43,11 @@ body {
 img {
     display: block;
     max-width: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
 }
 
 /* Navbar */
@@ -676,6 +682,41 @@ Soft Gold: #D4AF37 */
     opacity: 0.8;
 }
 
+.genre-tag {
+    display: inline-block;
+
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    background-color: var(--BGCOLOR2);
+    border: 1px solid var(--BORDERCOLOR1);
+
+    font-size: 0.85rem;
+
+    text-decoration: none;
+    color: inherit;
+
+    cursor: pointer;
+
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.genre-tag:hover {
+    background-color: var(--BGCOLOR3);
+}
+.genre-tag:active {
+    transform: scale(0.97);
+}
+
+.author-link {
+    text-decoration: none;
+    color: inherit;
+    font-weight: 500;
+}
+
+.author-link:hover {
+    text-decoration: underline;
+}
 
 @keyframes shimmer {
     100% {
@@ -683,7 +724,7 @@ Soft Gold: #D4AF37 */
     }
 }
 
-/* Skeleton Stuff */
+/* ==== Skeleton Stuff ===== */
 .skeleton-base {
     background: #e0e0e0;
     border-radius: 6px;
@@ -847,21 +888,40 @@ Soft Gold: #D4AF37 */
     gap: 8px;
 }
 
-.genre-tag {
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--BORDERCOLOR1);
-    font-size: 0.8rem;
-}
-
-.book-description {
-    margin-top: 16px;
-    line-height: 1.5;
-}
-
 .book-description {
     margin-top: 16px;
     line-height: 1.6;
+
+    max-height: 6.5rem;   /* ~4 lines */
+    overflow: hidden;
+
+    position: relative;
+
+    transition: max-height 0.35s ease;
+}
+
+.book-description.expanded {
+    max-height: 500px; /* big enough for content */
+}
+
+.book-description::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--BGCOLOR1)
+    );
+}
+
+/* remove fade when expanded */
+.book-description.expanded::after {
+    display: none;
 }
 
 .book-suggestion-section {
@@ -870,19 +930,53 @@ Soft Gold: #D4AF37 */
 }
 
 .read-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
     border: none;
     background: none;
-    color: var(--LINKCOLOR, #3b82f6);
+
+    color: var(--COLOR-GOLD);
+    font-weight: 600;
+
     cursor: pointer;
+
     padding: 0;
-    font-size: 0.9rem;
     margin-top: 6px;
+
+    font-size: 0.95rem;
+
+    position: relative;
+
+    transition: color 0.2s ease;
 }
 
-.read-more-btn:hover {
-    text-decoration: underline;
+.read-more-btn .arrow{
+    font-size: 0.9rem;
+    transition: transform 0.2s ease;
 }
 
+.arrow.open {
+    transform: rotate(180deg);
+}
+
+.read-more-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+
+    width: 0%;
+    height: 2px;
+    background-color: var(--COLOR-GOLD);
+
+    transition: width 0.25s ease;
+}
+
+.read-more-btn:hover::after {
+    width: 100%;
+}
 /* Author Page */
 .author-header {
     display: flex;
@@ -953,9 +1047,15 @@ Soft Gold: #D4AF37 */
     margin: 0 auto;
 }
 
-.load-more-wrapper {
+/* infinite scroll */
+.infinite-loader {
+    height: 40px;
+}
+
+.loading-more {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 16px;
+    opacity: 0.7;
 }
 /* * {
     outline: 1px solid red;

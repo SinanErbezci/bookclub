@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Author, Genre
+from .models import Book, Author, Genre, Review
 
 
 class BookSerializer(serializers.ModelSerializer):
@@ -60,3 +60,30 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ["id", "name"]
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "user",
+            "rating",
+            "text",
+            "created_at",
+            "updated_at",
+            "book",
+        ]
+        read_only_fields = ["user", "created_at", "updated_at"]
+
+    def get_user(self, obj):
+        return {
+            "id": obj.user.id,
+            "username": obj.user.username
+        }
+    
+    def validate_text(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError("Review too short")
+        return value

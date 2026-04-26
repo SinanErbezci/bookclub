@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views import generic
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .pagination import BookPagination
+from .pagination import BookPagination, ReviewPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -22,13 +22,29 @@ from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
-from .serializer import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer
+from .serializer import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer
+from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Max
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from django.db.models import Max, Avg
 
 
-# API Views
+# ====== API Views ======
+
+# Helper Functions
+def update_book_rating(book):
+    agg = book.reviews.aggregate(
+        count=Count("id"),
+        avg=Avg("rating")
+    )
+
+    book.num_ratings = agg["count"]
+    book.rating = agg["avg"] or 0
+    book.save()
+
 class BookViewSet(ReadOnlyModelViewSet):
     pagination_class = BookPagination
 
@@ -94,7 +110,57 @@ class RandomGenreAPIView(APIView):
         })
 
 
+class ReviewViewSet(ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = ReviewPagination 
 
+    def get_queryset(self):
+        queryset = Review.objects.select_related("user")
+
+        book_id = self.request.query_params.get("book")
+        if book_id:
+            queryset = queryset.filter(book_id=book_id)
+
+        return queryset.order_by("-created_at")
+
+    def perform_create(self, serializer):
+        book_id = self.request.data.get("book")
+
+        if not book_id:
+            raise ValidationError("Book is required")
+
+        book = get_object_or_404(Book, id=book_id)
+
+        # ✅ prevent duplicate reviews
+        if Review.objects.filter(book=book, user=self.request.user).exists():
+            raise ValidationError("You already reviewed this book")
+
+        review = serializer.save(user=self.request.user, book=book)
+
+        update_book_rating(book)
+
+    def perform_update(self, serializer):
+        review = serializer.instance
+
+        # ✅ only owner can update
+        if self.request.user != review.user:
+            raise PermissionDenied("You cannot edit this review")
+
+        review = serializer.save()
+        update_book_rating(review.book)
+
+    def perform_destroy(self, instance):
+        # ✅ only owner can delete
+        if self.request.user != instance.user:
+            raise PermissionDenied("You cannot delete this review")
+
+        book = instance.book
+        instance.delete()
+
+        update_book_rating(book)
+
+# ====== Legacy Views =========
 def index(request):
     hello = "hello, world"
     output = {"hello" : hello}
@@ -406,3 +472,4 @@ def listing(request):
             return redirect(request.META["HTTP_REFERER"])
         else:
             return redirect("index")
+        

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getBooksByGenrePaginated } from "../api/books";
@@ -16,6 +16,8 @@ function GenrePage() {
   const [loading, setLoading] = useState(false);
   const [nextPage, setNextPage] = useState(1);
 
+  const loaderRef = useRef(null);
+
   // 🔹 Fetch genre name
   useEffect(() => {
     async function fetchGenre() {
@@ -30,7 +32,7 @@ function GenrePage() {
     fetchGenre();
   }, [id]);
 
-  // 🔹 Fetch books (reset when id changes)
+  // 🔹 Reset + initial fetch when genre changes
   useEffect(() => {
     setBooks([]);
     setNextPage(1);
@@ -64,6 +66,30 @@ function GenrePage() {
     }
   }
 
+  // 🔹 Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+
+        if (first.isIntersecting && nextPage && !loading) {
+          fetchBooks(nextPage);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    const current = loaderRef.current;
+
+    if (current) {
+      observer.observe(current);
+    }
+
+    return () => {
+      if (current) observer.unobserve(current);
+    };
+  }, [nextPage, loading]);
+
   return (
     <div className="container mt-5">
 
@@ -78,18 +104,17 @@ function GenrePage() {
           <BookCard key={book.id} book={book} />
         ))}
 
-        {/* skeleton only for first load */}
+        {/* initial skeleton */}
         {loading && books.length === 0 && <SkeletonRow count={4} />}
       </div>
 
-      {/* 🔹 Load More */}
-      {nextPage && (
-        <div className="load-more-wrapper">
-          <button onClick={() => fetchBooks(nextPage)}>
-            Load More
-          </button>
-        </div>
+      {/* 🔹 Loading more indicator */}
+      {loading && books.length > 0 && (
+        <div className="loading-more">Loading...</div>
       )}
+
+      {/* 🔹 Sentinel element */}
+      <div ref={loaderRef} className="infinite-loader" />
 
     </div>
   );

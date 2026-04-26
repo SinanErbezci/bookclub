@@ -1,12 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet
 from . import views
 
 router = DefaultRouter()
 router.register(r"books", BookViewSet, basename="book")
 router.register(r"authors", AuthorViewSet)
 router.register(r"genres", GenreViewSet)
+router.register(r"reviews", ReviewViewSet, basename="reviews")
 
 urlpatterns = [
     # Landing Page
