@@ -63,6 +63,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    content = serializers.CharField(source="text")
 
     class Meta:
         model = Review
@@ -70,12 +71,12 @@ class ReviewSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "rating",
-            "text",
+            "content",
             "created_at",
             "updated_at",
             "book",
         ]
-        read_only_fields = ["user", "created_at", "updated_at"]
+        read_only_fields = ["user", "created_at", "updated_at", "book"]
 
     def get_user(self, obj):
         return {
@@ -83,7 +84,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "username": obj.user.username
         }
     
-    def validate_text(self, value):
+    def validate_content(self, value):
         if len(value.strip()) < 10:
             raise serializers.ValidationError("Review too short")
         return value

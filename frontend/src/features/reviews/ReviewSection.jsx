@@ -1,58 +1,42 @@
-import { useEffect, useState } from "react";
-import ReviewForm from "./ReviewForm";
+import { useAuth } from "../../context/AuthContext";
 import ReviewCard from "./ReviewCard";
+import ReviewFormModal from "./ReviewFormModal";
 
-function ReviewSection({ bookId, currentUser }) {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+function ReviewSection({ reviews, bookId, setReviews }) {
+  const { user } = useAuth();
 
-  useEffect(() => {
-    async function fetchReviews() {
-      try {
-        const res = await fetch(`/api/reviews/?book=${bookId}`);
-        const data = await res.json();
-        setReviews(data.results || data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const userReview = reviews.find(r => r.user.id === user?.id);
+  const otherReviews = reviews.filter(r => r.user.id !== user?.id);
 
-    fetchReviews();
-  }, [bookId]);
-
-  function handleNewReview(newReview) {
-    setReviews((prev) => [newReview, ...prev]);
+  function handleNewReview(review) {
+    setReviews(prev => [review, ...prev]);
   }
 
-  const userReview = null
-
   return (
-    <div className="book-reviews-section">
+    <div className="review-section">
       <h2>Reviews</h2>
 
-      {/* ✅ Form only if user hasn't reviewed */}
-      <ReviewForm
-        bookId={bookId}
-        onReviewCreated={handleNewReview}
-      />
-
-      {loading && <p>Loading...</p>}
-
-      {!loading && reviews.length === 0 && (
-        <p>No reviews yet.</p>
+      {/* Your Review */}
+      {userReview && (
+        <>
+          <h3 className="your-review-title">Your Review</h3>
+          <ReviewCard review={userReview} highlight />
+        </>
       )}
 
-      <div className="review-list">
-        {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            isMine={false}
-          />
-        ))}
-      </div>
+      {/* Write Review */}
+      {user && !userReview && (
+        <ReviewFormModal bookId={bookId} onSuccess={handleNewReview} />
+      )}
+
+      {/* Other Reviews */}
+      {otherReviews.length > 0 ? (
+        otherReviews.map(r => (
+          <ReviewCard key={r.id} review={r} />
+        ))
+      ) : (
+        <p className="no-reviews">No reviews yet.</p>
+      )}
     </div>
   );
 }

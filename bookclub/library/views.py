@@ -191,10 +191,10 @@ class RandomGenreAPIView(APIView):
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = ReviewPagination 
+    pagination_class = ReviewPagination
 
     def get_queryset(self):
-        queryset = Review.objects.select_related("user")
+        queryset = Review.objects.select_related("user", "book")
 
         book_id = self.request.query_params.get("book")
         if book_id:
@@ -202,34 +202,40 @@ class ReviewViewSet(ModelViewSet):
 
         return queryset.order_by("-created_at")
 
-    def perform_create(self, serializer):
-        book_id = self.request.data.get("book")
+    # ✅ CLEAN CREATE HANDLING
+    def create(self, request, *args, **kwargs):
+        book_id = request.data.get("book")
 
         if not book_id:
             raise ValidationError("Book is required")
 
         book = get_object_or_404(Book, id=book_id)
 
-        # ✅ prevent duplicate reviews
-        if Review.objects.filter(book=book, user=self.request.user).exists():
+        # 🔥 prevent duplicate reviews EARLY
+        if Review.objects.filter(book=book, user=request.user).exists():
             raise ValidationError("You already reviewed this book")
 
-        review = serializer.save(user=self.request.user, book=book)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        review = serializer.save(user=request.user, book=book)
 
         update_book_rating(book)
 
+        return Response(serializer.data, status=201)
+
+    # ✅ UPDATE
     def perform_update(self, serializer):
         review = serializer.instance
 
-        # ✅ only owner can update
         if self.request.user != review.user:
             raise PermissionDenied("You cannot edit this review")
 
         review = serializer.save()
         update_book_rating(review.book)
 
+    # ✅ DELETE
     def perform_destroy(self, instance):
-        # ✅ only owner can delete
         if self.request.user != instance.user:
             raise PermissionDenied("You cannot delete this review")
 

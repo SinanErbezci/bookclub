@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getBookById, getBooksByGenre } from "../api/books";
+import { getReviewsByBook } from "../api/reviews";
 import CarouselSection from "../components/CarouselSection";
 import ReviewSection from "../features/reviews/ReviewSection";
 import BookCard from "../components/BookCard";
@@ -12,6 +13,8 @@ function BookPage() {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   const [similarBooks, setSimilarBooks] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
@@ -61,6 +64,22 @@ function BookPage() {
 
     fetchSimilar();
   }, [book]);
+
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        setLoadingReviews(true);
+        const data = await getReviewsByBook(id);
+        setReviews(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingReviews(false);
+      }
+    }
+
+    fetchReviews();
+  }, [id]);
 
   if (loading) {
     return <BookPageSkeleton />;
@@ -156,10 +175,14 @@ function BookPage() {
         </div>
       </div>
 
-      <ReviewSection
-        bookId={id}   // pass logged-in user
-      />
-
+      <div className="book-reviews-section">
+        <ReviewSection
+          reviews={reviews}
+          setReviews={setReviews}
+          bookId={id}
+        />
+      </div>
+      
       <div className="book-suggestion-section">
         <CarouselSection
           title="Similar Books"
