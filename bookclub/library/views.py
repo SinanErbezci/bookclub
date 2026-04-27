@@ -16,7 +16,9 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .pagination import BookPagination, ReviewPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.urls import reverse
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.paginator import Paginator
 from .models import Book, Author, User, Genre, Review, UserFollower, List, ListBook
 from .forms import CreateUserFrom
@@ -105,7 +107,12 @@ class SignupAPIView(APIView):
 
         if User.objects.filter(username=username).exists():
             return Response({"error": "Username already taken"}, status=400)
-
+        
+        try:
+            validate_password(password)
+        except DjangoValidationError as e:
+            return Response({"error": e.messages[0]}, status=400)
+        
         user = User.objects.create_user(username=username, password=password)
 
         # auto login after signup

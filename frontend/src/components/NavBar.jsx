@@ -4,8 +4,10 @@ import { logoutUser } from "../api/auth";
 function NavBar() {
   const isAuthenticated = true;
   const { user, setUser } = useAuth();
-
-  console.log(user?.username)
+  console.log(user);
+  if (user) {
+    console.log("there is user");
+  }  
   async function handleLogout() {
     try {
       await logoutUser();
