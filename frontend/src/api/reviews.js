@@ -69,6 +69,9 @@ export async function getUserReview(bookId) {
     credentials: "include",
   });
 
+  if (res.status === 401 || res.status === 403) {
+    return null;
+  }
   if (res.status === 404) return null;
 
   const data = await res.json();

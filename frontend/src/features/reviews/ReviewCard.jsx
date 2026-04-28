@@ -4,7 +4,7 @@ export default function ReviewCard({
   onRead,
   onEdit,
 }) {
-  const formattedDate = new Date(review.date).toLocaleDateString();
+  const formattedDate = new Date(review.created_at).toLocaleDateString();
 
   return (
     <div className="review-row">
@@ -12,7 +12,7 @@ export default function ReviewCard({
         <div className="review-inner">
           
           <div className="review-user">
-            <img src="/default-avatar.svg" alt="profile" />
+            <img src="/assets/default-avatar.svg" alt="profile" />
             <p className="oneliner">
               {review.user?.username || "You"}
             </p>
@@ -26,7 +26,7 @@ export default function ReviewCard({
               />
             </div>
 
-            <p className="twoliner">{review.text}</p>
+            <p className="twoliner">{review.content}</p>
 
             <p className="review-meta">
               <small>Review on {formattedDate}</small>

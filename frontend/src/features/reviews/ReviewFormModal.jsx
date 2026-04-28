@@ -16,12 +16,14 @@ export default function ReviewFormModal({
 }) {
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
+  const [hoverRating, setHoverRating] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setRating(review?.rating || 0);
-    setText(review?.text || "");
+    setText(review?.content || "");
   }, [review, isOpen]);
 
   if (!isOpen) return null;
@@ -32,8 +34,8 @@ export default function ReviewFormModal({
       return;
     }
 
-    if (text.length < 50) {
-      setError("Review must be at least 50 characters");
+    if (text.length < 10) {
+      setError("Review must be at least 10 characters");
       return;
     }
 
@@ -42,9 +44,9 @@ export default function ReviewFormModal({
       setError(null);
 
       if (mode === "create") {
-        await createReview({ book: bookId, rating, text });
+        await createReview({ book: bookId, rating, content: text });
       } else {
-        await updateReview(review.id, { rating, text });
+        await updateReview(review.id, { rating, content: text });
       }
 
       onSuccess();
@@ -58,23 +60,58 @@ export default function ReviewFormModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h3>
-        {mode === "create" ? "Write a Review" : "Edit Review"}
-      </h3>
+      <div className="review-form">
+        
+        <h2 className="review-form-title">
+          {mode === "create" ? "Write a Review" : "Edit Your Review"}
+        </h2>
 
-      <StarRating value={rating} onChange={setRating} />
+        {/* ⭐ Rating */}
+        <div className="review-form-section">
+          <label class="text-center h4">Rating</label>
+          <StarRating
+            value={hoverRating ?? rating}
+            onChange={setRating}
+            onHover={setHoverRating}
+            onLeave={() => setHoverRating(null)}
+          />
+        </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        maxLength={500}
-      />
+        {/* ✍️ Text */}
+        <div className="review-form-section">
+          <label class="text-center h4">Your Review</label>
 
-      {error && <p className="error">{error}</p>}
+          <textarea
+            className="review-textarea"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={500}
+            placeholder="Share your thoughts... (10–2000 characters)"
+          />
 
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "Saving..." : "Submit"}
-      </button>
+          <div className="char-count">
+            {text.length} / 500
+          </div>
+        </div>
+
+        {/* ❌ Error */}
+        {error && <p className="error">{error}</p>}
+
+        {/* ✅ Actions */}
+        <div className="review-form-actions">
+          <button className="btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+
+          <button
+            className="btn primary"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? "Saving..." : "Submit"}
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 }

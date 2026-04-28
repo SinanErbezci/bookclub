@@ -6,7 +6,7 @@ export default function ReviewModal({ review, isOpen, onClose }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="review-modal-header">
-        <img src="/default-avatar.svg" alt="profile" />
+        <img src="/assets/default-avatar.svg" alt="profile" />
         <h3>{review.user?.username || "You"}'s Review</h3>
       </div>
 
@@ -18,7 +18,7 @@ export default function ReviewModal({ review, isOpen, onClose }) {
           />
         </div>
 
-        <p>{review.text}</p>
+        <p>{review.content}</p>
       </div>
     </Modal>
   );

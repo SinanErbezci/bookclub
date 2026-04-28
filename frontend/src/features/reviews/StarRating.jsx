@@ -1,15 +1,18 @@
-export default function StarRating({ value, onChange }) {
+export default function StarRating({
+  value,
+  onChange,
+  onHover,
+  onLeave,
+}) {
   return (
     <div className="rating-star">
       {[1, 2, 3, 4, 5].map((star) => (
         <span
           key={star}
           onClick={() => onChange(star)}
-          style={{
-            cursor: "pointer",
-            color: star <= value ? "#D4AF37" : "#ccc",
-            fontSize: "2rem",
-          }}
+          onMouseEnter={() => onHover?.(star)}
+          onMouseLeave={onLeave}
+          className={star <= value ? "star active" : "star"}
         >
           ★
         </span>
@@ -17,3 +20,5 @@ export default function StarRating({ value, onChange }) {
     </div>
   );
 }
+
+
