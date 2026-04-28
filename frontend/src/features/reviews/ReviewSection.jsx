@@ -1,44 +1,94 @@
-import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 import ReviewCard from "./ReviewCard";
+import ReviewModal from "./ReviewModal";
 import ReviewFormModal from "./ReviewFormModal";
+import {
+  getReviewsByBook,
+  getUserReview,
+} from "../../api/reviews";
 
-function ReviewSection({ reviews, bookId, setReviews }) {
-  const { user } = useAuth();
+export default function ReviewSection({ bookId }) {
+  const [reviews, setReviews] = useState([]);
+  const [userReview, setUserReview] = useState(null);
 
-  const userReview = reviews.find(r => r.user.id === user?.id);
-  const otherReviews = reviews.filter(r => r.user.id !== user?.id);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  function handleNewReview(review) {
-    setReviews(prev => [review, ...prev]);
-  }
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = () => {
+    setLoading(true);
+
+    Promise.all([
+      getReviewsByBook(bookId),
+      getUserReview(bookId),
+    ])
+      .then(([reviewsData, userReviewData]) => {
+        setReviews(reviewsData);
+        setUserReview(userReviewData);
+        setError(null);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (!bookId) return;
+    fetchData();
+  }, [bookId]);
 
   return (
-    <div className="review-section">
+    <div className="review-container">
       <h2>Reviews</h2>
 
-      {/* Your Review */}
-      {userReview && (
+      {loading && <p>Loading...</p>}
+      {error && <p>{error}</p>}
+
+      {!loading && !error && (
         <>
-          <h3 className="your-review-title">Your Review</h3>
-          <ReviewCard review={userReview} highlight />
+          {userReview && (
+            <>
+              <h3>Your Review</h3>
+              <ReviewCard
+                review={userReview}
+                isOwn
+                onRead={setSelectedReview}
+                onEdit={() => setIsFormOpen(true)}
+              />
+            </>
+          )}
+
+          {!userReview && (
+            <button onClick={() => setIsFormOpen(true)}>
+              Write Review
+            </button>
+          )}
+
+          {reviews.map((review) => (
+            <ReviewCard
+              key={review.id}
+              review={review}
+              onRead={setSelectedReview}
+            />
+          ))}
         </>
       )}
 
-      {/* Write Review */}
-      {user && !userReview && (
-        <ReviewFormModal bookId={bookId} onSuccess={handleNewReview} />
-      )}
+      <ReviewModal
+        review={selectedReview}
+        isOpen={!!selectedReview}
+        onClose={() => setSelectedReview(null)}
+      />
 
-      {/* Other Reviews */}
-      {otherReviews.length > 0 ? (
-        otherReviews.map(r => (
-          <ReviewCard key={r.id} review={r} />
-        ))
-      ) : (
-        <p className="no-reviews">No reviews yet.</p>
-      )}
+      <ReviewFormModal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        mode={userReview ? "edit" : "create"}
+        review={userReview}
+        bookId={bookId}
+        onSuccess={fetchData}
+      />
     </div>
   );
 }
-
-export default ReviewSection;

@@ -32,8 +32,9 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.decorators import action
 from django.db.models import Max, Avg
 
 
@@ -201,6 +202,24 @@ class ReviewViewSet(ModelViewSet):
             queryset = queryset.filter(book_id=book_id)
 
         return queryset.order_by("-created_at")
+    
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def user(self, request):
+        book_id = request.query_params.get("book")
+
+        if not book_id:
+            return Response({"error": "Book is required"}, status=400)
+
+        review = Review.objects.filter(
+            book_id=book_id,
+            user=request.user
+        ).select_related("user", "book").first()
+
+        if not review:
+            return Response({"detail": "Not found"}, status=404)
+
+        serializer = self.get_serializer(review)
+        return Response(serializer.data)
 
     # ✅ CLEAN CREATE HANDLING
     def create(self, request, *args, **kwargs):

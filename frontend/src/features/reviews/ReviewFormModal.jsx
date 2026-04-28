@@ -1,98 +1,80 @@
-import { useState } from "react";
-import { createReview } from "../../api/reviews";
-import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
+import Modal from "../../components/Modal";
+import StarRating from "./StarRating";
+import {
+  createReview,
+  updateReview,
+} from "../../api/reviews";
 
-function ReviewFormModal({ bookId, onSuccess }) {
-  const [open, setOpen] = useState(false);
-  const [rating, setRating] = useState(5);
-  const [content, setContent] = useState("");
-  const [error, setError] = useState("");
+export default function ReviewFormModal({
+  isOpen,
+  onClose,
+  mode,
+  review,
+  bookId,
+  onSuccess,
+}) {
+  const [rating, setRating] = useState(0);
+  const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
+  useEffect(() => {
+    setRating(review?.rating || 0);
+    setText(review?.text || "");
+  }, [review, isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    if (rating === 0) {
+      setError("Please select a rating");
+      return;
+    }
+
+    if (text.length < 50) {
+      setError("Review must be at least 50 characters");
+      return;
+    }
 
     try {
       setLoading(true);
+      setError(null);
 
-      const review = await createReview({
-        book: bookId,
-        rating,
-        content,
-      });
+      if (mode === "create") {
+        await createReview({ book: bookId, rating, text });
+      } else {
+        await updateReview(review.id, { rating, text });
+      }
 
-      onSuccess(review);
-      setOpen(false);
-      setContent("");
+      onSuccess();
+      onClose();
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <>
-      <button
-        type="button"
-        className="review-btn"
-        onClick={() => {
-          console.log("clicked");
-          setOpen(true)
-        }}
-      >
-        Write a Review
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <h3>
+        {mode === "create" ? "Write a Review" : "Edit Review"}
+      </h3>
+
+      <StarRating value={rating} onChange={setRating} />
+
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        maxLength={500}
+      />
+
+      {error && <p className="error">{error}</p>}
+
+      <button onClick={handleSubmit} disabled={loading}>
+        {loading ? "Saving..." : "Submit"}
       </button>
-
-{open &&
-  createPortal(
-    <div
-      className="modal-overlay"
-      onClick={() => setOpen(false)}
-    >
-      <div
-        className="modal"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3>Write a Review</h3>
-
-        {error && <p className="auth-error">{error}</p>}
-
-        <form onSubmit={handleSubmit}>
-          <select
-            value={rating}
-            onChange={(e) => setRating(Number(e.target.value))}
-          >
-            {[1,2,3,4,5].map(n => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-
-          <textarea
-            placeholder="Write your review..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            minLength={10}
-            maxLength={500}
-          />
-
-          <div className="modal-actions">
-            <button type="button" onClick={() => setOpen(false)}>
-              Cancel
-            </button>
-
-            <button type="submit" disabled={loading}>
-              {loading ? "Posting..." : "Submit"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body
-  )}
-    </>
+    </Modal>
   );
 }
-
-export default ReviewFormModal;

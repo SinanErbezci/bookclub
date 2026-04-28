@@ -1,52 +1,49 @@
-import { useState } from "react";
-import StarRating from "./StarRating";
-import profileImg from "../../assets/profile.svg";
-
-function ReviewCard({ review, highlight }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const isLong = review.content.length > 200;
-  const displayText = expanded
-    ? review.content
-    : review.content.slice(0, 200);
+export default function ReviewCard({
+  review,
+  isOwn = false,
+  onRead,
+  onEdit,
+}) {
+  const formattedDate = new Date(review.date).toLocaleDateString();
 
   return (
-    <div className={`review-card ${highlight ? "highlight" : ""}`}>
-      
-      {/* Header */}
-      <div className="review-header">
-        <div className="review-user">
-          <img src={profileImg} alt="user" />
-          <div className="user-meta">
-            <span className="username">{review.user.username}</span>
-            <span className="review-date">
-              {new Date(review.created_at).toLocaleDateString()}
-            </span>
+    <div className="review-row">
+      <div className="review-card clickme">
+        <div className="review-inner">
+          
+          <div className="review-user">
+            <img src="/default-avatar.svg" alt="profile" />
+            <p className="oneliner">
+              {review.user?.username || "You"}
+            </p>
+          </div>
+
+          <div className="review-content-area">
+            <div className="star-outer">
+              <div
+                className="star-inner"
+                style={{ width: `${(review.rating / 5) * 100}%` }}
+              />
+            </div>
+
+            <p className="twoliner">{review.text}</p>
+
+            <p className="review-meta">
+              <small>Review on {formattedDate}</small>
+
+              <button onClick={() => onRead?.(review)}>
+                Read Review
+              </button>
+
+              {isOwn && (
+                <button onClick={() => onEdit?.()}>
+                  Edit
+                </button>
+              )}
+            </p>
           </div>
         </div>
-
-        <StarRating rating={review.rating} />
       </div>
-
-      {/* Text */}
-      <p className="review-text">
-        {displayText}
-        {!expanded && isLong && "..."}
-      </p>
-
-      {/* Footer */}
-      {isLong && (
-        <div className="review-footer">
-          <button
-            className="read-more"
-            onClick={() => setExpanded((s) => !s)}
-          >
-            {expanded ? "Show less ↑" : "Read more ↓"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
-
-export default ReviewCard;

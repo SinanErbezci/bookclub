@@ -1,13 +1,19 @@
-function StarRating({ rating }) {
+export default function StarRating({ value, onChange }) {
   return (
-    <div className="star-rating">
-      {[1,2,3,4,5].map(i => (
-        <span key={i} className={i <= rating ? "star filled" : "star"}>
+    <div className="rating-star">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          onClick={() => onChange(star)}
+          style={{
+            cursor: "pointer",
+            color: star <= value ? "#D4AF37" : "#ccc",
+            fontSize: "2rem",
+          }}
+        >
           ★
         </span>
       ))}
     </div>
   );
 }
-
-export default StarRating;

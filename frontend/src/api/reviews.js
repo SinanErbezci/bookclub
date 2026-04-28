@@ -13,8 +13,7 @@ export async function getReviewsByBook(bookId) {
     throw new Error(result.error || "Failed to fetch reviews");
   }
 
-  // 🔥 handle pagination automatically
-  return result.results || result;
+  return Array.isArray(result) ? result : result.results ?? [];
 }
 
 export async function createReview(data) {
@@ -40,4 +39,43 @@ export async function createReview(data) {
   }
 
   return result;
+}
+
+export async function updateReview(id, data) {
+  await fetch(`${BASE_URL}/csrf/`, { credentials: "include" });
+
+  const res = await fetch(`${BASE_URL}/reviews/${id}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result.error || "Failed to update review");
+  }
+
+  return result;
+}
+
+
+export async function getUserReview(bookId) {
+  const res = await fetch(`${BASE_URL}/reviews/user/?book=${bookId}`, {
+    credentials: "include",
+  });
+
+  if (res.status === 404) return null;
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to fetch user review");
+  }
+
+  return data;
 }
