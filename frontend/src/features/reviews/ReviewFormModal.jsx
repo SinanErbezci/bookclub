@@ -39,6 +39,11 @@ export default function ReviewFormModal({
       return;
     }
 
+    if (text.length > 2000) {
+      setError("Review cannot exceed 2000 characters");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -61,14 +66,14 @@ export default function ReviewFormModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="review-form">
-        
+
         <h2 className="review-form-title">
           {mode === "create" ? "Write a Review" : "Edit Your Review"}
         </h2>
 
         {/* ⭐ Rating */}
         <div className="review-form-section">
-          <label class="text-center h4">Rating</label>
+          <label className="text-center h4">Rating</label>
           <StarRating
             value={hoverRating ?? rating}
             onChange={setRating}
@@ -84,13 +89,19 @@ export default function ReviewFormModal({
           <textarea
             className="review-textarea"
             value={text}
-            onChange={(e) => setText(e.target.value)}
-            maxLength={500}
+            onChange={(e) => {
+              setText(e.target.value);
+
+              e.target.style.height = "auto";
+              e.target.style.height = e.target.scrollHeight + "px";
+            }}
+            style={{ overflow: "hidden" }}
+            maxLength={2000}
             placeholder="Share your thoughts... (10–2000 characters)"
           />
 
           <div className="char-count">
-            {text.length} / 500
+            {text.length} / 2000
           </div>
         </div>
 

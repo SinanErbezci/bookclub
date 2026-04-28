@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 # Create your models here.
@@ -92,7 +92,7 @@ class Review(models.Model):
     rating = models.SmallIntegerField(validators=[
         MaxValueValidator(5), MinValueValidator(1)
     ])
-    text = models.TextField(validators=[MaxLengthValidator(2000), MinValueValidator(10)])
+    text = models.TextField(validators=[MaxLengthValidator(2000), MinLengthValidator(10)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

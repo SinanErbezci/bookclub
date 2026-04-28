@@ -89,7 +89,7 @@ function BookPage() {
     return <p>Book not found.</p>;
   }
 
-  console.log(book.genres);
+
   return (
     <div className="book-page container mt-5">
       <div className="book-layout">

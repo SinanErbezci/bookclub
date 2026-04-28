@@ -87,4 +87,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate_content(self, value):
         if len(value.strip()) < 10:
             raise serializers.ValidationError("Review too short")
+        
+        if len(value) > 2000:
+            raise serializers.ValidationError(
+                "Review cannot exceed 2000 characters"
+            )
         return value

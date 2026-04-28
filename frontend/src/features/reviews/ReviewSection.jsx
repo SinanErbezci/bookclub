@@ -5,6 +5,7 @@ import ReviewFormModal from "./ReviewFormModal";
 import {
   getReviewsByBook,
   getUserReview,
+  deleteReview,
 } from "../../api/reviews";
 import { useAuth } from "../../context/AuthContext";
 
@@ -16,6 +17,9 @@ export default function ReviewSection({ bookId }) {
 
   const [selectedReview, setSelectedReview] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const [nextUrl, setNextUrl] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,15 +36,61 @@ export default function ReviewSection({ bookId }) {
 
         // 🔥 remove user's review from list
         const filtered = userReviewData
-          ? reviewsData.filter((r) => r.id !== userReviewData.id)
-          : reviewsData;
+          ? reviewsData.results.filter(
+            (r) => r.id !== userReviewData.id
+          )
+          : reviewsData.results;
 
         setReviews(filtered);
+        setNextUrl(reviewsData.next);
         setError(null);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   };
+
+  const loadMore = async () => {
+    if (!nextUrl || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+
+      const data = await getReviewsByBook(bookId, nextUrl);
+
+      const filtered = data.results.filter((r) => {
+        if (userReview && r.id === userReview.id) return false;
+        return true;
+      });
+
+      setReviews((prev) => {
+        const existingIds = new Set(prev.map((r) => r.id));
+        const newItems = filtered.filter((r) => !existingIds.has(r.id));
+        return [...prev, ...newItems];
+      });
+
+      setNextUrl(data.next);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const handleDelete = async (reviewId) => {
+  try {
+    const confirmed = window.confirm("Delete your review?");
+    if (!confirmed) return;
+    setUserReview(null);
+
+    await deleteReview(reviewId);
+
+    // optional: refetch rating later if needed
+  } catch (err) {
+    setError(err.message);
+    // ❗ rollback (restore if failed)
+    fetchData();
+  }
+};
 
   useEffect(() => {
     if (!bookId) return;
@@ -70,6 +120,7 @@ export default function ReviewSection({ bookId }) {
                 isOwn
                 onRead={setSelectedReview}
                 onEdit={() => setIsFormOpen(true)}
+                onDelete={() => handleDelete(userReview.id)}
               />
 
               <div className="divider" />
@@ -125,6 +176,18 @@ export default function ReviewSection({ bookId }) {
         bookId={bookId}
         onSuccess={fetchData}
       />
+
+      {nextUrl && (
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <button
+            className="btn load-more-btn"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

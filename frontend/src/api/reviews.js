@@ -2,8 +2,11 @@ import { getCookie } from "../utils/cookies";
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 
-export async function getReviewsByBook(bookId) {
-  const res = await fetch(`${BASE_URL}/reviews/?book=${bookId}`, {
+export async function getReviewsByBook(bookId, url = null) {
+    const endpoint =
+    url || `${BASE_URL}/reviews/?book=${bookId}`;
+
+  const res = await fetch(endpoint, {
     credentials: "include",
   });
 
@@ -13,7 +16,7 @@ export async function getReviewsByBook(bookId) {
     throw new Error(result.error || "Failed to fetch reviews");
   }
 
-  return Array.isArray(result) ? result : result.results ?? [];
+  return result;
 }
 
 export async function createReview(data) {
@@ -81,4 +84,18 @@ export async function getUserReview(bookId) {
   }
 
   return data;
+}
+
+export async function deleteReview(reviewId) {
+  const res = await fetch(`${BASE_URL}/reviews/${reviewId}/`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete review");
+  }
 }
