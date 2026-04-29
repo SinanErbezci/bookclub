@@ -100,9 +100,6 @@ export default function ReviewSection({ bookId }) {
     fetchData();
   }, [bookId, user]); // 🔥 refetch when login/logout changes
 
-    useEffect(() => {
-  addToast("Toast working", "success");
-}, []);
   return (
     <div className="review-container">
       <h2>Reviews</h2>
