@@ -6,9 +6,15 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import '../src/styles/style.css';
 import App from './App';
 import { BrowserRouter } from "react-router-dom";
+import { ToastProvider } from './context/ToastContext';
+import { AuthProvider } from './context/AuthContext';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+<BrowserRouter>
+  <AuthProvider>
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  </AuthProvider>
+</BrowserRouter>
 );

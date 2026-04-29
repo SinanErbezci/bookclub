@@ -17,7 +17,6 @@ function FeaturedGenre() {
 
       setLoading(false);
     }
-
     fetchData();
   }, []);
 

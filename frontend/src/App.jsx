@@ -11,7 +11,7 @@ import { useEffect } from "react";
 
 function App() {
   return (
-    <AuthProvider>
+    <>
       <NavBar />
 
       <Routes>
@@ -22,7 +22,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
       </Routes>
-    </AuthProvider>
+    </>
   );
 }
 

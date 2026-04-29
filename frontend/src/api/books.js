@@ -15,7 +15,7 @@ export async function getRecentBooks() {
   );
 
   // optional delay for testing
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  // await new Promise((resolve) => setTimeout(resolve, 1500));
 
   return handleResponse(res);
 }
@@ -24,7 +24,7 @@ export async function getRecentBooks() {
 export async function getBookById(id) {
   const res = await fetch(`${BASE_URL}/books/${id}/`);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  // await new Promise((resolve) => setTimeout(resolve, 1500));
 
   return handleResponse(res);
 }

@@ -8,6 +8,7 @@ import {
   deleteReview,
 } from "../../api/reviews";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 
 export default function ReviewSection({ bookId }) {
   const { user } = useAuth();
@@ -23,6 +24,8 @@ export default function ReviewSection({ bookId }) {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const {addToast} = useToast();
 
   const fetchData = () => {
     setLoading(true);
@@ -77,17 +80,17 @@ export default function ReviewSection({ bookId }) {
   };
 
   const handleDelete = async (reviewId) => {
+  if (!window.confirm("Delete your review?")) return;
+
   try {
-    const confirmed = window.confirm("Delete your review?");
-    if (!confirmed) return;
-    setUserReview(null);
-
     await deleteReview(reviewId);
-
-    // optional: refetch rating later if needed
+    
+    addToast("Review deleted", "success");
+    
+    setUserReview(null);
   } catch (err) {
     setError(err.message);
-    // ❗ rollback (restore if failed)
+    addToast("Failed to delete review", "error");
     fetchData();
   }
 };
@@ -97,6 +100,9 @@ export default function ReviewSection({ bookId }) {
     fetchData();
   }, [bookId, user]); // 🔥 refetch when login/logout changes
 
+    useEffect(() => {
+  addToast("Toast working", "success");
+}, []);
   return (
     <div className="review-container">
       <h2>Reviews</h2>
