@@ -35,7 +35,7 @@ function LoginPage() {
     try {
       setIsSubmitting(true);
       const data = await loginUser(form);
-      setUser(data);
+      setUser(data.user);
       navigate("/");
     } catch (err) {
       setError(err.message || "Invalid username or password");

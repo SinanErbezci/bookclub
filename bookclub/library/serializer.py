@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Author, Genre, Review
+from .models import Book, Author, Genre, Review, List
 
 
 class BookSerializer(serializers.ModelSerializer):
@@ -63,6 +63,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    book = serializers.SerializerMethodField()
     content = serializers.CharField(source="text")
 
     class Meta:
@@ -84,6 +85,14 @@ class ReviewSerializer(serializers.ModelSerializer):
             "username": obj.user.username
         }
     
+    def get_book(self, obj):
+        return {
+        "id": obj.book.id,
+        "title": obj.book.title,
+        "cover": obj.book.cover,
+        "author_name": obj.book.author.name,
+    }
+
     def validate_content(self, value):
         if len(value.strip()) < 10:
             raise serializers.ValidationError("Review too short")
@@ -93,3 +102,10 @@ class ReviewSerializer(serializers.ModelSerializer):
                 "Review cannot exceed 2000 characters"
             )
         return value
+    
+class ListSerializer(serializers.ModelSerializer):
+    books = BookListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = List
+        fields = ["id", "name", "books"]

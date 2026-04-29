@@ -57,7 +57,7 @@ async function handleSubmit(e) {
       password: form.password,
     });
 
-    setUser(data);
+    setUser(data.user);
     navigate("/");
   } catch (err) {
     setError(err.message || "Signup failed");

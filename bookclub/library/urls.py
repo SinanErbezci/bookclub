@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView, UserProfileAPIView, AddToListAPIView,DeleteListAPIView, RemoveFromListAPIView, CreateListAPIView
 from . import views
 
 router = DefaultRouter()
@@ -43,4 +43,9 @@ urlpatterns = [
     path("api/me/", MeAPIView.as_view()),
     path("api/signup/", SignupAPIView.as_view()),
     path("api/csrf/", CSRFAPIView.as_view()),
+    path("api/users/<int:user_id>/profile/", UserProfileAPIView.as_view()),
+    path("api/lists/<int:list_id>/books/", AddToListAPIView.as_view()),
+    path("api/lists/<int:list_id>/", DeleteListAPIView.as_view()),
+    path("api/lists/<int:list_id>/books/<int:book_id>/", RemoveFromListAPIView.as_view()),
+    path("api/lists/", CreateListAPIView.as_view()),
 ]

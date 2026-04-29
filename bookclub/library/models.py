@@ -131,20 +131,26 @@ class UserFollower(models.Model):
 
 
 class List(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lists")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lists")
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    books = models.ManyToManyField(
+    Book,
+    through="ListBook",
+    related_name="lists"
+)
+    
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["owner", "name"],
+                fields=["user", "name"],
                 name="uniq_list_owner_name"
             )
         ]
 
         ordering = ["-created_at"]
+
 class ListBook(models.Model):
     book_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name="list_books")
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="in_lists")

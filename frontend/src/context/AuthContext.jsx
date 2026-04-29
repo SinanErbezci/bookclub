@@ -11,11 +11,9 @@ export function AuthProvider({ children }) {
     async function fetchUser() {
       try {
         const data = await getCurrentUser();
-        if (data.user === null) {
-          setUser(null);
-        } else {
-          setUser(data);
-        }
+        setUser(data.user); // ✅ FIX
+      } catch {
+        setUser(null);
       } finally {
         setLoading(false);
       }

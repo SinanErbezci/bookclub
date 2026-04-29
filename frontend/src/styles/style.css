@@ -908,6 +908,87 @@ Soft Gold: #D4AF37 */
     margin: 40px auto 0;
 }
 
+/* ---- List --- */
+.list-section {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.list-toggle-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.list-toggle-btn:hover {
+  background: #f5f5f5;
+}
+
+.list-toggle-btn.active {
+  background: #e6f4ea;
+  border-color: #4caf50;
+  color: #2e7d32;
+}
+
+.list-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 260px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 4px;
+  align-items: center;
+}
+
+.list-row:hover {
+  background: #f8f8f8;
+  border-radius: 4px;
+}
+
+.add-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.remove-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.list-create {
+  margin-top: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.list-create input {
+  flex: 1;
+  padding: 6px;
+}
+
+.list-loading {
+  text-align: center;
+  font-size: 0.9rem;
+}
 .read-more-btn {
     display: inline-flex;
     align-items: center;

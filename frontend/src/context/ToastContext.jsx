@@ -8,7 +8,7 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   const addToast = (message, type = "success") => {
-    const id = Date.now();
+    const id = crypto.randomUUID();
 
     // add toast
     setToasts((prev) => [
@@ -40,7 +40,7 @@ export function ToastProvider({ children }) {
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 300);
+    }, EXIT_DURATION);
   };
 
   return (

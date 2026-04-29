@@ -27,8 +27,8 @@ from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
-from .serializer import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer
-from rest_framework import serializers
+from .serializer import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer, ListSerializer
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -92,8 +92,10 @@ class MeAPIView(APIView):
             return Response({"user": None})
 
         return Response({
-            "id": request.user.id,
-            "username": request.user.username
+            "user": {
+                "id": request.user.id,
+                "username": request.user.username
+            }
         })
 
 class SignupAPIView(APIView):
@@ -198,8 +200,14 @@ class ReviewViewSet(ModelViewSet):
         queryset = Review.objects.select_related("user", "book")
 
         book_id = self.request.query_params.get("book")
+        user_id = self.request.query_params.get("user")
+
         if book_id:
             queryset = queryset.filter(book_id=book_id)
+
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+
 
         return queryset.order_by("-created_at")
     
@@ -262,6 +270,111 @@ class ReviewViewSet(ModelViewSet):
         instance.delete()
 
         update_book_rating(book)
+
+class UserProfileAPIView(APIView):
+    def get(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        lists = (
+            List.objects
+            .filter(user=user)
+            .prefetch_related("books__author")
+        )
+
+        reviews = (
+            Review.objects
+            .filter(user=user)
+            .select_related("book__author")
+            .order_by("-created_at")
+        )
+
+        return Response({
+            "user": {
+                "id": user.id,
+                "username": user.username
+            },
+            "lists": ListSerializer(lists, many=True).data,
+            "reviews": ReviewSerializer(reviews, many=True).data
+        })
+    
+class CreateListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        name = request.data.get("name")
+
+        if not name or not name.strip():
+            raise ValidationError("List name is required")
+
+        # enforce uniqueness (you already have DB constraint, but this gives cleaner error)
+        if List.objects.filter(user=request.user, name=name).exists():
+            raise ValidationError("You already have a list with this name")
+
+        book_list = List.objects.create(
+            user=request.user,
+            name=name.strip().lower()
+        )
+
+        return Response({
+            "id": book_list.id,
+            "name": book_list.name
+        }, status=201)
+
+class AddToListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, list_id):
+        book_id = request.data.get("book_id")
+
+        if not book_id:
+            raise ValidationError({"book_id": "This field is required."})
+
+        book_list = get_object_or_404(List, id=list_id, user=request.user)
+        book = get_object_or_404(Book, id=book_id)
+
+        obj, created = ListBook.objects.get_or_create(
+            book_list=book_list,
+            book=book
+        )
+
+        return Response(
+            {"success": True, "created": created},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+    
+class RemoveFromListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, list_id, book_id):
+        book_list = get_object_or_404(
+            List,
+            id=list_id,
+            user=request.user
+        )
+
+        deleted, _ = ListBook.objects.filter(
+            book_list=book_list,
+            book_id=book_id
+        ).delete()
+
+        return Response(
+            {"success": True, "deleted": bool(deleted)},
+            status=status.HTTP_200_OK
+        )
+
+class DeleteListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, list_id):
+        book_list = get_object_or_404(
+            List,
+            id=list_id,
+            user=request.user
+        )
+
+        book_list.delete()
+
+        return Response({"success": True}, status=status.HTTP_200_OK)
 
 # ====== Legacy Views =========
 def index(request):
