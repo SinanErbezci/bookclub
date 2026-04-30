@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { fetchUserProfile } from "../api/users";
-import { deleteList } from "../api/lists";
+import { deleteList, removeBookFromList } from "../api/lists";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -69,6 +69,40 @@ function ProfilePage() {
         }
     }
 
+    async function handleRemoveFromList(listId, bookId) {
+        try {
+            const res = await removeBookFromList(listId, bookId);
+
+            // optional: check res.deleted if you return it
+            addToast("Removed from list", "success");
+
+            // 🔥 update profile data
+            setData((prev) => ({
+                ...prev,
+                lists: prev.lists.map((l) =>
+                    l.id === listId
+                        ? {
+                            ...l,
+                            books: l.books.filter((b) => b.id !== bookId),
+                        }
+                        : l
+                ),
+            }));
+
+            // 🔥 update currently open modal
+            setSelectedList((prev) =>
+                prev
+                    ? {
+                        ...prev,
+                        books: prev.books.filter((b) => b.id !== bookId),
+                    }
+                    : prev
+            );
+        } catch (err) {
+            addToast("Failed to remove book", "error");
+        }
+    }
+
     if (loading) return <p>Loading...</p>;
     if (!data) return <p>Profile not found</p>;
 
@@ -76,9 +110,15 @@ function ProfilePage() {
         <div className="profile-page">
             {/* HEADER */}
             <div className="profile-header">
-                <h2>{data.user.username}</h2>
-            </div>
+                <div className="profile-avatar">
+                    {data.user.username[0].toUpperCase()}
+                </div>
 
+                <div className="profile-info">
+                    <h2>{data.user.username}</h2>
+                    <p>{data.lists.length} lists • {data.reviews.length} reviews</p>
+                </div>
+            </div>
             {/* LISTS */}
             <section className="profile-section">
                 <h3>Lists</h3>
@@ -94,17 +134,20 @@ function ProfilePage() {
                                 onClick={() => setSelectedList(list)}
                             >
                                 <div className="profile-card-header">
-                                    <h4>{list.name}</h4>
+                                    <div className="list-title">
+                                        <h4>{list.name}</h4>
+                                        <p className="list-count">{list.books.length} books</p>
+                                    </div>
 
                                     {isOwnProfile && (
                                         <button
-                                            className="btn secondary"
+                                            className="list-delete-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDeleteList(list.id);
                                             }}
                                         >
-                                            Delete
+                                            ✕
                                         </button>
                                     )}
                                 </div>
@@ -157,9 +200,9 @@ function ProfilePage() {
                                     book={book}
                                     showAuthor
                                     action="Remove"
-                                //onAction={(b) =>
-                                //handleRemoveFromList(selectedList.id, b.id)
-                                //}
+                                    onAction={(b) =>
+                                        handleRemoveFromList(selectedList.id, b.id)
+                                    }
                                 />
                             )}
                         />

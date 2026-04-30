@@ -236,7 +236,7 @@ async function handleCreateList() {
 
                         return (
                           <div key={list.id} className="list-row">
-                            <span>{list.name}</span>
+                            <span class="twoliner">{list.name}</span>
 
                             {inList ? (
                               <button
