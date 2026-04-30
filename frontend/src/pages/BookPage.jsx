@@ -112,9 +112,20 @@ function BookPage() {
       }
     }
 
+    
     fetchLists();
   }, [user, book]);
 
+  useEffect(() => {
+  function handleClickOutside(e) {
+    if (!e.target.closest(".list-section")) {
+      setShowPicker(false);
+    }
+  }
+
+  document.addEventListener("click", handleClickOutside);
+  return () => document.removeEventListener("click", handleClickOutside);
+}, []);
   // 🔄 Refresh lists
   async function refreshLists() {
     const data = await fetchUserProfile(user.id);
@@ -161,18 +172,25 @@ async function handleCreateList() {
   if (!newListName.trim()) return;
 
   try {
-    await createList(newListName);
+    const newList = await createList(newListName);
 
-    addToast("List created", "success");
+    // 🔥 auto-add book to the new list
+    const res = await addBookToList(newList.id, book.id);
+
+    if (res.created) {
+      addToast(`Added to "${newList.name}"`, "success");
+    } else {
+      addToast("Already in list", "success");
+    }
 
     await refreshLists();
+
     setNewListName("");
     setShowPicker(false);
   } catch (err) {
     addToast(err.message || "Failed to create list", "error");
   }
 }
-
   if (loading) return <BookPageSkeleton />;
   if (!book) return <p>Book not found.</p>;
 
@@ -194,33 +212,8 @@ async function handleCreateList() {
           <div className="book-rating">
             ⭐ {book.rating} ({book.num_ratings})
           </div>
-        </div>
 
-        {/* RIGHT */}
-        <div className="book-info">
-          <h2 className="book-title">{book.title}</h2>
-
-          <h5 className="book-author">
-            by{" "}
-            <Link to={`/authors/${book.author}`} className="author-link">
-              {book.author_name}
-            </Link>
-          </h5>
-
-          <p className="book-meta">
-            {book.publisher_name && (
-              <>
-                <span>Publisher: {book.publisher_name}</span> |{" "}
-              </>
-            )}
-            {book.pub_date && (
-              <span>
-                Published: {new Date(book.pub_date).getFullYear()}
-              </span>
-            )}
-          </p>
-
-          {/* 📚 LIST SYSTEM */}
+                    {/* 📚 LIST SYSTEM */}
           {user && (
             <div className="list-section">
               <button
@@ -280,6 +273,31 @@ async function handleCreateList() {
               )}
             </div>
           )}
+        </div>
+
+        {/* RIGHT */}
+        <div className="book-info">
+          <h2 className="book-title">{book.title}</h2>
+
+          <h5 className="book-author">
+            by{" "}
+            <Link to={`/authors/${book.author}`} className="author-link">
+              {book.author_name}
+            </Link>
+          </h5>
+
+          <p className="book-meta">
+            {book.publisher_name && (
+              <>
+                <span>Publisher: {book.publisher_name}</span> |{" "}
+              </>
+            )}
+            {book.pub_date && (
+              <span>
+                Published: {new Date(book.pub_date).getFullYear()}
+              </span>
+            )}
+          </p>
 
           {/* GENRES */}
           <div className="book-genres">

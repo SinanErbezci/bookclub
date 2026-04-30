@@ -911,78 +911,140 @@ Soft Gold: #D4AF37 */
 /* ---- List --- */
 .list-section {
   position: relative;
-  margin-top: 1rem;
+    display: inline-block;
+
+  
 }
 
 .list-toggle-btn {
+  width: 100%;
+
   padding: 8px 14px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  background: white;
+  border-radius: 8px;
+
+  border: 1px solid var(--BORDERCOLOR1);
+  background: var(--BGCOLOR2);
+
+  font-weight: 600;
   cursor: pointer;
+
   transition: all 0.2s ease;
 }
 
 .list-toggle-btn:hover {
-  background: #f5f5f5;
+  background: var(--BGCOLOR3);
 }
 
 .list-toggle-btn.active {
-  background: #e6f4ea;
-  border-color: #4caf50;
-  color: #2e7d32;
+  border-color: var(--COLOR-GOLD);
+  color: var(--COLOR-GOLD);
 }
 
 .list-dropdown {
   position: absolute;
-  top: 110%;
-  left: 0;
+  top: calc(100% + 10px);
+    left: 0;
+
   width: 260px;
-  background: white;
-  border: 1px solid #ddd;
+  box-sizing: border-box;
+
+  background: var(--BGCOLOR2); /* 🔥 match cards */
+  border: 1px solid var(--BORDERCOLOR1);
   border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  z-index: 10;
+
+  padding: 6px 0;
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+
+  z-index: 20;
+  animation: fadeIn 0.15s ease;
 }
 
 .list-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 4px;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
+
+  padding: 10px 14px;
+  font-size: 0.95rem;
 }
 
 .list-row:hover {
-  background: #f8f8f8;
-  border-radius: 4px;
+  background: var(--BGCOLOR3); /* 🔥 matches hover patterns */
 }
 
-.add-btn {
-  background: #4caf50;
-  color: white;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 4px;
-}
-
+.add-btn,
 .remove-btn {
-  background: #e53935;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  min-width: 70px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ADD = primary style */
+.add-btn {
+  background: var(--COLOR-GOLD);
   color: white;
   border: none;
-  padding: 4px 10px;
-  border-radius: 4px;
+}
+
+.add-btn:hover {
+  background: #c49b2c;
+}
+
+/* REMOVE = subtle destructive */
+.remove-btn {
+  background: transparent;
+  border: 1px solid var(--BORDERCOLOR1);
+  color: var(--FONTCOLOR);
+}
+
+.remove-btn:hover {
+  background: var(--BGCOLOR3);
 }
 
 .list-create {
-  margin-top: 10px;
+  border-top: 1px solid var(--BORDERCOLOR1);
+  margin-top: 6px;
+  padding: 10px 12px;
+
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  align-items: center;
 }
 
 .list-create input {
   flex: 1;
-  padding: 6px;
+  min-width: 0;
+
+  padding: 6px 10px;
+
+  border-radius: 6px;
+  border: 1px solid var(--BORDERCOLOR1);
+
+  background: var(--BGCOLOR1);
+  color: var(--FONTCOLOR);
+}
+
+.list-create input:focus {
+  outline: none;
+  border-color: var(--COLOR-GOLD);
+  box-shadow: 0 0 4px rgba(212, 175, 55, 0.3);
+}
+
+.list-create button {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+  border-radius: 6px;
+
+  background: var(--COLOR-GOLD);
+  color: white;
+  border: none;
+  font-weight: 600;
 }
 
 .list-loading {
@@ -1713,6 +1775,17 @@ input.valid {
   to {
     opacity: 0;
     transform: translateY(-12px) scale(0.95);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 /* * {
