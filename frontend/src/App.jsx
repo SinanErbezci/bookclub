@@ -6,6 +6,7 @@ import GenrePage from "./pages/GenrePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import NavBar from "./components/NavBar";
+import ProfilePage from "./pages/ProfilePage";
 import { AuthProvider } from "./context/AuthContext";
 import { useEffect } from "react";
 
@@ -16,6 +17,8 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Browse />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/book/:id" element={<BookPage />} />
         <Route path="/authors/:id" element={<AuthorPage />} />
         <Route path="/genres/:id" element={<GenrePage />} />

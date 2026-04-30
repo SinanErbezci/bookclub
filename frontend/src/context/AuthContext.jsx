@@ -7,23 +7,26 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const data = await getCurrentUser();
-        setUser(data.user); // ✅ FIX
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
+  async function fetchUser() {
+    try {
+      const data = await getCurrentUser();
 
+      if (data.user === null) {
+        setUser(null);
+      } else {
+        setUser(data.user);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+    useEffect(() => {
     fetchUser();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading, refreshUser: fetchUser}}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,7 +4,7 @@ import { loginUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
-  const { user, loading, setUser } = useAuth(); // auth loading
+  const { user, loading, refreshUser } = useAuth(); // auth loading
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ username: "", password: "" });
@@ -23,27 +23,33 @@ function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
+async function handleSubmit(e) {
+  e.preventDefault();
+  setError("");
 
-    if (!form.username || !form.password) {
-      setError("All fields are required");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const data = await loginUser(form);
-      setUser(data.user);
-      navigate("/");
-    } catch (err) {
-      setError(err.message || "Invalid username or password");
-    } finally {
-      setIsSubmitting(false);
-    }
+  if (!form.username || !form.password) {
+    setError("All fields are required");
+    return;
   }
 
+  try {
+    setIsSubmitting(true);
+
+    // 1. login → sets session cookie
+    await loginUser(form);
+
+    // 2. sync AuthContext with backend
+    await refreshUser();
+
+    // ❌ no navigate here
+    // useEffect will handle redirect when user updates
+
+  } catch (err) {
+    setError(err.message || "Invalid username or password");
+  } finally {
+    setIsSubmitting(false);
+  }
+}
   const isDisabled = !form.username || !form.password || isSubmitting;
 
   return (

@@ -96,10 +96,31 @@ nav {
     color: white;
 }
 
+.nav-link.active {
+  position: relative;
+}
+
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+
+  width: 50%;
+  height: 2px;
+
+  background: var(--COLOR-GOLD);
+  opacity: 0.6;
+
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
 .navbar-toggler-icon {
     margin-top: auto;
     margin-bottom: auto;
 }
+
 
 .nav-login {
     font-weight: 600;
@@ -625,29 +646,76 @@ Soft Gold: #D4AF37 */
     border: 1px solid var(--BORDERCOLOR1);
     border-radius: 12px;
 
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: 
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .book-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--COLOR-GOLD);
+    transform: translateY(-3px);
 }
 
 .book-card-img {
     width: 100%;
     height: 260px;
     object-fit: cover;
+      transition: filter 0.2s ease;
+}
+.book-card:hover .book-card-img {
+  filter: brightness(1.05);
 }
 
+.book-card-img-wrapper {
+  position: relative;
+}
+
+.book-card-action-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+  border: 1px solid var(--COLOR-GOLD);
+
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+
+  font-size: 14px;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  /* always visible */
+  opacity: 1;
+
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+
+.book-card-action-icon:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.8);
+}
 .book-card-body {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
-    justify-content: space-between;
-    align-items: center;
+  align-items: center;
 
-    padding: 10px;
-    gap: 6px;
+  padding: 10px;
+  gap: 6px;
+
+  flex-grow: 1; /* 🔥 important */
 }
 
 .book-card-title {
@@ -658,6 +726,26 @@ Soft Gold: #D4AF37 */
 .book-card-author {
     font-size: 0.9rem;
     opacity: 0.8;
+}
+
+.book-card-action {
+  margin-top: auto;
+  width: 100%;
+
+  padding: 4px 6px;
+  font-size: 0.8rem;
+
+  border-radius: 6px;
+  border: 1px solid var(--BORDERCOLOR1);
+
+  background: transparent;
+  color: var(--FONTCOLOR);
+
+  cursor: pointer;
+}
+
+.book-card-action:hover {
+  background: var(--BGCOLOR3);
 }
 
 .genre-tag {
@@ -1761,6 +1849,53 @@ input.valid {
 
 .app-toast-close:hover {
   opacity: 1;
+}
+
+/* ---- Profile Page ----- */
+.profile-page {
+  max-width: 1100px;
+  margin: 2rem auto;
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profile-section {
+  margin-bottom: 2rem;
+}
+
+.profile-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.profile-card {
+  background: var(--BGCOLOR2);
+  border: 1px solid var(--BORDERCOLOR1);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.profile-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-book-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.profile-book-row img {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
 /* animations */

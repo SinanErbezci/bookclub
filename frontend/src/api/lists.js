@@ -42,3 +42,15 @@ export async function removeBookFromList(listId, bookId) {
 
   return data; // 🔥 IMPORTANT
 }
+
+export async function deleteList(listId) {
+  const res = await csrfFetch(`/lists/${listId}/`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete list");
+  }
+
+  return true;
+}

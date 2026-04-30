@@ -16,7 +16,7 @@ export default function Modal({ isOpen, onClose, children }) {
 
       const timeout = setTimeout(() => {
         setShouldRender(false);
-      }, 250); // match CSS duration
+      }, 200); // match CSS duration
 
       return () => clearTimeout(timeout);
     }
