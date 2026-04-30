@@ -10,29 +10,6 @@ router.register(r"genres", GenreViewSet)
 router.register(r"reviews", ReviewViewSet, basename="reviews")
 
 urlpatterns = [
-    # Landing Page
-    path("", views.index, name="index"),
-
-    # Browse Section
-    path("browse/", views.browse, name="browse"),
-    path("browse/books/<int:book_id>", views.browse_book, name="book"),
-    path("browse/genres/<int:genre_id>", views.browse_genre, name="genre"),
-    path("browse/authors/<int:author_id>", views.browse_author, name="author"),
-
-    # Search Page
-    # path("search", views.search, name="search"),
-
-    # Profile Page
-    path("profile", views.profile, name="profile"),
-    path("profile/<int:user_id>", views.user_profile, name="user_profile"),
-
-    # API Search, Follow
-    # path("short", views.short_search, name="short_search"),
-    path("follow/<int:user_id>", views.follow, name="follow"),
-
-    # API List
-    path("listing", views.listing, name="listing"),
-
     # API urls
     path("api/", include(router.urls)),
     path("api/random/author/", RandomAuthorAPIView.as_view()),
