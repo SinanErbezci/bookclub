@@ -1,13 +1,15 @@
-const BASE_URL = process.env.REACT_APP_API_URL;
+import { apiFetch } from "./client";
 
+// 👤 FETCH USER PROFILE
 export async function fetchUserProfile(userId) {
-  const res = await fetch(`${BASE_URL}/users/${userId}/profile/`, {
-    credentials: "include",
-  });
+  const data = await apiFetch(`/users/${userId}/profile/`);
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch profile");
-  }
-
-  return res.json();
+  // 🔥 normalize response ONCE here
+  return data?.user
+    ? data
+    : {
+        user: data,
+        lists: data?.lists || [],
+        reviews: data?.reviews || [],
+      };
 }

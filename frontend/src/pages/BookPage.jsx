@@ -15,9 +15,11 @@ import {
 } from "../api/lists";
 import { fetchUserProfile } from "../api/users";
 import { useToast } from "../context/ToastContext";
+
 function BookPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { addToast } = useToast();
 
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,15 +31,10 @@ function BookPage() {
   const [similarBooks, setSimilarBooks] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
 
-  // 📚 Lists
   const [lists, setLists] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
   const [loadingLists, setLoadingLists] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const { addToast } = useToast();
-  const isInAnyList = lists.some(list =>
-    list.books.some(b => b.id === book.id)
-  );
 
   const MAX_LENGTH = 300;
   const description = book?.description || "";
@@ -47,13 +44,24 @@ function BookPage() {
     ? description
     : description.slice(0, MAX_LENGTH);
 
+  const isInAnyList = book
+    ? lists.some(list =>
+        list.books.some(b => b.id === book.id)
+      )
+    : false;
+
   // 📘 Fetch book
   useEffect(() => {
     async function fetchBook() {
       setLoading(true);
-      const data = await getBookById(id);
-      setBook(data);
-      setLoading(false);
+      try {
+        const data = await getBookById(id);
+        setBook(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchBook();
@@ -61,9 +69,9 @@ function BookPage() {
 
   // 📚 Fetch similar books
   useEffect(() => {
-    async function fetchSimilar() {
-      if (!book?.genres?.length) return;
+    if (!book?.genres?.length) return;
 
+    async function fetchSimilar() {
       try {
         setLoadingSimilar(true);
         const genreId = book.genres[0].id;
@@ -98,105 +106,110 @@ function BookPage() {
     fetchReviews();
   }, [id]);
 
-  // 📚 Fetch user lists
+  // 📚 Fetch user lists (SAFE VERSION)
   useEffect(() => {
-    if (!user || !book) return;
+    if (!user?.id || !book?.id) return;
 
     async function fetchLists() {
       setLoadingLists(true);
       try {
         const data = await fetchUserProfile(user.id);
-        setLists(data.lists || []);
+        setLists(data.lists);
+      } catch (err) {
+        console.error("Failed to fetch lists:", err);
+        setLists([]); // prevent crash
       } finally {
         setLoadingLists(false);
       }
     }
 
-    
     fetchLists();
   }, [user, book]);
 
+  // outside click close
   useEffect(() => {
-  function handleClickOutside(e) {
-    if (!e.target.closest(".list-section")) {
-      setShowPicker(false);
+    function handleClickOutside(e) {
+      if (!e.target.closest(".list-section")) {
+        setShowPicker(false);
+      }
     }
-  }
 
-  document.addEventListener("click", handleClickOutside);
-  return () => document.removeEventListener("click", handleClickOutside);
-}, []);
-  // 🔄 Refresh lists
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
   async function refreshLists() {
-    const data = await fetchUserProfile(user.id);
-    setLists(data.lists || []);
-  }
-
-  // ➕ Add
-async function handleAdd(listId) {
-  try {
-    const res = await addBookToList(listId, book.id);
-
-    if (res.created) {
-      addToast("Added to list", "success");
-    } else {
-      addToast("Already in list", "error");
+    if (!user?.id) return;
+    try {
+      const data = await fetchUserProfile(user.id);
+      setLists(data?.lists || []);
+    } catch (err) {
+      console.error(err);
     }
-
-    await refreshLists();
-    setShowPicker(false);
-  } catch (err) {
-    addToast("Failed to add book", "error");
   }
-}
-  // ➖ Remove
-async function handleRemove(listId) {
-  try {
-    const res = await removeBookFromList(listId, book.id);
 
-    if (res.deleted) {
-      addToast("Removed from list", "success");
-    } else {
-      addToast("Already removed", "error");
+  async function handleAdd(listId) {
+    try {
+      const res = await addBookToList(listId, book.id);
+
+      if (res.created) {
+        addToast("Added to list", "success");
+      } else {
+        addToast("Already in list", "error");
+      }
+
+      await refreshLists();
+      setShowPicker(false);
+    } catch {
+      addToast("Failed to add book", "error");
     }
-
-    await refreshLists();
-    setShowPicker(false);
-  } catch (err) {
-    addToast("Failed to remove book", "error");
   }
-}
 
-  // 🆕 Create list
-async function handleCreateList() {
-  if (!newListName.trim()) return;
+  async function handleRemove(listId) {
+    try {
+      const res = await removeBookFromList(listId, book.id);
 
-  try {
-    const newList = await createList(newListName);
+      if (res.deleted) {
+        addToast("Removed from list", "success");
+      } else {
+        addToast("Already removed", "error");
+      }
 
-    // 🔥 auto-add book to the new list
-    const res = await addBookToList(newList.id, book.id);
-
-    if (res.created) {
-      addToast(`Added to "${newList.name}"`, "success");
-    } else {
-      addToast("Already in list", "success");
+      await refreshLists();
+      setShowPicker(false);
+    } catch {
+      addToast("Failed to remove book", "error");
     }
-
-    await refreshLists();
-
-    setNewListName("");
-    setShowPicker(false);
-  } catch (err) {
-    addToast(err.message || "Failed to create list", "error");
   }
-}
+
+  async function handleCreateList() {
+    if (!newListName.trim()) return;
+
+    try {
+      const newList = await createList(newListName);
+      const res = await addBookToList(newList.id, book.id);
+
+      if (res.created) {
+        addToast(`Added to "${newList.name}"`, "success");
+      } else {
+        addToast("Already in list", "success");
+      }
+
+      await refreshLists();
+      setNewListName("");
+      setShowPicker(false);
+    } catch (err) {
+      addToast(err.message || "Failed to create list", "error");
+    }
+  }
+
   if (loading) return <BookPageSkeleton />;
   if (!book) return <p>Book not found.</p>;
 
   return (
     <div className="book-page container mt-5">
       <div className="book-layout">
+
         {/* LEFT */}
         <div className="book-cover-wrapper">
           <img
@@ -213,7 +226,6 @@ async function handleCreateList() {
             ⭐ {book.rating} ({book.num_ratings})
           </div>
 
-                    {/* 📚 LIST SYSTEM */}
           {user && (
             <div className="list-section">
               <button
@@ -226,7 +238,7 @@ async function handleCreateList() {
               {showPicker && (
                 <div className="list-dropdown">
                   {loadingLists ? (
-                    <p className="list-loading">Loading...</p>
+                    <p>Loading...</p>
                   ) : (
                     <>
                       {lists.map(list => {
@@ -236,20 +248,14 @@ async function handleCreateList() {
 
                         return (
                           <div key={list.id} className="list-row">
-                            <span class="twoliner">{list.name}</span>
+                            <span className="twoliner">{list.name}</span>
 
                             {inList ? (
-                              <button
-                                className="remove-btn"
-                                onClick={() => handleRemove(list.id)}
-                              >
+                              <button onClick={() => handleRemove(list.id)}>
                                 Remove
                               </button>
                             ) : (
-                              <button
-                                className="add-btn"
-                                onClick={() => handleAdd(list.id)}
-                              >
+                              <button onClick={() => handleAdd(list.id)}>
                                 Add
                               </button>
                             )}
@@ -281,41 +287,14 @@ async function handleCreateList() {
 
           <h5 className="book-author">
             by{" "}
-            <Link to={`/authors/${book.author}`} className="author-link">
+            <Link to={`/authors/${book.author}`}>
               {book.author_name}
             </Link>
           </h5>
 
-          <p className="book-meta">
-            {book.publisher_name && (
-              <>
-                <span>Publisher: {book.publisher_name}</span> |{" "}
-              </>
-            )}
-            {book.pub_date && (
-              <span>
-                Published: {new Date(book.pub_date).getFullYear()}
-              </span>
-            )}
-          </p>
-
-          {/* GENRES */}
-          <div className="book-genres">
-            {book.genres?.map((genre) => (
-              <Link
-                key={genre.id}
-                to={`/genres/${genre.id}`}
-                className="genre-tag"
-              >
-                {genre.name}
-              </Link>
-            ))}
-          </div>
-
-          {/* DESCRIPTION */}
           {book.description && (
             <>
-              <div className={`book-description ${expanded ? "expanded" : ""}`}>
+              <div className="book-description">
                 <p>
                   {displayText}
                   {!expanded && isLong && "..."}
@@ -335,26 +314,20 @@ async function handleCreateList() {
         </div>
       </div>
 
-      {/* REVIEWS */}
-      <div className="book-reviews-section">
-        <ReviewSection
-          reviews={reviews}
-          setReviews={setReviews}
-          bookId={id}
-        />
-      </div>
+      <ReviewSection
+        reviews={reviews}
+        setReviews={setReviews}
+        bookId={id}
+      />
 
-      {/* SIMILAR */}
-      <div className="book-suggestion-section">
-        <CarouselSection
-          title="Similar Books"
-          items={similarBooks}
-          loading={loadingSimilar}
-          renderItem={(book) => (
-            <BookCard key={book.id} book={book} />
-          )}
-        />
-      </div>
+      <CarouselSection
+        title="Similar Books"
+        items={similarBooks}
+        loading={loadingSimilar}
+        renderItem={(book) => (
+          <BookCard key={book.id} book={book} />
+        )}
+      />
     </div>
   );
 }

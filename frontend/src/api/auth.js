@@ -1,73 +1,39 @@
-import { getCookie } from "../utils/cookies";
-const BASE_URL = process.env.REACT_APP_API_URL;
+import { apiFetch } from "./client";
 
+// 🔐 LOGIN
 export async function loginUser(data) {
-    await fetch(`${BASE_URL}/csrf/`, {
-        credentials: "include",
-    });
+  // sets session cookie
+  await apiFetch("/login/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const res = await fetch(`${BASE_URL}/login/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
-        },
-        credentials: "include", // 🔥 IMPORTANT
-        body: JSON.stringify(data),
-    });
-
-
-    const result = await res.json();
-
-    if (!res.ok) {
-        throw new Error(result.error || "Login failed");
-    }
-
-    return result;
+  // 🔥 always return normalized user
+  return getCurrentUser();
 }
 
-export async function getCurrentUser() {
-    const res = await fetch(`${BASE_URL}/me/`, {
-        credentials: "include",
-    });
-
-    return res.json();
-}
-
-export async function logoutUser() {
-    await fetch(`${BASE_URL}/csrf/`, {
-        credentials: "include",
-    });
-
-    await fetch(`${BASE_URL}/logout/`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-        }
-    });
-}
-
+// 🔐 SIGNUP
 export async function signupUser(data) {
-    await fetch(`${BASE_URL}/csrf/`, {
-        credentials: "include",
-    });
+  await apiFetch("/signup/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
-    const res = await fetch(`${BASE_URL}/signup/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-    });
+  // 🔥 same pattern as login
+  return getCurrentUser();
+}
 
-    const result = await res.json();
+// 🔐 CURRENT USER
+export async function getCurrentUser() {
+  const data = await apiFetch("/me/");
 
-    if (!res.ok) {
-        throw new Error(result.error || "Signup failed");
-    }
+  // 🔥 normalize response
+  return data?.user ?? data ?? null;
+}
 
-    return result;
+// 🔐 LOGOUT
+export async function logoutUser() {
+  await apiFetch("/logout/", {
+    method: "POST",
+  });
 }

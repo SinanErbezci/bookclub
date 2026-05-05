@@ -2,7 +2,8 @@ import { getCookie } from "../utils/cookies";
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 
-export async function csrfFetch(path, options = {}) {
+// 🔥 Core request function
+export async function apiFetch(path, options = {}) {
   // Ensure CSRF cookie exists
   await fetch(`${BASE_URL}/csrf/`, {
     credentials: "include",
@@ -18,5 +19,27 @@ export async function csrfFetch(path, options = {}) {
     ...options,
   });
 
-  return res;
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
+
+  // 🔥 Centralized error handling
+  if (!res.ok) {
+    const message =
+      data?.message ||
+      data?.detail ||
+      "Something went wrong";
+
+    const error = new Error(message);
+    error.status = res.status;
+    error.data = data;
+
+    throw error;
+  }
+
+  return data;
 }

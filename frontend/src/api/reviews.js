@@ -1,79 +1,67 @@
-import { csrfFetch } from "./client";
+import { apiFetch } from "./client";
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 
+// 📚 GET REVIEWS (supports pagination URL)
 export async function getReviewsByBook(bookId, url = null) {
-    const endpoint =
-    url || `${BASE_URL}/reviews/?book=${bookId}`;
+  if (url) {
+    // 🔁 pagination links may be absolute → use plain fetch
+    const res = await fetch(url, { credentials: "include" });
 
-  const res = await fetch(endpoint, {
-    credentials: "include",
-  });
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
 
-  const result = await res.json();
+    if (!res.ok) {
+      const message =
+        data?.message || data?.detail || "Failed to fetch reviews";
+      throw new Error(message);
+    }
 
-  if (!res.ok) {
-    throw new Error(result.error || "Failed to fetch reviews");
+    return data;
   }
 
-  return result;
+  // default endpoint uses apiFetch
+  return await apiFetch(`/reviews/?book=${bookId}`);
 }
 
+// ➕ CREATE REVIEW
 export async function createReview(data) {
-  const res = await csrfFetch("/reviews/", {
+  return await apiFetch("/reviews/", {
     method: "POST",
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.error || "Failed to create review");
-  }
-
-  return result;
 }
 
+// ✏️ UPDATE REVIEW
 export async function updateReview(id, data) {
-  const res = await csrfFetch(`/reviews/${id}/`, {
+  return await apiFetch(`/reviews/${id}/`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.error || "Failed to update review");
-  }
-
-  return result;
 }
 
+// 👤 GET CURRENT USER'S REVIEW (graceful nulls)
 export async function getUserReview(bookId) {
-  const res = await fetch(`${BASE_URL}/reviews/user/?book=${bookId}`, {
-    credentials: "include",
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    return null;
+  try {
+    return await apiFetch(`/reviews/user/?book=${bookId}`);
+  } catch (err) {
+    // 🔥 expected cases: not logged in or no review
+    if (err.status === 401 || err.status === 403 || err.status === 404) {
+      return null;
+    }
+    throw err;
   }
-  if (res.status === 404) return null;
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.error || "Failed to fetch user review");
-  }
-
-  return data;
 }
 
+// ❌ DELETE REVIEW
 export async function deleteReview(reviewId) {
-  const res = await csrfFetch(`/reviews/${reviewId}/`, {
+  await apiFetch(`/reviews/${reviewId}/`, {
     method: "DELETE",
   });
 
-  if (!res.ok) {
-    throw new Error("Failed to delete review");
-  }
+  return true;
 }

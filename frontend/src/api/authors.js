@@ -1,13 +1,11 @@
-const BASE_URL = process.env.REACT_APP_API_URL;
+import { apiFetch } from "./client";
 
+// 🎲 RANDOM AUTHOR
 export async function getRandomAuthor() {
-    const res = await fetch(`${BASE_URL}/random/author/`);
-    return res.json();
+  return await apiFetch("/random/author/");
 }
 
+// 👤 AUTHOR BY ID
 export async function getAuthorById(id) {
-    const res = await fetch(`${BASE_URL}/authors/${id}`);
-    const data = await res.json();
-    return data;
+  return await apiFetch(`/authors/${id}`);
 }
-
