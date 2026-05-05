@@ -4,7 +4,7 @@ import { loginUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
-  const { user, loading, refreshUser } = useAuth(); // auth loading
+  const { user, loading, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ username: "", password: "" });
@@ -12,7 +12,7 @@ function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Redirect only AFTER auth is resolved
+  // Redirect after login/signup
   useEffect(() => {
     if (!loading && user) {
       navigate("/");
@@ -23,33 +23,33 @@ function LoginPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-async function handleSubmit(e) {
-  e.preventDefault();
-  setError("");
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
 
-  if (!form.username || !form.password) {
-    setError("All fields are required");
-    return;
+    if (!form.username || !form.password) {
+      setError("All fields are required");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // 1. Login → session cookie set
+      await loginUser(form);
+
+      // 2. Sync AuthContext
+      await refreshUser();
+
+      // ❌ no navigate
+
+    } catch (err) {
+      setError(err.message || "Invalid username or password");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
-  try {
-    setIsSubmitting(true);
-
-    // 1. login → sets session cookie
-    await loginUser(form);
-
-    // 2. sync AuthContext with backend
-    await refreshUser();
-
-    // ❌ no navigate here
-    // useEffect will handle redirect when user updates
-
-  } catch (err) {
-    setError(err.message || "Invalid username or password");
-  } finally {
-    setIsSubmitting(false);
-  }
-}
   const isDisabled = !form.username || !form.password || isSubmitting;
 
   return (
@@ -84,6 +84,7 @@ async function handleSubmit(e) {
             👁
           </span>
         </div>
+
         <button disabled={isDisabled}>
           {isSubmitting ? "Logging in..." : "Login"}
         </button>

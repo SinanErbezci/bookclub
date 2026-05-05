@@ -134,7 +134,7 @@ export default function ReviewSection({ bookId }) {
           {!userReview && user && (
             <div style={{ textAlign: "center", marginBottom: "1rem" }}>
               <button
-                className="btn primary"
+                className="btn btn-primary"
                 onClick={() => setIsFormOpen(true)}
               >
                 Write a Review
@@ -183,7 +183,7 @@ export default function ReviewSection({ bookId }) {
       {nextUrl && (
         <div style={{ textAlign: "center", marginTop: "1rem" }}>
           <button
-            className="btn load-more-btn"
+            className="btn btn-ghost"
             onClick={loadMore}
             disabled={loadingMore}
           >

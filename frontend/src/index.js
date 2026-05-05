@@ -11,10 +11,10 @@ import { AuthProvider } from './context/AuthContext';
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <ToastProvider>
-<BrowserRouter>
-  <AuthProvider>
-      <App />
-  </AuthProvider>
-</BrowserRouter>
+        <BrowserRouter>
+            <AuthProvider>
+                <App />
+            </AuthProvider>
+        </BrowserRouter>
     </ToastProvider>
 );

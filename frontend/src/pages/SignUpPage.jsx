@@ -4,7 +4,7 @@ import { signupUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
 function SignupPage() {
-  const { user, loading, setUser } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -17,7 +17,7 @@ function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Redirect if already logged in
+  // Redirect after auth is resolved
   useEffect(() => {
     if (!loading && user) {
       navigate("/");
@@ -28,43 +28,45 @@ function SignupPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  // ✅ Real-time password match check
   const passwordsMatch =
     form.password && form.confirmPassword
       ? form.password === form.confirmPassword
       : true;
 
-async function handleSubmit(e) {
-  e.preventDefault();
-  setError("");
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
 
-  // Basic frontend validation
-  if (!form.username || !form.password) {
-    setError("All fields are required");
-    return;
+    if (!form.username || !form.password) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (!passwordsMatch) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // 1. Create user + session
+      await signupUser({
+        username: form.username,
+        password: form.password,
+      });
+
+      // 2. Sync AuthContext
+      await refreshUser();
+
+      // ❌ no navigate here
+
+    } catch (err) {
+      setError(err.message || "Signup failed");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-
-  if (!passwordsMatch) {
-    setError("Passwords do not match");
-    return;
-  }
-
-  try {
-    setIsSubmitting(true);
-
-    const data = await signupUser({
-      username: form.username,
-      password: form.password,
-    });
-
-    setUser(data.user);
-    navigate("/");
-  } catch (err) {
-    setError(err.message || "Signup failed");
-  } finally {
-    setIsSubmitting(false);
-  }
-}
 
   const isDisabled =
     !form.username ||
@@ -100,8 +102,7 @@ async function handleSubmit(e) {
           />
 
           <span
-            className={`password-toggle ${showPassword ? "active" : ""
-              }`}
+            className={`password-toggle ${showPassword ? "active" : ""}`}
             onClick={() => setShowPassword((s) => !s)}
           >
             👁
@@ -124,7 +125,6 @@ async function handleSubmit(e) {
           }
         />
 
-        {/* Real-time hint */}
         {form.confirmPassword && !passwordsMatch && (
           <p className="input-error">Passwords do not match</p>
         )}

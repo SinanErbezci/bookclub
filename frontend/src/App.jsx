@@ -7,8 +7,9 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import NavBar from "./components/NavBar";
 import ProfilePage from "./pages/ProfilePage";
-import { AuthProvider } from "./context/AuthContext";
 import { useEffect } from "react";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
 
 function App() {
   return (
@@ -17,19 +18,40 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Browse />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/book/:id" element={<BookPage />} />
         <Route path="/authors/:id" element={<AuthorPage />} />
         <Route path="/genres/:id" element={<GenrePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute>
+              <LoginPage />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicOnlyRoute>
+              <SignupPage />
+            </PublicOnlyRoute>
+          }
+        />
       </Routes>
     </>
   );
 }
 
-export default App; 
+export default App;
 
 // | Concept | Meaning                    |
 // | ------- | -------------------------- |

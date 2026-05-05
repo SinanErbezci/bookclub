@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import SkeletonRow from "./SkeletonRow";
+import SkeletonRow from "../SkeletonRow";
+import styles from "./CarouselSection.module.css"
 
 function CarouselSection({
   title,
@@ -63,22 +64,22 @@ function CarouselSection({
     <section>
       <h2 className="form-title mt-4">{title}</h2>
 
-      <div className="carousel-wrapper">
+      <div className={styles.wrapper}>
         {/* LEFT ARROW (hidden when unnecessary) */}
         {!shouldCenter && (
           <button
             onClick={handlePrev}
             disabled={index === 0}
-            className="carousel-arrow"
+            className={styles.arrow}
           >
             ◀
           </button>
         )}
 
         {/* VIEWPORT */}
-        <div className="carousel-container" ref={containerRef}>
+        <div className={styles.container} ref={containerRef}>
           <div
-            className={`carousel-row ${shouldCenter ? "centered" : ""}`}
+            className={`${styles.row} ${shouldCenter ? styles.centered : ""}`}
             style={{
               transform: shouldCenter
                 ? "translateX(0)"
@@ -100,7 +101,7 @@ function CarouselSection({
           <button
             onClick={handleNext}
             disabled={index >= maxIndex}
-            className="carousel-arrow"
+            className={styles.arrow}
           >
             ▶
           </button>

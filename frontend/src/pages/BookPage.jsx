@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getBookById, getBooksByGenre } from "../api/books";
 import { getReviewsByBook } from "../api/reviews";
-import CarouselSection from "../components/CarouselSection";
+import CarouselSection from "../components/CarouselSection/CarouselSection";
 import ReviewSection from "../features/reviews/ReviewSection";
 import BookCard from "../components/BookCard";
 import BookPageSkeleton from "../components/BookPageSkeleton";

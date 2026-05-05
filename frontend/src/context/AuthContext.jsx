@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser } from "../api/auth";
+import { getCurrentUser, logoutUser } from "../api/auth";
 
 const AuthContext = createContext();
 
@@ -8,25 +8,37 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function fetchUser() {
+    setLoading(true);
+
     try {
       const data = await getCurrentUser();
-
-      if (data.user === null) {
-        setUser(null);
-      } else {
-        setUser(data.user);
-      }
+      const normalizedUser = data?.user ?? data ?? null;
+      setUser(normalizedUser);
+    } catch {
+      setUser(null);
     } finally {
       setLoading(false);
     }
   }
 
-    useEffect(() => {
+  async function logout() {
+    try {
+      await logoutUser();
+    } catch {
+      // ignore backend errors
+    } finally {
+      setUser(null);
+    }
+  }
+
+  useEffect(() => {
     fetchUser();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, refreshUser: fetchUser}}>
+    <AuthContext.Provider
+      value={{ user, loading, refreshUser: fetchUser, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

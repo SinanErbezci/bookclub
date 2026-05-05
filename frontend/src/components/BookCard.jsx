@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import placeholder from "../assets/placeholder_book.png";
+import styles from "./BookCard.module.css";
 
 function BookCard({
   book,
@@ -8,12 +9,12 @@ function BookCard({
   onAction = null
 }) {
   return (
-    <div className="book-card">
-      <div className="book-card-img-wrapper">
+    <div className={styles.card}>
+      <div className={styles.imgWrapper}>
         <img
           src={book.cover || placeholder}
           alt={book.title}
-          className="book-card-img"
+          className={styles.img}
           loading="lazy"
           onError={(e) => {
             e.target.onerror = null;
@@ -23,7 +24,7 @@ function BookCard({
 
         {action && (
           <button
-            className="book-card-action-icon"
+            className={styles.actionIcon}
             onClick={(e) => {
               e.stopPropagation();
               onAction?.(book);
@@ -34,9 +35,9 @@ function BookCard({
         )}
       </div>
 
-      <div className="book-card-body">
+      <div className={styles.body}>
         <div className="twoliner">
-          <Link to={`/book/${book.id}`} className="book-link book-card-title">
+          <Link to={`/book/${book.id}`} className={`book-link ${styles.title}`}>
             {book.title}
           </Link>
         </div>
@@ -44,7 +45,7 @@ function BookCard({
         {showAuthor && (
           <Link
             to={`/authors/${book.author}`}
-            className="book-link book-card-author"
+            className={`book-link ${styles.author}`}
           >
             {book.author_name}
           </Link>

@@ -1,0 +1,52 @@
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 16px;
+
+    transition: transform 0.3s ease;
+}
+
+.centered {
+    justify-content: center;
+}
+
+/* arrows */
+.arrow {
+    border: none;
+    background: var(--BGCOLOR2);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.arrow:hover:not(:disabled) {
+    transform: scale(1.1);
+}
+
+.arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* container */
+.container {
+    overflow: hidden;
+    scrollbar-width: none;
+    max-width: 900px;
+    padding-bottom: 12px;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+.wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}

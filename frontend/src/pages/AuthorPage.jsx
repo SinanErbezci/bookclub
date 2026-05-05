@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getAuthorById } from "../api/authors";
-import CarouselSection from "../components/CarouselSection";
+import CarouselSection from "../components/CarouselSection/CarouselSection";
 import BookCard from "../components/BookCard";
 import AuthorPageSkeleton from "../components/AuthorPageSkeleton";
 import personPlaceholder from "../assets/profile.svg"

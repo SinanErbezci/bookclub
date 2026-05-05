@@ -1,0 +1,61 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* TITLE */
+.title {
+  text-align: center;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* SECTION */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-weight: 600;
+}
+
+/* TEXTAREA */
+.textarea {
+  width: 100%;
+  min-height: 220px;
+  max-height: 500px;
+
+  padding: 14px 16px;
+
+  border-radius: 8px;
+  border: 1px solid #ccc;
+
+  font-family: var(--FONT);
+  font-size: 1rem;
+  line-height: 1.6;
+
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #5D3A1A;
+  box-shadow: 0 0 4px rgba(93, 58, 26, 0.4);
+}
+
+/* CHAR COUNT */
+.charCount {
+  font-size: 0.8rem;
+  text-align: right;
+  color: #666;
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}

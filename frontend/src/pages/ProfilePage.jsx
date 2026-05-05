@@ -6,7 +6,7 @@ import { deleteList, removeBookFromList } from "../api/lists";
 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import CarouselSection from "../components/CarouselSection";
+import CarouselSection from "../components/CarouselSection/CarouselSection";
 import BookCard from "../components/BookCard";
 
 import Modal from "../components/Modal";

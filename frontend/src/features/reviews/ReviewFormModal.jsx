@@ -5,6 +5,7 @@ import {
   createReview,
   updateReview,
 } from "../../api/reviews";
+import styles from "./ReviewForm.module.css";
 
 export default function ReviewFormModal({
   isOpen,
@@ -65,9 +66,9 @@ export default function ReviewFormModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="review-form">
+      <div className={styles.form}>
 
-        <h2 className="review-form-title">
+        <h2 className={styles.title}>
           {mode === "create" ? "Write a Review" : "Edit Your Review"}
         </h2>
 
@@ -83,11 +84,11 @@ export default function ReviewFormModal({
         </div>
 
         {/* ✍️ Text */}
-        <div className="review-form-section">
-          <label class="text-center h4">Your Review</label>
+        <div className={styles.section}>
+          <label class={styles.label}>Your Review</label>
 
           <textarea
-            className="review-textarea"
+            className={styles.textarea}
             value={text}
             onChange={(e) => {
               setText(e.target.value);
@@ -100,7 +101,7 @@ export default function ReviewFormModal({
             placeholder="Share your thoughts... (10–2000 characters)"
           />
 
-          <div className="char-count">
+          <div className={styles.charCount}>
             {text.length} / 2000
           </div>
         </div>
@@ -109,13 +110,13 @@ export default function ReviewFormModal({
         {error && <p className="error">{error}</p>}
 
         {/* ✅ Actions */}
-        <div className="review-form-actions">
-          <button className="btn secondary" onClick={onClose}>
+        <div className={styles.actions}>
+          <button className="btn btn-secondary" onClick={onClose}>
             Cancel
           </button>
 
           <button
-            className="btn primary"
+            className="btn btn-primary"
             onClick={handleSubmit}
             disabled={loading}
           >

@@ -1,0 +1,101 @@
+.row {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* CARD */
+.card {
+    border: 1px solid var(--BORDERCOLOR1);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--BGCOLOR2);
+}
+
+.mine {
+  border: 2px solid var(--COLOR-GOLD);
+}
+
+/* LAYOUT */
+.inner {
+  display: flex;
+  
+  flex-wrap: nowrap;
+}
+
+/* USER */
+.user {
+  width: 140px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;   /* 🔥 key fix */
+
+  padding-right: 1rem;
+  padding-top: 10px;
+  border-right: 1px solid var(--BORDERCOLOR1);
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+
+  margin-bottom: 0.5rem;
+}
+
+
+/* CONTENT */
+.contentArea {
+  flex: 1;
+  padding-left: 1rem;
+}
+
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.edited {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+
+/* STARS */
+.starOuter {
+  position: relative;
+  width: 100px;
+  height: 20px;
+  background: #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.starInner {
+  height: 100%;
+  background: gold;
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 6px;
+}
+
+.actionButton {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--BORDERCOLOR1);
+  padding: 0;
+
+  position: relative;
+}
+
