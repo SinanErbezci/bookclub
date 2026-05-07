@@ -971,55 +971,6 @@ Soft Gold: #D4AF37 */
   text-align: center;
   font-size: 0.9rem;
 }
-.read-more-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    border: none;
-    background: none;
-
-    color: var(--COLOR-GOLD);
-    font-weight: 600;
-
-    cursor: pointer;
-
-    padding: 0;
-    margin-top: 6px;
-
-    font-size: 0.95rem;
-
-    position: relative;
-
-    transition: color 0.2s ease;
-}
-
-.read-more-btn .arrow {
-    font-size: 0.9rem;
-    transition: transform 0.2s ease;
-}
-
-.arrow.open {
-    transform: rotate(180deg);
-}
-
-.read-more-btn::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -2px;
-
-    width: 0%;
-    height: 2px;
-    background-color: var(--COLOR-GOLD);
-
-    transition: width 0.25s ease;
-}
-
-.read-more-btn:hover::after {
-    width: 100%;
-}
-
 
 /* BASE */
 .btn {
@@ -1130,6 +1081,12 @@ transition: background-color 0.2s ease,
   border: 1px solid var(--BORDERCOLOR1);
   background: var(--BGCOLOR2);
   cursor: pointer;
+}
+
+.read-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .star-input {
@@ -1727,6 +1684,12 @@ input.valid {
 .list-count {
   font-size: 0.8rem;
   opacity: 0.6;
+}
+
+.profile-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 

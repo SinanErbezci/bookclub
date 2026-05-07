@@ -118,6 +118,19 @@ class SignupAPIView(APIView):
         
         user = User.objects.create_user(username=username, password=password)
 
+        List.objects.bulk_create([
+            List(
+                user=user,
+                name="Favourites",
+                is_system=True
+            ),
+            List(
+                user=user,
+                name="Want to Read",
+                is_system=True
+            )
+        ])
+
         # auto login after signup
         login(request, user)
 
@@ -372,6 +385,9 @@ class DeleteListAPIView(APIView):
             user=request.user
         )
 
+        if book_list.is_system:
+            raise PermissionDenied("System links cannot be deleted")
+        
         book_list.delete()
 
         return Response({"success": True}, status=status.HTTP_200_OK)

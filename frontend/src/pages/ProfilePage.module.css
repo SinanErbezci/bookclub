@@ -1,0 +1,264 @@
+/* ProfilePage.module.css */
+
+.page {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  padding: 18px;
+
+  background: var(--BGCOLOR2);
+
+  border: 1px solid rgba(93, 58, 26, 0.14);
+  border-radius: 16px;
+
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+
+  margin-bottom: 32px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--COLOR-GOLD);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.45rem;
+  font-weight: 700;
+
+  color: #1f1f1f;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,0.08),
+    0 4px 10px rgba(0,0,0,0.06);
+}
+
+.info h2 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+
+  color: #2b2118;
+}
+
+.info p {
+  margin-top: 4px;
+
+  font-size: 0.92rem;
+  color: rgba(40, 40, 40, 0.68);
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 1.28rem;
+  font-weight: 700;
+
+  color: #2d2419;
+
+  letter-spacing: -0.01em;
+}
+
+.listGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.emptyState {
+  padding: 20px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.35);
+  border: 1px dashed rgba(93, 58, 26, 0.2);
+
+  text-align: center;
+
+  color: rgba(40, 40, 40, 0.62);
+}
+
+@media (max-width: 640px) {
+  .page {
+    margin-top: 1rem;
+  }
+
+  .header {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .avatar {
+    width: 52px;
+    height: 52px;
+
+    font-size: 1.2rem;
+  }
+
+  .info h2 {
+    font-size: 1.35rem;
+  }
+
+  .listGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.listCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+    overflow: hidden;
+  min-height: 180px;
+
+  background: var(--BGCOLOR2);
+
+  border: 1px solid rgba(93, 58, 26, 0.14);
+  border-radius: 14px;
+
+  padding: 16px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.listCard:hover {
+  transform: translateY(-3px);
+
+  border-color: rgba(212, 175, 55, 0.45);
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.06),
+    0 0 0 1px rgba(212, 175, 55, 0.08);
+}
+
+.listCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 8px;
+}
+
+.listTitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.listTitle h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+
+  color: #2b2118;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+
+  word-break: break-word;
+}
+
+.listCount {
+  margin-top: 4px;
+
+  font-size: 0.78rem;
+  color: rgba(40, 40, 40, 0.58);
+}
+
+.deleteButton {
+  width: 26px;
+  height: 26px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  opacity: 0;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.listCard:hover .deleteButton {
+  opacity: 0.7;
+}
+
+.deleteButton:hover {
+  opacity: 1 !important;
+
+  background: rgba(229, 57, 53, 0.08);
+  color: #d32f2f;
+}
+
+.bookRow {
+  display: flex;
+  gap: 8px;
+
+  margin-top: auto;
+
+  padding-top: 6px;
+}
+
+.bookRow img {
+  width: 40px;
+  height: 60px;
+
+  object-fit: cover;
+
+  border-radius: 6px;
+
+  border: 1px solid rgba(93, 58, 26, 0.16);
+
+  transition: transform 0.15s ease;
+}
+
+.listCard:hover .bookRow img {
+  transform: translateY(-1px);
+}

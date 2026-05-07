@@ -85,7 +85,7 @@ export default function ReviewFormModal({
 
         {/* ✍️ Text */}
         <div className={styles.section}>
-          <label class={styles.label}>Your Review</label>
+          <label className={styles.label}>Your Review</label>
 
           <textarea
             className={styles.textarea}
@@ -111,11 +111,12 @@ export default function ReviewFormModal({
 
         {/* ✅ Actions */}
         <div className={styles.actions}>
-          <button className="btn btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancel
           </button>
 
           <button
+            type="button"
             className="btn btn-primary"
             onClick={handleSubmit}
             disabled={loading}

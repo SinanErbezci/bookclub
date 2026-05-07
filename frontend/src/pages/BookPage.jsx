@@ -36,18 +36,14 @@ function BookPage() {
   const [loadingLists, setLoadingLists] = useState(false);
   const [newListName, setNewListName] = useState("");
 
-  const MAX_LENGTH = 300;
-  const description = book?.description || "";
-  const isLong = description.length > MAX_LENGTH;
 
-  const displayText = expanded
-    ? description
-    : description.slice(0, MAX_LENGTH);
+  const description = book?.description || "";
+  const isLong = description.length > 300;
 
   const isInAnyList = book
     ? lists.some(list =>
-        list.books.some(b => b.id === book.id)
-      )
+      list.books.some(b => b.id === book.id)
+    )
     : false;
 
   // 📘 Fetch book
@@ -294,16 +290,16 @@ function BookPage() {
 
           {book.description && (
             <>
-              <div className="book-description">
-                <p>
-                  {displayText}
-                  {!expanded && isLong && "..."}
-                </p>
+              <div
+                className={`book-description ${expanded ? "expanded" : ""
+                  }`}
+              >
+                <p>{description}</p>
               </div>
 
               {isLong && (
                 <button
-                  className="read-more-btn"
+                  className="btn btn-ghost read-more-btn"
                   onClick={() => setExpanded(!expanded)}
                 >
                   {expanded ? "Read less" : "Read more"}

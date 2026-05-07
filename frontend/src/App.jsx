@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import { useEffect } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -46,6 +47,8 @@ function App() {
             </PublicOnlyRoute>
           }
         />
+
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );

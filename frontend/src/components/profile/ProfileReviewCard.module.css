@@ -1,0 +1,153 @@
+.reviewCard {
+  display: flex;
+  gap: 12px;
+
+  padding: 14px;
+
+  background: var(--BGCOLOR2);
+
+  border: 1px solid rgba(93, 58, 26, 0.12);
+  border-radius: 12px;
+
+  cursor: pointer;
+  overflow: hidden;
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.reviewCard:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(212, 175, 55, 0.45);
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.05),
+    0 0 0 1px rgba(212, 175, 55, 0.06);
+}
+
+.coverLink {
+  flex-shrink: 0;
+}
+
+.cover {
+  width: 56px;
+  height: 84px;
+
+  object-fit: cover;
+
+  border-radius: 6px;
+
+  border: 1px solid rgba(93, 58, 26, 0.14);
+
+  background: rgba(0,0,0,0.04);
+
+  display: block;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  min-width: 0;
+  flex: 1;
+}
+
+.bookSection {
+  min-width: 0;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+
+  letter-spacing: -0.01em;
+
+  color: #2b2118;
+
+  text-decoration: none;
+
+  transition: color 0.18s ease;
+}
+
+.title:hover {
+  color: var(--COLOR-GOLD);
+}
+
+.author {
+  margin-top: 1px;
+
+  font-size: 0.9rem;
+  color: rgba(40, 40, 40, 0.72);
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ratingValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  color: rgba(40, 40, 40, 0.7);
+}
+
+.reviewText {
+  line-height: 1.5;
+  color: rgba(40, 40, 40, 0.9);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+
+  word-break: break-word;
+}
+
+.footer {
+  margin-top: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.date {
+  font-size: 0.78rem;
+  color: rgba(40, 40, 40, 0.5);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+@media (max-width: 640px) {
+  .reviewCard {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .cover {
+    width: 56px;
+    height: 84px;
+  }
+
+  .title {
+    font-size: 0.98rem;
+  }
+
+  .reviewText {
+    -webkit-line-clamp: 5;
+  }
+}

@@ -3,12 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { fetchUserProfile } from "../api/users";
 import { deleteList, removeBookFromList } from "../api/lists";
-
+import { deleteReview } from "../api/reviews";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import CarouselSection from "../components/CarouselSection/CarouselSection";
 import BookCard from "../components/BookCard";
 import Modal from "../components/Modal";
+import ReviewModal from "../features/reviews/ReviewModal";
+import ReviewFormModal from "../features/reviews/ReviewFormModal";
+import ProfileReviewCard from "../components/profile/ProfileReviewCard";
+import styles from "./ProfilePage.module.css";
+import NotFoundPage from "./NotFoundPage";
 
 function ProfilePage() {
   const { id } = useParams();
@@ -20,6 +25,10 @@ function ProfilePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedList, setSelectedList] = useState(null);
+  const [selectedReview, setSelectedReview] =
+    useState(null);
+  const [editingReview, setEditingReview] =
+    useState(null);
 
   // ✅ safer ownership check
   const isOwnProfile =
@@ -32,27 +41,60 @@ function ProfilePage() {
       return;
     }
 
-    async function loadProfile() {
-      try {
-        const targetId = id || user?.id;
-        if (!targetId) return;
+    const isValidProfileId =
+      !id || /^\d+$/.test(id);
 
-        const data = await fetchUserProfile(targetId);
-
-        setData(data);
-      } catch (err) {
-        console.error(err);
-        addToast("Failed to load profile", "error");
-        setData(null);
-      } finally {
-        setLoading(false);
-      }
+    if (!isValidProfileId) {
+      setLoading(false);
+      setData(null);
+      return;
     }
-
     if (!authLoading) {
       loadProfile();
     }
-  }, [id, user, authLoading, navigate, addToast]);
+  }, [id, user, authLoading, navigate,]);
+
+  async function loadProfile() {
+    try {
+      const targetId = id || user?.id;
+      if (!targetId) return;
+
+      const data = await fetchUserProfile(targetId);
+
+      setData(data);
+    } catch (err) {
+      console.error(err);
+      addToast("Failed to load profile", "error");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDeleteReview(review) {
+    if (!window.confirm("Delete this review?")) {
+      return;
+    }
+
+    try {
+      await deleteReview(review.id);
+
+      addToast("Review deleted", "success");
+
+      setData((prev) => ({
+        ...prev,
+        reviews: prev.reviews.filter(
+          (r) => r.id !== review.id
+        ),
+      }));
+
+      if (selectedReview?.id === review.id) {
+        setSelectedReview(null);
+      }
+    } catch {
+      addToast("Failed to delete review", "error");
+    }
+  }
 
   // 🔥 Delete list
   async function handleDeleteList(listId) {
@@ -85,9 +127,9 @@ function ProfilePage() {
         lists: prev.lists.map((l) =>
           l.id === listId
             ? {
-                ...l,
-                books: l.books.filter((b) => b.id !== bookId),
-              }
+              ...l,
+              books: l.books.filter((b) => b.id !== bookId),
+            }
             : l
         ),
       }));
@@ -96,9 +138,9 @@ function ProfilePage() {
       setSelectedList((prev) =>
         prev
           ? {
-              ...prev,
-              books: prev.books.filter((b) => b.id !== bookId),
-            }
+            ...prev,
+            books: prev.books.filter((b) => b.id !== bookId),
+          }
           : prev
       );
     } catch {
@@ -108,114 +150,147 @@ function ProfilePage() {
 
   // 🔥 Loading & error states
   if (loading) return <p>Loading...</p>;
-  if (!data || !data.user) return <p>Profile not found</p>;
+  if (!data || !data.user) return <NotFoundPage />;
 
   return (
-    <div className="profile-page">
-      {/* HEADER */}
-      <div className="profile-header">
-        <div className="profile-avatar">
-          {data.user.username[0].toUpperCase()}
+    <>
+      <div className={styles.page}>
+        {/* HEADER */}
+        <div className={styles.header}>
+          <div className={styles.avatar}>
+            {data.user.username[0].toUpperCase()}
+          </div>
+
+          <div className={styles.info}>
+            <h2>{data.user.username}</h2>
+            <p>
+              {data.lists.length} lists • {data.reviews.length} reviews
+            </p>
+          </div>
         </div>
 
-        <div className="profile-info">
-          <h2>{data.user.username}</h2>
-          <p>
-            {data.lists.length} lists • {data.reviews.length} reviews
-          </p>
-        </div>
-      </div>
+        {/* LISTS */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionTitle}>
+              Lists
+            </h3>
+          </div>
 
-      {/* LISTS */}
-      <section className="profile-section">
-        <h3>Lists</h3>
+          {data.lists.length === 0 ? (
+            <div className={styles.emptyState}>
+              No lists yet
+            </div>
+          ) : (
+            <div className={styles.listGrid}>
+              {data.lists.map((list) => (
+                <div
+                  key={list.id}
+                  className={styles.listCard}
+                  onClick={() => setSelectedList(list)}
+                >
+                  <div className={styles.listCardHeader}>
+                    <div className={styles.listTitle}>
+                      <h4>{list.name}</h4>
+                      <p className={styles.listCount}>
+                        {list.books.length} books
+                      </p>
+                    </div>
 
-        {data.lists.length === 0 ? (
-          <p>No lists yet</p>
-        ) : (
-          <div className="profile-list-grid">
-            {data.lists.map((list) => (
-              <div
-                key={list.id}
-                className="profile-card"
-                onClick={() => setSelectedList(list)}
-              >
-                <div className="profile-card-header">
-                  <div className="list-title">
-                    <h4>{list.name}</h4>
-                    <p className="list-count">
-                      {list.books.length} books
-                    </p>
+                    {isOwnProfile && !list.is_system && (
+                      <button
+                        className={styles.deleteButton}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteList(list.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
-                  {isOwnProfile && (
-                    <button
-                      className="list-delete-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteList(list.id);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <div className={styles.bookRow}>
+                    {list.books.slice(0, 5).map((book) => (
+                      <img
+                        key={book.id}
+                        src={book.cover}
+                        alt={book.title}
+                      />
+                    ))}
+                  </div>
                 </div>
-
-                <div className="profile-book-row">
-                  {list.books.slice(0, 5).map((book) => (
-                    <img
-                      key={book.id}
-                      src={book.cover}
-                      alt={book.title}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* REVIEWS */}
-      <section className="profile-section">
-        <h3>Reviews</h3>
-
-        {data.reviews.length === 0 ? (
-          <p>No reviews yet</p>
-        ) : (
-          data.reviews.map((review) => (
-            <div key={review.id} className="review-card">
-              <h4>{review.book.title}</h4>
-              <p>{review.content}</p>
+              ))}
             </div>
-          ))
-        )}
-      </section>
+          )}
+        </section>
 
-      {/* MODAL */}
-      <Modal
-        isOpen={!!selectedList}
-        onClose={() => setSelectedList(null)}
-      >
-        {selectedList && (
-          <CarouselSection
-            title={selectedList.name}
-            items={selectedList.books}
-            renderItem={(book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                showAuthor
-                action="Remove"
-                onAction={(b) =>
-                  handleRemoveFromList(selectedList.id, b.id)
-                }
-              />
-            )}
-          />
-        )}
-      </Modal>
-    </div>
+        {/* REVIEWS */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionTitle}>
+              Reviews
+            </h3>
+          </div>
+
+          {data.reviews.length === 0 ? (
+            <div className={styles.emptyState}>
+              No reviews yet
+            </div>
+          ) : (
+            <div className={styles.reviewList}>
+              {data.reviews.map((review) => (
+                <ProfileReviewCard
+                  key={review.id}
+                  review={review}
+                  isOwnProfile={isOwnProfile}
+                  onOpen={setSelectedReview}
+                  onEdit={setEditingReview}
+                  onDelete={handleDeleteReview}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* MODAL */}
+        <Modal
+          isOpen={!!selectedList}
+          onClose={() => setSelectedList(null)}
+        >
+          {selectedList && (
+            <CarouselSection
+              title={selectedList.name}
+              items={selectedList.books}
+              renderItem={(book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  showAuthor
+                  action="Remove"
+                  onAction={(b) =>
+                    handleRemoveFromList(selectedList.id, b.id)
+                  }
+                />
+              )}
+            />
+          )}
+        </Modal>
+        <ReviewModal
+          review={selectedReview}
+          isOpen={!!selectedReview}
+          onClose={() => setSelectedReview(null)}
+        />
+      </div>
+      <ReviewFormModal
+        isOpen={!!editingReview}
+        mode="edit"
+        review={editingReview}
+        onClose={() => setEditingReview(null)}
+        onSuccess={loadProfile}
+      />
+    </>
   );
 }
 

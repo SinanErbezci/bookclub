@@ -108,4 +108,4 @@ class ListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = List
-        fields = ["id", "name", "books"]
+        fields = ["id", "name", "books", "is_system"]
