@@ -1,0 +1,70 @@
+.wrapper {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+
+  width: 320px;
+
+  padding: 14px;
+
+  background: var(--BGCOLOR2);
+
+  border: 1px solid rgba(93, 58, 26, 0.14);
+  border-radius: 14px;
+
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.08);
+
+  z-index: 20;
+}
+
+.loading {
+  text-align: center;
+  color: rgba(40,40,40,0.7);
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+.listName {
+  font-size: 0.92rem;
+  font-weight: 500;
+
+  word-break: break-word;
+}
+
+.createSection {
+  display: flex;
+  gap: 8px;
+
+  margin-top: 14px;
+  padding-top: 14px;
+
+  border-top: 1px solid rgba(93, 58, 26, 0.1);
+}
+
+.input {
+  flex: 1;
+
+  padding: 8px 10px;
+
+  border: 1px solid rgba(93, 58, 26, 0.14);
+  border-radius: 10px;
+
+  background: white;
+}

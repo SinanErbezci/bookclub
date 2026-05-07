@@ -45,3 +45,7 @@ export async function deleteList(listId) {
 
   return true;
 }
+
+export async function getUserLists() {
+  return await apiFetch("/lists/");
+}

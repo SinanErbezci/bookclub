@@ -6,6 +6,7 @@ import { getGenreById } from "../api/genres";
 
 import BookCard from "../components/BookCard";
 import SkeletonRow from "../components/SkeletonRow";
+import NotFoundPage from "./NotFoundPage";
 
 function GenrePage() {
   const { id } = useParams();
@@ -20,6 +21,14 @@ function GenrePage() {
 
   // 🔹 Fetch genre name
   useEffect(() => {
+    const isValidAuthorId = /^\d+$/.test(id);
+
+    if (!isValidAuthorId) {
+      setBooks(null);
+      setLoading(false);
+      return;
+    }
+
     async function fetchGenre() {
       try {
         const data = await getGenreById(id);
@@ -90,6 +99,8 @@ function GenrePage() {
     };
   }, [nextPage, loading]);
 
+//  if (loading) return <BookPageSkeleton />;
+  if (!genre) return <NotFoundPage />
   return (
     <div className="container mt-5">
 

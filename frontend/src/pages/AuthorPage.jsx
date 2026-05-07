@@ -6,7 +6,7 @@ import CarouselSection from "../components/CarouselSection/CarouselSection";
 import BookCard from "../components/BookCard";
 import AuthorPageSkeleton from "../components/AuthorPageSkeleton";
 import personPlaceholder from "../assets/profile.svg"
-
+import NotFoundPage from "./NotFoundPage";
 
 function AuthorPage() {
   const { id } = useParams();
@@ -15,13 +15,24 @@ function AuthorPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const isValidAuthorId = /^\d+$/.test(id);
+
+    if (!isValidAuthorId) {
+      setAuthor(null);
+      setLoading(false);
+      return;
+    }
+
     async function fetchAuthor() {
       try {
         setLoading(true);
+
         const data = await getAuthorById(id);
+
         setAuthor(data);
       } catch (err) {
         console.error(err);
+        setAuthor(null);
       } finally {
         setLoading(false);
       }
@@ -35,7 +46,7 @@ function AuthorPage() {
   }
 
   if (!author) {
-    return <p>Author not found</p>;
+    return <NotFoundPage />;
   }
 
   return (

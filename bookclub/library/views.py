@@ -309,29 +309,54 @@ class UserProfileAPIView(APIView):
             "lists": ListSerializer(lists, many=True).data,
             "reviews": ReviewSerializer(reviews, many=True).data
         })
-    
-class CreateListAPIView(APIView):
+
+# List API    
+class UserListAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        lists = (
+            List.objects
+            .filter(user=request.user)
+            .prefetch_related("books")
+        )
+
+        serializer = ListSerializer(lists, many=True)
+
+        return Response(serializer.data)
 
     def post(self, request):
         name = request.data.get("name")
 
         if not name or not name.strip():
-            raise ValidationError("List name is required")
+            raise ValidationError(
+                "List name is required"
+            )
 
-        # enforce uniqueness (you already have DB constraint, but this gives cleaner error)
-        if List.objects.filter(user=request.user, name=name).exists():
-            raise ValidationError("You already have a list with this name")
+        cleaned_name = name.strip()
+
+        if List.objects.filter(
+            user=request.user,
+            name=cleaned_name
+        ).exists():
+            raise ValidationError(
+                "You already have a list with this name"
+            )
 
         book_list = List.objects.create(
             user=request.user,
-            name=name.strip().lower()
+            name=cleaned_name
         )
 
-        return Response({
-            "id": book_list.id,
-            "name": book_list.name
-        }, status=201)
+        return Response(
+            {
+                "id": book_list.id,
+                "name": book_list.name,
+                "is_system": book_list.is_system,
+                "books": [],
+            },
+            status=201
+        )
 
 class AddToListAPIView(APIView):
     permission_classes = [IsAuthenticated]

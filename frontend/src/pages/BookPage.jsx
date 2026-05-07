@@ -15,6 +15,9 @@ import {
 } from "../api/lists";
 import { fetchUserProfile } from "../api/users";
 import { useToast } from "../context/ToastContext";
+import NotFoundPage from "./NotFoundPage";
+import LoadingScreen from "../components/LoadingScreen";
+import ListDropdown from "../components/lists/ListDropdown";
 
 function BookPage() {
   const { id } = useParams();
@@ -31,23 +34,18 @@ function BookPage() {
   const [similarBooks, setSimilarBooks] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
 
-  const [lists, setLists] = useState([]);
-  const [showPicker, setShowPicker] = useState(false);
-  const [loadingLists, setLoadingLists] = useState(false);
-  const [newListName, setNewListName] = useState("");
-
-
   const description = book?.description || "";
   const isLong = description.length > 300;
 
-  const isInAnyList = book
-    ? lists.some(list =>
-      list.books.some(b => b.id === book.id)
-    )
-    : false;
-
   // 📘 Fetch book
   useEffect(() => {
+    const isValidAuthorId = /^\d+$/.test(id);
+
+      if (!isValidAuthorId) {
+      setBook(null);
+      setLoading(false);
+      return;
+    }
     async function fetchBook() {
       setLoading(true);
       try {
@@ -102,105 +100,15 @@ function BookPage() {
     fetchReviews();
   }, [id]);
 
-  // 📚 Fetch user lists (SAFE VERSION)
-  useEffect(() => {
-    if (!user?.id || !book?.id) return;
-
-    async function fetchLists() {
-      setLoadingLists(true);
-      try {
-        const data = await fetchUserProfile(user.id);
-        setLists(data.lists);
-      } catch (err) {
-        console.error("Failed to fetch lists:", err);
-        setLists([]); // prevent crash
-      } finally {
-        setLoadingLists(false);
-      }
-    }
-
-    fetchLists();
-  }, [user, book]);
-
-  // outside click close
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (!e.target.closest(".list-section")) {
-        setShowPicker(false);
-      }
-    }
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
-  async function refreshLists() {
-    if (!user?.id) return;
-    try {
-      const data = await fetchUserProfile(user.id);
-      setLists(data?.lists || []);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function handleAdd(listId) {
-    try {
-      const res = await addBookToList(listId, book.id);
-
-      if (res.created) {
-        addToast("Added to list", "success");
-      } else {
-        addToast("Already in list", "error");
-      }
-
-      await refreshLists();
-      setShowPicker(false);
-    } catch {
-      addToast("Failed to add book", "error");
-    }
-  }
-
-  async function handleRemove(listId) {
-    try {
-      const res = await removeBookFromList(listId, book.id);
-
-      if (res.deleted) {
-        addToast("Removed from list", "success");
-      } else {
-        addToast("Already removed", "error");
-      }
-
-      await refreshLists();
-      setShowPicker(false);
-    } catch {
-      addToast("Failed to remove book", "error");
-    }
-  }
-
-  async function handleCreateList() {
-    if (!newListName.trim()) return;
-
-    try {
-      const newList = await createList(newListName);
-      const res = await addBookToList(newList.id, book.id);
-
-      if (res.created) {
-        addToast(`Added to "${newList.name}"`, "success");
-      } else {
-        addToast("Already in list", "success");
-      }
-
-      await refreshLists();
-      setNewListName("");
-      setShowPicker(false);
-    } catch (err) {
-      addToast(err.message || "Failed to create list", "error");
-    }
-  }
-
-  if (loading) return <BookPageSkeleton />;
-  if (!book) return <p>Book not found.</p>;
+if (loading) {
+  return (
+    <LoadingScreen
+      text="Loading book..."
+      fullPage
+    />
+  );
+}
+  if (!book) return <NotFoundPage />
 
   return (
     <div className="book-page container mt-5">
@@ -222,59 +130,9 @@ function BookPage() {
             ⭐ {book.rating} ({book.num_ratings})
           </div>
 
-          {user && (
-            <div className="list-section">
-              <button
-                className={`list-toggle-btn ${isInAnyList ? "active" : ""}`}
-                onClick={() => setShowPicker(p => !p)}
-              >
-                {isInAnyList ? "✓ In List" : "+ Add to List"}
-              </button>
-
-              {showPicker && (
-                <div className="list-dropdown">
-                  {loadingLists ? (
-                    <p>Loading...</p>
-                  ) : (
-                    <>
-                      {lists.map(list => {
-                        const inList = list.books.some(
-                          b => b.id === book.id
-                        );
-
-                        return (
-                          <div key={list.id} className="list-row">
-                            <span className="twoliner">{list.name}</span>
-
-                            {inList ? (
-                              <button onClick={() => handleRemove(list.id)}>
-                                Remove
-                              </button>
-                            ) : (
-                              <button onClick={() => handleAdd(list.id)}>
-                                Add
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-
-                      <div className="list-create">
-                        <input
-                          value={newListName}
-                          onChange={(e) => setNewListName(e.target.value)}
-                          placeholder="New list..."
-                        />
-                        <button onClick={handleCreateList}>
-                          Create
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+{user && (
+  <ListDropdown book={book} />
+)}
         </div>
 
         {/* RIGHT */}
@@ -287,6 +145,31 @@ function BookPage() {
               {book.author_name}
             </Link>
           </h5>
+
+          <p className="book-meta">
+            {book.publisher_name && (
+              <>
+                <span>Publisher: {book.publisher_name}</span> |{" "}
+              </>
+            )}
+            {book.pub_date && (
+              <span>
+                Published: {new Date(book.pub_date).getFullYear()}
+              </span>
+            )}
+          </p>
+
+          <div className="book-genres">
+            {book.genres?.map((genre) => (
+              <Link
+                key={genre.id}
+                to={`/genres/${genre.id}`}
+                className="genre-tag"
+              >
+                {genre.name}
+              </Link>
+            ))}
+          </div>
 
           {book.description && (
             <>

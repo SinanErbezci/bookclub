@@ -14,6 +14,7 @@ import ReviewFormModal from "../features/reviews/ReviewFormModal";
 import ProfileReviewCard from "../components/profile/ProfileReviewCard";
 import styles from "./ProfilePage.module.css";
 import NotFoundPage from "./NotFoundPage";
+import LoadingScreen from "../components/LoadingScreen";
 
 function ProfilePage() {
   const { id } = useParams();
@@ -149,7 +150,14 @@ function ProfilePage() {
   }
 
   // 🔥 Loading & error states
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+  return (
+    <LoadingScreen
+      text="Loading profile..."
+      fullPage
+    />
+  );
+}
   if (!data || !data.user) return <NotFoundPage />;
 
   return (
