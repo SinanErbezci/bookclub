@@ -1,4 +1,5 @@
 asgiref==3.11.1
+dj-database-url==3.1.2
 Django==6.0.1
 django-cors-headers==4.9.0
 django-filter==25.2
@@ -14,6 +15,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 six==1.17.0
 sqlparse==0.5.5
+typing_extensions==4.15.0
 tzdata==2026.1
 wcwidth==0.6.0
 whitenoise==6.12.0

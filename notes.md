@@ -66,3 +66,8 @@ frontend/
 #### Optional chaning
 author.books?.map(...)
 "Only continue if the thing before ? exists"
+
+
+
+## To do
+* Improve etl perfomance
