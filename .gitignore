@@ -31,3 +31,6 @@ books_1.Best_Books_Ever.csv
 etl_rejects*.csv
 
 .DS_Store
+
+*tar.gz
+*tar

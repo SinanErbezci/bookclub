@@ -11,7 +11,9 @@ pandas==3.0.0
 psycopg==3.3.2
 psycopg-binary==3.3.2
 python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
 six==1.17.0
 sqlparse==0.5.5
 tzdata==2026.1
 wcwidth==0.6.0
+whitenoise==6.12.0

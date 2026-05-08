@@ -27,7 +27,7 @@ from random import choice, randint
 from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
-from .serializer import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer, ListSerializer
+from .serializers import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer, ListSerializer
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
