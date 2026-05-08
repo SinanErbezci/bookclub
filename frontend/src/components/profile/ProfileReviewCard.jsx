@@ -14,7 +14,7 @@ function ProfileReviewCard({
       onClick={() => onOpen(review)}
     >
       <Link
-        to={`/book/${review.book.id}`}
+        to={`/books/${review.book.id}`}
         onClick={(e) => e.stopPropagation()}
         className={styles.coverLink}
       >
@@ -28,7 +28,7 @@ function ProfileReviewCard({
       <div className={styles.content}>
         <div className={styles.bookSection}>
           <Link
-            to={`/book/${review.book.id}`}
+            to={`/books/${review.book.id}`}
             onClick={(e) => e.stopPropagation()}
             className={styles.title}
           >

@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
 import { fetchUserProfile } from "../api/users";
 import { deleteList, removeBookFromList } from "../api/lists";
 import { deleteReview } from "../api/reviews";
@@ -35,6 +34,26 @@ function ProfilePage() {
   const isOwnProfile =
     user && (!id || user.id === Number(id));
 
+  const loadProfile = useCallback(async () => {
+  try {
+    setLoading(true);
+    
+    const targetId = id || user?.id;
+
+    if (!targetId) return;
+
+    const data =
+      await fetchUserProfile(targetId);
+
+    setData(data);
+  } catch (err) {
+    console.error(err);
+    setData(null);
+  } finally {
+    setLoading(false);
+  }
+}, [id, user]);
+
   // 🔥 Load profile (FINAL FIXED)
   useEffect(() => {
     if (!authLoading && !id && !user) {
@@ -53,24 +72,13 @@ function ProfilePage() {
     if (!authLoading) {
       loadProfile();
     }
-  }, [id, user, authLoading, navigate,]);
-
-  async function loadProfile() {
-    try {
-      const targetId = id || user?.id;
-      if (!targetId) return;
-
-      const data = await fetchUserProfile(targetId);
-
-      setData(data);
-    } catch (err) {
-      console.error(err);
-      addToast("Failed to load profile", "error");
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [
+  id,
+  user,
+  authLoading,
+  navigate,
+  loadProfile,
+]);
 
   async function handleDeleteReview(review) {
     if (!window.confirm("Delete this review?")) {

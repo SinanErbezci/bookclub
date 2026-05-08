@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { useParams } from "react-router-dom";
 
 import { getBooksByGenrePaginated } from "../api/books";
@@ -12,6 +17,8 @@ function GenrePage() {
   const { id } = useParams();
 
   const [genre, setGenre] = useState(null);
+  const [genreLoading, setGenreLoading] =
+    useState(true);
 
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,24 +26,71 @@ function GenrePage() {
 
   const loaderRef = useRef(null);
 
+  const fetchBooks = useCallback(async (page) => {
+    try {
+      setLoading(true);
+
+      const data =
+        await getBooksByGenrePaginated(
+          id,
+          page
+        );
+
+      setBooks((prev) => {
+        const existingIds = new Set(
+          prev.map((b) => b.id)
+        );
+
+        const newBooks =
+          data.results.filter(
+            (b) => !existingIds.has(b.id)
+          );
+
+        return [...prev, ...newBooks];
+      });
+
+      setNextPage(
+        data.next ? page + 1 : null
+      );
+    } catch (err) {
+      console.error(
+        "Books fetch error:",
+        err
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   // 🔹 Fetch genre name
   useEffect(() => {
-    const isValidAuthorId = /^\d+$/.test(id);
+    const isValidGenreId = /^\d+$/.test(id);
 
-    if (!isValidAuthorId) {
-      setBooks(null);
-      setLoading(false);
+    if (!isValidGenreId) {
+      setGenre(null);
+      setGenreLoading(false);
       return;
     }
 
     async function fetchGenre() {
       try {
+        setGenreLoading(true);
+
         const data = await getGenreById(id);
+
         setGenre(data);
       } catch (err) {
-        console.error("Genre fetch error:", err);
+        console.error(
+          "Genre fetch error:",
+          err
+        );
+
+        setGenre(null);
+      } finally {
+        setGenreLoading(false);
       }
     }
+
 
     fetchGenre();
   }, [id]);
@@ -46,34 +100,7 @@ function GenrePage() {
     setBooks([]);
     setNextPage(1);
     fetchBooks(1);
-  }, [id]);
-
-  // 🔹 Fetch paginated books
-  async function fetchBooks(page) {
-    try {
-      setLoading(true);
-
-      const data = await getBooksByGenrePaginated(id, page);
-
-      // ✅ deduplicate safely
-      setBooks((prev) => {
-        const existingIds = new Set(prev.map((b) => b.id));
-
-        const newBooks = data.results.filter(
-          (b) => !existingIds.has(b.id)
-        );
-
-        return [...prev, ...newBooks];
-      });
-
-      setNextPage(data.next ? page + 1 : null);
-
-    } catch (err) {
-      console.error("Books fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [id, fetchBooks]);
 
   // 🔹 Infinite scroll observer
   useEffect(() => {
@@ -97,10 +124,11 @@ function GenrePage() {
     return () => {
       if (current) observer.unobserve(current);
     };
-  }, [nextPage, loading]);
+  }, [nextPage, loading, fetchBooks]);
 
-//  if (loading) return <BookPageSkeleton />;
-  if (!genre) return <NotFoundPage />
+  if (!genre && !genreLoading) {
+    return <NotFoundPage />;
+  }
   return (
     <div className="container mt-5">
 

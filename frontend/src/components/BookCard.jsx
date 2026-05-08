@@ -37,7 +37,7 @@ function BookCard({
 
       <div className={styles.body}>
         <div className="twoliner">
-          <Link to={`/book/${book.id}`} className={`book-link ${styles.title}`}>
+          <Link to={`/books/${book.id}`} className={`book-link ${styles.title}`}>
             {book.title}
           </Link>
         </div>

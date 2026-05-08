@@ -28,7 +28,7 @@ function App() {
           }
         />
         <Route path="/profile/:id" element={<ProfilePage />} />
-        <Route path="/book/:id" element={<BookPage />} />
+        <Route path="/books/:id" element={<BookPage />} />
         <Route path="/authors/:id" element={<AuthorPage />} />
         <Route path="/genres/:id" element={<GenrePage />} />
         <Route

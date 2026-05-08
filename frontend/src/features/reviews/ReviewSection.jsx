@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ReviewCard from "./ReviewCard";
 import ReviewModal from "./ReviewModal";
 import ReviewFormModal from "./ReviewFormModal";
@@ -27,30 +27,41 @@ export default function ReviewSection({ bookId }) {
 
   const {addToast} = useToast();
 
-  const fetchData = () => {
-    setLoading(true);
+const fetchData = useCallback(() => {
+  setLoading(true);
 
-    Promise.all([
-      getReviewsByBook(bookId),
-      user ? getUserReview(bookId) : Promise.resolve(null),
-    ])
-      .then(([reviewsData, userReviewData]) => {
+  Promise.all([
+    getReviewsByBook(bookId),
+    user
+      ? getUserReview(bookId)
+      : Promise.resolve(null),
+  ])
+    .then(
+      ([reviewsData, userReviewData]) => {
         setUserReview(userReviewData);
 
-        // 🔥 remove user's review from list
-        const filtered = userReviewData
-          ? reviewsData.results.filter(
-            (r) => r.id !== userReviewData.id
-          )
-          : reviewsData.results;
+        const filtered =
+          userReviewData
+            ? reviewsData.results.filter(
+                (r) =>
+                  r.id !== userReviewData.id
+              )
+            : reviewsData.results;
 
         setReviews(filtered);
+
         setNextUrl(reviewsData.next);
+
         setError(null);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  };
+      }
+    )
+    .catch((err) =>
+      setError(err.message)
+    )
+    .finally(() =>
+      setLoading(false)
+    );
+}, [bookId, user]);
 
   const loadMore = async () => {
     if (!nextUrl || loadingMore) return;
@@ -98,7 +109,7 @@ export default function ReviewSection({ bookId }) {
   useEffect(() => {
     if (!bookId) return;
     fetchData();
-  }, [bookId, user]); // 🔥 refetch when login/logout changes
+  }, [bookId, fetchData]); // 🔥 refetch when login/logout changes
 
   return (
     <div className="review-container">
@@ -149,7 +160,7 @@ export default function ReviewSection({ bookId }) {
 
           {/* ✅ EMPTY STATE */}
           {reviews.length === 0 && !userReview && user && (
-            <p className="empty">No reviews yet.</p>
+            <div className="emptyState">No reviews yet.</div>
           )}
 
           {/* ✅ OTHER REVIEWS */}

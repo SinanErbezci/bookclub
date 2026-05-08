@@ -5,16 +5,8 @@ import { getReviewsByBook } from "../api/reviews";
 import CarouselSection from "../components/CarouselSection/CarouselSection";
 import ReviewSection from "../features/reviews/ReviewSection";
 import BookCard from "../components/BookCard";
-import BookPageSkeleton from "../components/BookPageSkeleton";
 import placeholder_book from "../assets/placeholder_book.png";
 import { useAuth } from "../context/AuthContext";
-import {
-  addBookToList,
-  removeBookFromList,
-  createList,
-} from "../api/lists";
-import { fetchUserProfile } from "../api/users";
-import { useToast } from "../context/ToastContext";
 import NotFoundPage from "./NotFoundPage";
 import LoadingScreen from "../components/LoadingScreen";
 import ListDropdown from "../components/lists/ListDropdown";
@@ -22,14 +14,12 @@ import ListDropdown from "../components/lists/ListDropdown";
 function BookPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { addToast } = useToast();
 
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 
   const [reviews, setReviews] = useState([]);
-  const [loadingReviews, setLoadingReviews] = useState(true);
 
   const [similarBooks, setSimilarBooks] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
@@ -87,13 +77,10 @@ function BookPage() {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        setLoadingReviews(true);
         const data = await getReviewsByBook(id);
         setReviews(data);
       } catch (err) {
         console.error(err);
-      } finally {
-        setLoadingReviews(false);
       }
     }
 

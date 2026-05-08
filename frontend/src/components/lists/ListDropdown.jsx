@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import {
   getUserLists,
@@ -24,25 +24,52 @@ function ListDropdown({ book }) {
   const [newListName, setNewListName] =
     useState("");
 
-  useEffect(() => {
-    async function fetchLists() {
-      try {
-        setLoadingLists(true);
+  const dropdownRef = useRef(null);
 
-        const data = await getUserLists();
+  const [initialized, setInitialized] =
+  useState(false);
 
-        setLists(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingLists(false);
-      }
+useEffect(() => {
+  async function fetchLists() {
+    try {
+      setLoadingLists(true);
+
+      const data = await getUserLists();
+
+      setLists(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingLists(false);
+      setInitialized(true);
     }
+  }
 
-    if (showPicker) {
-      fetchLists();
+  fetchLists();
+}, [book.id]);
+
+useEffect(() => {
+  function handleClickOutside(e) {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(e.target)
+    ) {
+      setShowPicker(false);
     }
-  }, [showPicker]);
+  }
+
+  document.addEventListener(
+    "mousedown",
+    handleClickOutside
+  );
+
+  return () => {
+    document.removeEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+  };
+}, []);
 
   const isInAnyList = lists.some((list) =>
     list.books.some((b) => b.id === book.id)
@@ -117,7 +144,7 @@ function ListDropdown({ book }) {
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} ref={dropdownRef}>
       <button
         type="button"
         className={`btn ${
@@ -129,7 +156,8 @@ function ListDropdown({ book }) {
           setShowPicker((p) => !p)
         }
       >
-        {isInAnyList
+        {!initialized ?
+        "Loading..." : isInAnyList
           ? "✓ In List"
           : "+ Add to List"}
       </button>
