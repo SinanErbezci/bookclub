@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Browse from "./pages/Browse";
 import BookPage from "./pages/BookPage";
 import AuthorPage from "./pages/AuthorPage";
@@ -7,7 +7,6 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import NavBar from "./components/NavBar";
 import ProfilePage from "./pages/ProfilePage";
-import { useEffect } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import NotFoundPage from "./pages/NotFoundPage";

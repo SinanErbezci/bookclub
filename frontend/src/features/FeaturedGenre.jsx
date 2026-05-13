@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getRandomGenre } from "../api/genres";
 import BookCard from "../components/BookCard";
-import SkeletonRow from "../components/SkeletonRow";
+// import SkeletonRow from "../components/SkeletonRow";
 import CarouselSection from "../components/CarouselSection/CarouselSection";
 
 function FeaturedGenre() {

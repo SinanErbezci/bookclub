@@ -1,7 +1,5 @@
 import { apiFetch } from "./client";
 
-const BASE_URL = process.env.REACT_APP_API_URL;
-
 // 📚 GET REVIEWS (supports pagination URL)
 export async function getReviewsByBook(bookId, url = null) {
   if (url) {

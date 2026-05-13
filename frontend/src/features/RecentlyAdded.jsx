@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getRecentBooks } from "../api/books";
 import BookCard from "../components/BookCard";
-import SkeletonRow from "../components/SkeletonRow";
+// import SkeletonRow from "../components/SkeletonRow";
 import CarouselSection from "../components/CarouselSection/CarouselSection";
 
 function RecentlyAdded() {
