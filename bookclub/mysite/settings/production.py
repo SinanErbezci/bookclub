@@ -9,11 +9,11 @@ ALLOWED_HOSTS = [
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "https://your-frontend.vercel.app",
+    "https://bookclub-peach-six.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://your-frontend.vercel.app",
+    "https://bookclub-peach-six.vercel.app",
 ]
 
 SESSION_COOKIE_SECURE = True
