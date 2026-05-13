@@ -1,12 +1,9 @@
-from django.shortcuts import render, get_object_or_404,redirect
-from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
-from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from django.db.models import Count
 from django.contrib import messages
 from django.contrib.auth import authenticate,login, logout, get_user_model
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -15,27 +12,22 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .pagination import BookPagination, ReviewPagination
 from django_filters.rest_framework import DjangoFilterBackend
-from django.urls import reverse
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.core.paginator import Paginator
-from .models import Book, Author, User, Genre, Review, UserFollower, List, ListBook
-from .forms import CreateUserFrom
+from django.middleware.csrf import get_token
+from .models import Book, Author, User, Genre, Review, List, ListBook
 # from .documents import BookDocument, AuthorDocument, GenreDocument
-from random import choice, randint
-from decimal import Decimal
 # from elasticsearch_dsl.query import Match
 import json
 from .serializers import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer, ListSerializer
-from rest_framework import serializers, status
+from rest_framework import  status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action
-from django.db.models import Max, Avg
+from django.db.models import  Avg
 
 
 # ====== API Views ======
@@ -58,7 +50,8 @@ class CSRFAPIView(APIView):
     permission_classes = []  # AllowAny
 
     def get(self, request):
-        return JsonResponse({"detail": "CSRF cookie set"})
+        return JsonResponse({
+            "csrfToken": get_token(request)})
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]

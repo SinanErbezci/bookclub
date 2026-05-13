@@ -1,19 +1,22 @@
-import { getCookie } from "../utils/cookies";
-
 const BASE_URL = process.env.REACT_APP_API_URL;
 
 // 🔥 Core request function
 export async function apiFetch(path, options = {}) {
-  // Ensure CSRF cookie exists
-  await fetch(`${BASE_URL}/csrf/`, {
+  // Fetch CSRF token from backend
+  const csrfRes = await fetch(`${BASE_URL}/csrf/`, {
     credentials: "include",
   });
 
+  const csrfData = await csrfRes.json();
+
+  const csrfToken = csrfData.csrfToken;
+
+  // Main API request
   const res = await fetch(`${BASE_URL}${path}`, {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie("csrftoken"),
+      "X-CSRFToken": csrfToken,
       ...(options.headers || {}),
     },
     ...options,
