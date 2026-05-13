@@ -141,8 +141,6 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_CREDENTIALS = True
 
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SAMESITE = "Lax"
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
