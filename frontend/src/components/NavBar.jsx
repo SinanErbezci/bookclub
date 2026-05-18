@@ -1,6 +1,7 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import SearchBar from "./SearchBar/SearchBar";
 
 function NavBar() {
   const { user, logout } = useAuth();
@@ -65,16 +66,7 @@ function NavBar() {
           </Link>
 
           {/* SEARCH (DESKTOP) */}
-          <div className="search-wrapper d-none d-xl-flex">
-            <div className="search-bar">
-              <div className="search-bar-input">
-                <input type="search" placeholder="Search books..." />
-                <button className="search-btn">
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+          <SearchBar />
 
           {/* DESKTOP NAV */}
           <div className="nav-options d-none d-xl-flex ms-auto">
