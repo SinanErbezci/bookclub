@@ -13,7 +13,12 @@ export function AuthProvider({ children }) {
     try {
       const data = await getCurrentUser();
       const normalizedUser = data?.user ?? data ?? null;
-      setUser(normalizedUser);
+      if (normalizedUser?.id) {
+        setUser(normalizedUser);
+      } else {
+        setUser(null);
+      }
+      
     } catch {
       setUser(null);
     } finally {
