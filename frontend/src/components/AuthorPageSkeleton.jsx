@@ -1,21 +1,33 @@
-import SkeletonRow from "./SkeletonRow";
+import CarouselSection from "./CarouselSection/CarouselSection";
+import styles from "./AuthorPageSkeleton.module.css";
 
 function AuthorPageSkeleton() {
   return (
     <div className="container mt-5">
 
+      {/* HEADER */}
       <div className="author-header">
-        <div className="skeleton-base skeleton-shimmer author-avatar" />
+
+        <div className="author-avatar">
+          <div className={styles.avatarSkeleton} />
+        </div>
 
         <div className="author-info">
-          <div className="skeleton-base skeleton-shimmer skeleton-title" />
-          <div className="skeleton-base skeleton-shimmer skeleton-meta" />
-          <div className="skeleton-base skeleton-shimmer skeleton-desc short" />
+          <div className={styles.nameSkeleton} />
+          <div className={styles.metaSkeleton} />
+          <div className={styles.descSkeleton} />
         </div>
+
       </div>
 
+      {/* BOOKS */}
       <div className="author-books-section">
-        <SkeletonRow count={4} />
+        <CarouselSection
+          title="Loading books..."
+          items={[]}
+          loading={true}
+          renderItem={() => null}
+        />
       </div>
 
     </div>

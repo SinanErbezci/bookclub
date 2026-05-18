@@ -87,7 +87,7 @@ function CarouselSection({
             }}
           >
             {loading ? (
-              <SkeletonRow count={visibleCount} />
+              <SkeletonRow count={Math.max(visibleCount, 4)} />
             ) : itemCount === 0 ? (
               <p>No items found.</p>
             ) : (

@@ -10,7 +10,7 @@ import { getBooksByGenrePaginated } from "../api/books";
 import { getGenreById } from "../api/genres";
 
 import BookCard from "../components/BookCard";
-import SkeletonRow from "../components/SkeletonRow";
+import SkeletonCard from "../components/SkeletonCard";
 import NotFoundPage from "./NotFoundPage";
 
 function GenrePage() {
@@ -138,14 +138,19 @@ function GenrePage() {
       </h1>
 
       {/* 🔹 Grid */}
-      <div className="genre-grid">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
+<div className="genre-grid">
 
-        {/* initial skeleton */}
-        {loading && books.length === 0 && <SkeletonRow count={4} />}
-      </div>
+  {books.map((book) => (
+    <BookCard key={book.id} book={book} />
+  ))}
+
+  {loading && books.length === 0 &&
+    Array.from({ length: 8 }).map((_, i) => (
+      <SkeletonCard key={i} />
+    ))
+  }
+
+</div>
 
       {/* 🔹 Loading more indicator */}
       {loading && books.length > 0 && (
