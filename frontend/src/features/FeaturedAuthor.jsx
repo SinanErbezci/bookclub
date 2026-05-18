@@ -22,13 +22,20 @@ function FeaturedAuthor() {
   }, []);
 
   return (
-    <CarouselSection 
-    title={`Author: ${author?.name}`}
-    items={author?.books}
-    loading={loading}
-    renderItem={(book) => (
-      <BookCard key={book.id} book={book} />
-    )}
+    <CarouselSection
+      title={
+        author
+          ? `Author: ${author.name}`
+          : "Author: "
+      }
+      titleLink={
+        author ? `/authors/${author.id}` : null
+      }
+      items={author?.books}
+      loading={loading}
+      renderItem={(book) => (
+        <BookCard key={book.id} book={book} />
+      )}
     />
   );
 }

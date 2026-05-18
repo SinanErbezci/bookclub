@@ -50,3 +50,12 @@
     justify-content: center;
     gap: 8px;
 }
+
+.titleLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.titleLink:hover {
+  opacity: 0.8;
+}

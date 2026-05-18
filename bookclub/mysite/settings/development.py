@@ -23,3 +23,8 @@ CSRF_COOKIE_SAMESITE = "Lax"
 
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+    "anon": "10000/day",
+    "user": "100000/day",
+}

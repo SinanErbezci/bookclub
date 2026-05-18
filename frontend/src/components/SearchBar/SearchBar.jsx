@@ -1,5 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import { searchBooks } from "../../api/search";
 
@@ -7,14 +15,23 @@ import styles from "./SearchBar.module.css";
 
 function SearchBar() {
   const [query, setQuery] = useState("");
+
   const [results, setResults] = useState([]);
 
   const [loading, setLoading] = useState(false);
+
   const [open, setOpen] = useState(false);
+
+  const [selectedIndex, setSelectedIndex] =
+    useState(-1);
+
+  const resultRefs = useRef([]);
 
   const wrapperRef = useRef(null);
 
-  // close dropdown when clicking outside
+  const navigate = useNavigate();
+
+  // close dropdown outside click
   useEffect(() => {
     function handleClickOutside(e) {
       if (
@@ -43,6 +60,7 @@ function SearchBar() {
     if (query.trim().length < 2) {
       setResults([]);
       setOpen(false);
+      setSelectedIndex(-1);
       return;
     }
 
@@ -53,7 +71,10 @@ function SearchBar() {
         const data = await searchBooks(query);
 
         setResults(data);
+
         setOpen(true);
+
+        setSelectedIndex(-1);
 
       } catch {
         setResults([]);
@@ -66,12 +87,76 @@ function SearchBar() {
 
   }, [query]);
 
+  useEffect(() => {
+    if (
+      selectedIndex >= 0 &&
+      resultRefs.current[selectedIndex]
+    ) {
+      resultRefs.current[
+        selectedIndex
+      ].scrollIntoView({
+        block: "nearest",
+      });
+    }
+  }, [selectedIndex]);
+
+  function handleKeyDown(e) {
+    if (!open) return;
+
+    // DOWN
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+
+      setSelectedIndex((prev) =>
+        prev < results.length - 1
+          ? prev + 1
+          : prev
+      );
+    }
+
+    // UP
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+
+      setSelectedIndex((prev) =>
+        prev > 0 ? prev - 1 : 0
+      );
+    }
+
+    // ESC
+    if (e.key === "Escape") {
+      setOpen(false);
+    }
+
+    // ENTER
+    if (e.key === "Enter") {
+      // selected dropdown item
+      if (
+        selectedIndex >= 0 &&
+        results[selectedIndex]
+      ) {
+        navigate(
+          `/books/${results[selectedIndex].id}`
+        );
+
+      } else {
+        // full search page
+        navigate(
+          `/search?q=${encodeURIComponent(query)}`
+        );
+      }
+
+      setOpen(false);
+    }
+  }
+
   return (
     <div
       className={styles.wrapper}
       ref={wrapperRef}
     >
       <div className={styles.searchBar}>
+
         <div className={styles.searchBarInput}>
 
           <input
@@ -81,6 +166,7 @@ function SearchBar() {
             onChange={(e) =>
               setQuery(e.target.value)
             }
+            onKeyDown={handleKeyDown}
             className={styles.input}
           />
 
@@ -89,7 +175,9 @@ function SearchBar() {
             type="button"
           >
             <i
-              className={`fa-solid fa-magnifying-glass ${loading ? styles.loadingIcon : ""
+              className={`fa-solid fa-magnifying-glass ${loading
+                ? styles.loadingIcon
+                : ""
                 }`}
             ></i>
           </button>
@@ -110,24 +198,38 @@ function SearchBar() {
               </div>
 
             ) : (
-              results.map((book) => (
+              results.map((book, index) => (
                 <Link
+                  ref={(el) =>
+                    (resultRefs.current[index] = el)
+                  }
                   key={book.id}
                   to={`/books/${book.id}`}
-                  className={styles.result}
+                  className={`${styles.result} ${selectedIndex === index
+                    ? styles.active
+                    : ""
+                    }`}
                   onClick={() => {
                     setOpen(false);
                     setQuery("");
                   }}
                 >
-                  <div>
+                  <img
+                    src={book.cover}
+                    alt={book.title}
+                    className={styles.cover}
+                  />
+
+                  <div className={styles.resultContent}>
+
                     <div className={styles.resultTitle}>
                       {book.title}
                     </div>
 
                     <div className={styles.resultAuthor}>
-                      {book.authors}
+                      {book.author_name}
                     </div>
+
                   </div>
                 </Link>
               ))

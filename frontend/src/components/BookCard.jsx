@@ -42,12 +42,12 @@ function BookCard({
           </Link>
         </div>
 
-        {showAuthor && (
+        {showAuthor && book.author && (
           <Link
             to={`/authors/${book.author}`}
             className={`book-link ${styles.author}`}
           >
-            {book.author_name}
+            {book.author_name || "Unknown Author"}
           </Link>
         )}
 

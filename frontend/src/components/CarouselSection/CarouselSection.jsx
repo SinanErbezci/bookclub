@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import SkeletonRow from "../SkeletonRow";
 import styles from "./CarouselSection.module.css"
-
+import { Link } from "react-router-dom";
 function CarouselSection({
   title,
+  titleLink,
   items = [],
   loading,
   renderItem,
@@ -18,7 +19,7 @@ function CarouselSection({
 
   const safeItems = items || [];
   const itemCount = safeItems.length;
- 
+
   // 🔥 calculate visible cards dynamically
   useEffect(() => {
     function calculateVisible() {
@@ -62,7 +63,20 @@ function CarouselSection({
 
   return (
     <section>
-      <h2 className="form-title mt-4">{title}</h2>
+      {titleLink ? (
+        <Link
+          to={titleLink}
+          className={styles.titleLink}
+        >
+          <h2 className="form-title mt-4">
+            {title}
+          </h2>
+        </Link>
+      ) : (
+        <h2 className="form-title mt-4">
+          {title}
+        </h2>
+      )}
 
       <div className={styles.wrapper}>
         {/* LEFT ARROW (hidden when unnecessary) */}

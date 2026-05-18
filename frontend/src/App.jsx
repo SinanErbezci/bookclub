@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import NavBar from "./components/NavBar";
 import ProfilePage from "./pages/ProfilePage";
+import SearchPage from "./pages/SearchPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -31,6 +32,7 @@ function App() {
         <Route path="/books/:id" element={<BookPage />} />
         <Route path="/authors/:id" element={<AuthorPage />} />
         <Route path="/genres/:id" element={<GenrePage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route
           path="/login"
           element={

@@ -21,13 +21,20 @@ function FeaturedGenre() {
   }, []);
 
   return (
-    <CarouselSection 
-    title={`Genre: ${genre?.name}`}
-    items={genre?.books}
-    loading={loading}
-    renderItem={(book) => (
-      <BookCard key={book.id} book={book} />
-    )}
+    <CarouselSection
+      title={
+        genre
+          ? `Genre: ${genre.name}`
+          : "Genre: "
+      }
+      titleLink={
+        genre ? `/genres/${genre.id}` : null
+      }
+      items={genre?.books}
+      loading={loading}
+      renderItem={(book) => (
+        <BookCard key={book.id} book={book} />
+      )}
     />
   );
 }
