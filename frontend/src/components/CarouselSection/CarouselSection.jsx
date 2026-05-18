@@ -11,14 +11,14 @@ function CarouselSection({
   const containerRef = useRef(null);
 
   const [index, setIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(4);
 
   const CARD_WIDTH = 180;
   const GAP = 16;
 
   const safeItems = items || [];
   const itemCount = safeItems.length;
-
+ 
   // 🔥 calculate visible cards dynamically
   useEffect(() => {
     function calculateVisible() {
