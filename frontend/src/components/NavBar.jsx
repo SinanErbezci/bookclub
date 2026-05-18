@@ -1,6 +1,7 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useEffect } from "react";
 import SearchBar from "./SearchBar/SearchBar";
 
 function NavBar() {
@@ -19,6 +20,33 @@ function NavBar() {
       addToast("Logout failed", "error");
     }
   }
+
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 992) {
+        const offcanvasEl =
+          document.getElementById("mobileMenu");
+
+        if (!offcanvasEl) return;
+
+        const offcanvas =
+          window.bootstrap?.Offcanvas.getInstance(
+            offcanvasEl
+          );
+
+        offcanvas?.hide();
+      }
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+    };
+  }, []);
 
   const getNavClass = ({ isActive }) =>
     "nav-link " + (isActive ? "active" : "");
@@ -57,7 +85,7 @@ function NavBar() {
 
   return (
     <header>
-      <nav className="navbar navbar-expand-xl">
+      <nav className="navbar navbar-expand-lg">
         <div className="container nav-contain d-flex align-items-center">
 
           {/* LOGO */}
@@ -66,16 +94,18 @@ function NavBar() {
           </Link>
 
           {/* SEARCH (DESKTOP) */}
-          <SearchBar />
+          <div className="d-none d-lg-flex flex-fill justify-content-center px-4">
+            <SearchBar />
+          </div>
 
           {/* DESKTOP NAV */}
-          <div className="nav-options d-none d-xl-flex ms-auto">
+          <div className="nav-options d-none d-lg-flex ms-auto">
             {renderNavLinks()}
           </div>
 
           {/* MOBILE TOGGLE */}
           <button
-            className="navbar-toggler d-xl-none"
+            className="navbar-toggler d-lg-none"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#mobileMenu"
@@ -85,7 +115,7 @@ function NavBar() {
 
           {/* MOBILE MENU */}
           <div
-            className="offcanvas offcanvas-end d-xl-none"
+            className="offcanvas offcanvas-end d-lg-none"
             id="mobileMenu"
           >
             <div className="offcanvas-header">
@@ -100,12 +130,7 @@ function NavBar() {
 
               {/* MOBILE SEARCH */}
               <div className="search-bar mb-3">
-                <div className="search-bar-input">
-                  <input type="search" placeholder="Search..." />
-                  <button className="search-btn">
-                    <i className="fa-solid fa-magnifying-glass"></i>
-                  </button>
-                </div>
+                <SearchBar />
               </div>
 
               <ul className="navbar-nav">
