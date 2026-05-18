@@ -11,11 +11,13 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://bookclub-peach-six.vercel.app",
+    "https://sinanbook.club",
+    "https://www.sinanbook.club",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://bookclub-peach-six.vercel.app",
+    "https://sinanbook.club",
+    "https://www.sinanbook.club",
 ]
 
 SESSION_COOKIE_SAMESITE = "None"
