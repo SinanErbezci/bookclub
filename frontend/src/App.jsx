@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicOnlyRoute from "./components/PublicOnlyRoute";
 import NotFoundPage from "./pages/NotFoundPage";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -49,6 +50,8 @@ function App() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+
+      <Footer />
     </>
   );
 }
