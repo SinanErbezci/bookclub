@@ -20,6 +20,9 @@ function SearchPage() {
   const query =
     searchParams.get("q") || "";
 
+  const page =
+    searchParams.get("page") || 1;
+
   const [results, setResults] =
     useState({
       books: [],
@@ -48,7 +51,7 @@ function SearchPage() {
         setLoading(true);
 
         const data =
-          await searchAll(query);
+          await searchAll(query, page);
 
         setResults(data);
 
@@ -122,6 +125,30 @@ function SearchPage() {
                       showAuthor
                     />
                   )
+                )}
+
+              </div>
+
+              <div className="d-flex gap-3 mt-4">
+
+                {results.previous && (
+                  <Link
+                    to={`/search?q=${query}&page=${Number(page) - 1
+                      }`}
+                    className="btn btn-outline-dark"
+                  >
+                    Previous
+                  </Link>
+                )}
+
+                {results.next && (
+                  <Link
+                    to={`/search?q=${query}&page=${Number(page) + 1
+                      }`}
+                    className="btn btn-outline-dark"
+                  >
+                    Next
+                  </Link>
                 )}
 
               </div>

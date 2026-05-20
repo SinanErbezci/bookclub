@@ -71,7 +71,7 @@ class SearchBooksAPIView(APIView):
                 Q(rank__gte=0.05) |
                 Q(similarity__gt=0.1)
             )
-            .order_by("-score")[:5]
+            .order_by("-score")
         )
 
         # Authors
@@ -88,9 +88,14 @@ class SearchBooksAPIView(APIView):
             .order_by("name")[:5]
         )
 
+        paginator = SearchPagination()
+        paginated_books = paginator.paginate_queryset(books, request)
 
         return Response({
-            "books": BookSerializer(books,many=True).data,
+            "books": BookSerializer(paginated_books,many=True).data,
+            "books_count": books.count(),
+            "next": paginator.get_next_link(),
+            "previous": paginator.get_previous_link(),
             "authors": AuthorSerializer(authors,many=True).data,
             "genres": GenreSerializer(genres,many=True).data,
         })
