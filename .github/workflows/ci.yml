@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - old-main
+
+  pull_request:
+    branches:
+      - main
+      - old-main
+
+jobs:
+
+  backend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./bookclub
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check Django setup
+        run: |
+          python manage.py check
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install frontend dependencies
+        run: |
+          npm install
+
+      - name: Run ESLint
+        run: |
+          npm run lint
+
+      - name: Test production build
+        run: |
+          npm run build
