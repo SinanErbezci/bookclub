@@ -9,7 +9,7 @@ from django.contrib.postgres.search import (
 )
 from django.db.models import F, Q
 from .models import Book, Author, Genre
-from .serializers import BookSerializer, AuthorSerializer, GenreSerializer
+from .serializers import SearchBookSerializer, SearchAuthorSerializer, SearchGenreSerializer
 from .pagination import SearchPagination
 
 
@@ -63,13 +63,13 @@ class SearchBooksAPIView(APIView):
             )
             .annotate(
                 score=(
-                    F("rank") * 0.7 +
-                    F("similarity") * 0.3
+                    F("rank") * 0.85 +
+                    F("similarity") * 0.15
                 )
             )
             .filter(
                 Q(rank__gte=0.05) |
-                Q(similarity__gt=0.1)
+                Q(similarity__gt=0.3)
             )
             .order_by("-score")
         )
@@ -92,10 +92,10 @@ class SearchBooksAPIView(APIView):
         paginated_books = paginator.paginate_queryset(books, request)
 
         return Response({
-            "books": BookSerializer(paginated_books,many=True).data,
+            "books": SearchBookSerializer(paginated_books,many=True).data,
             "books_count": books.count(),
             "next": paginator.get_next_link(),
             "previous": paginator.get_previous_link(),
-            "authors": AuthorSerializer(authors,many=True).data,
-            "genres": GenreSerializer(genres,many=True).data,
+            "authors": SearchAuthorSerializer(authors,many=True).data,
+            "genres": SearchGenreSerializer(genres,many=True).data,
         })

@@ -109,3 +109,34 @@ class ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
         fields = ["id", "name", "books", "is_system"]
+
+class SearchBookSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source="author.name", read_only=True)
+    
+    class Meta:
+        model = Book
+
+        fields = [
+            "id",
+            "title",
+            "cover",
+            "author",
+            "author_name",
+        ]
+class SearchAuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+
+        fields = [
+            "id",
+            "name",
+        ]
+
+class SearchGenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+
+        fields = [
+            "id",
+            "name",
+        ]
