@@ -189,3 +189,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.sectionTitle {
+  padding: 10px 12px 6px;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  color: var(--TEXTCOLOR2);
+}

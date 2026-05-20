@@ -9,29 +9,58 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import { searchBooks } from "../../api/search";
+import { searchAll } from "../../api/search";
+
+import bookPlaceholder from "../../assets/placeholder_book.png";
 
 import styles from "./SearchBar.module.css";
 
 function SearchBar() {
   const [query, setQuery] = useState("");
 
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState({
+    books: [],
+    authors: [],
+    genres: [],
+  });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] =
+    useState(false);
 
   const [selectedIndex, setSelectedIndex] =
     useState(-1);
 
-  const resultRefs = useRef([]);
-
   const wrapperRef = useRef(null);
+
+  const resultRefs = useRef([]);
 
   const navigate = useNavigate();
 
-  // close dropdown outside click
+  // flatten results for keyboard navigation
+  const flatResults = [
+    ...results.books.map((item) => ({
+      ...item,
+      type: "book",
+    })),
+
+    ...results.authors.map((item) => ({
+      ...item,
+      type: "author",
+    })),
+
+    ...results.genres.map((item) => ({
+      ...item,
+      type: "genre",
+    })),
+  ];
+
+  const hasResults =
+    flatResults.length > 0;
+
+  // close outside click
   useEffect(() => {
     function handleClickOutside(e) {
       if (
@@ -58,9 +87,15 @@ function SearchBar() {
   // debounce search
   useEffect(() => {
     if (query.trim().length < 2) {
-      setResults([]);
+      setResults({
+        books: [],
+        authors: [],
+        genres: [],
+      });
+
       setOpen(false);
       setSelectedIndex(-1);
+
       return;
     }
 
@@ -68,7 +103,8 @@ function SearchBar() {
       try {
         setLoading(true);
 
-        const data = await searchBooks(query);
+        const data =
+          await searchAll(query);
 
         setResults(data);
 
@@ -77,7 +113,11 @@ function SearchBar() {
         setSelectedIndex(-1);
 
       } catch {
-        setResults([]);
+        setResults({
+          books: [],
+          authors: [],
+          genres: [],
+        });
       } finally {
         setLoading(false);
       }
@@ -87,6 +127,7 @@ function SearchBar() {
 
   }, [query]);
 
+  // auto-scroll selected item
   useEffect(() => {
     if (
       selectedIndex >= 0 &&
@@ -100,6 +141,23 @@ function SearchBar() {
     }
   }, [selectedIndex]);
 
+  function navigateToItem(item) {
+    if (item.type === "book") {
+      navigate(`/books/${item.id}`);
+    }
+
+    if (item.type === "author") {
+      navigate(`/authors/${item.id}`);
+    }
+
+    if (item.type === "genre") {
+      navigate(`/genres/${item.id}`);
+    }
+
+    setOpen(false);
+    setQuery("");
+  }
+
   function handleKeyDown(e) {
     if (!open) return;
 
@@ -108,7 +166,7 @@ function SearchBar() {
       e.preventDefault();
 
       setSelectedIndex((prev) =>
-        prev < results.length - 1
+        prev < flatResults.length - 1
           ? prev + 1
           : prev
       );
@@ -130,25 +188,26 @@ function SearchBar() {
 
     // ENTER
     if (e.key === "Enter") {
-      // selected dropdown item
       if (
         selectedIndex >= 0 &&
-        results[selectedIndex]
+        flatResults[selectedIndex]
       ) {
-        navigate(
-          `/books/${results[selectedIndex].id}`
+        navigateToItem(
+          flatResults[selectedIndex]
         );
-
       } else {
-        // full search page
         navigate(
-          `/search?q=${encodeURIComponent(query)}`
+          `/search?q=${encodeURIComponent(
+            query
+          )}`
         );
-      }
 
-      setOpen(false);
+        setOpen(false);
+      }
     }
   }
+
+  let currentIndex = -1;
 
   return (
     <div
@@ -161,7 +220,7 @@ function SearchBar() {
 
           <input
             type="search"
-            placeholder="Search books..."
+            placeholder="Search books, authors, genres..."
             value={query}
             onChange={(e) =>
               setQuery(e.target.value)
@@ -175,10 +234,11 @@ function SearchBar() {
             type="button"
           >
             <i
-              className={`fa-solid fa-magnifying-glass ${loading
-                ? styles.loadingIcon
-                : ""
-                }`}
+              className={`fa-solid fa-magnifying-glass ${
+                loading
+                  ? styles.loadingIcon
+                  : ""
+              }`}
             ></i>
           </button>
 
@@ -192,47 +252,199 @@ function SearchBar() {
                 Loading...
               </div>
 
-            ) : results.length === 0 ? (
+            ) : !hasResults ? (
               <div className={styles.empty}>
-                No books found
+                No results found
               </div>
 
             ) : (
-              results.map((book, index) => (
-                <Link
-                  ref={(el) =>
-                    (resultRefs.current[index] = el)
-                  }
-                  key={book.id}
-                  to={`/books/${book.id}`}
-                  className={`${styles.result} ${selectedIndex === index
-                    ? styles.active
-                    : ""
-                    }`}
-                  onClick={() => {
-                    setOpen(false);
-                    setQuery("");
-                  }}
-                >
-                  <img
-                    src={book.cover}
-                    alt={book.title}
-                    className={styles.cover}
-                  />
-
-                  <div className={styles.resultContent}>
-
-                    <div className={styles.resultTitle}>
-                      {book.title}
+              <>
+                {/* BOOKS */}
+                {results.books.length > 0 && (
+                  <>
+                    <div
+                      className={
+                        styles.sectionTitle
+                      }
+                    >
+                      Books
                     </div>
 
-                    <div className={styles.resultAuthor}>
-                      {book.author_name}
+                    {results.books.map(
+                      (book) => {
+                        currentIndex++;
+
+                        return (
+                          <Link
+                            ref={(el) =>
+                              (resultRefs.current[
+                                currentIndex
+                              ] = el)
+                            }
+                            key={`book-${book.id}`}
+                            to={`/books/${book.id}`}
+                            className={`${styles.result} ${
+                              selectedIndex ===
+                              currentIndex
+                                ? styles.active
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setOpen(false);
+                              setQuery("");
+                            }}
+                          >
+                            <img
+                              src={
+                                book.cover ||
+                                bookPlaceholder
+                              }
+                              alt={book.title}
+                              className={
+                                styles.cover
+                              }
+                            />
+
+                            <div
+                              className={
+                                styles.resultContent
+                              }
+                            >
+                              <div
+                                className={
+                                  styles.resultTitle
+                                }
+                              >
+                                {book.title}
+                              </div>
+
+                              <div
+                                className={
+                                  styles.resultAuthor
+                                }
+                              >
+                                {
+                                  book.author_name
+                                }
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      }
+                    )}
+                  </>
+                )}
+
+                {/* AUTHORS */}
+                {results.authors.length > 0 && (
+                  <>
+                    <div
+                      className={
+                        styles.sectionTitle
+                      }
+                    >
+                      Authors
                     </div>
 
-                  </div>
-                </Link>
-              ))
+                    {results.authors.map(
+                      (author) => {
+                        currentIndex++;
+
+                        return (
+                          <Link
+                            ref={(el) =>
+                              (resultRefs.current[
+                                currentIndex
+                              ] = el)
+                            }
+                            key={`author-${author.id}`}
+                            to={`/authors/${author.id}`}
+                            className={`${styles.result} ${
+                              selectedIndex ===
+                              currentIndex
+                                ? styles.active
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setOpen(false);
+                              setQuery("");
+                            }}
+                          >
+                            <div
+                              className={
+                                styles.resultContent
+                              }
+                            >
+                              <div
+                                className={
+                                  styles.resultTitle
+                                }
+                              >
+                                {author.name}
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      }
+                    )}
+                  </>
+                )}
+
+                {/* GENRES */}
+                {results.genres.length > 0 && (
+                  <>
+                    <div
+                      className={
+                        styles.sectionTitle
+                      }
+                    >
+                      Genres
+                    </div>
+
+                    {results.genres.map(
+                      (genre) => {
+                        currentIndex++;
+
+                        return (
+                          <Link
+                            ref={(el) =>
+                              (resultRefs.current[
+                                currentIndex
+                              ] = el)
+                            }
+                            key={`genre-${genre.id}`}
+                            to={`/genres/${genre.id}`}
+                            className={`${styles.result} ${
+                              selectedIndex ===
+                              currentIndex
+                                ? styles.active
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setOpen(false);
+                              setQuery("");
+                            }}
+                          >
+                            <div
+                              className={
+                                styles.resultContent
+                              }
+                            >
+                              <div
+                                className={
+                                  styles.resultTitle
+                                }
+                              >
+                                {genre.name}
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      }
+                    )}
+                  </>
+                )}
+              </>
             )}
 
           </div>

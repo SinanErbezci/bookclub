@@ -4,11 +4,13 @@ from rest_framework.permissions import AllowAny
 from django.contrib.postgres.search import (
     SearchQuery,
     SearchRank,
-    SearchVector
+    SearchVector,
+    TrigramSimilarity
 )
-from django.db.models import F
-from .models import Book
-from .serializers import BookSerializer
+from django.db.models import F, Q
+from .models import Book, Author, Genre
+from .serializers import BookSerializer, AuthorSerializer, GenreSerializer
+from .pagination import SearchPagination
 
 
 class SearchBooksAPIView(APIView):
@@ -18,14 +20,25 @@ class SearchBooksAPIView(APIView):
         query = request.query_params.get("q", "").strip()
 
         if not query:
-            return Response([])
+            return Response({
+                "books": [],
+                "authors": [],
+                "genres": [],
+            })
 
+        # Books
         books = (
             Book.objects
             .annotate(
                 search=(
-                    SearchVector("title", weight="A") +
-                    SearchVector("author__name", weight="B")
+                    SearchVector(
+                        "title",
+                        weight="A"
+                    ) +
+                    SearchVector(
+                        "author__name",
+                        weight="B"
+                    )
                 )
             )
             .annotate(
@@ -35,12 +48,49 @@ class SearchBooksAPIView(APIView):
                         query,
                         search_type="websearch"
                     )
+                ),
+
+                similarity=(
+                    TrigramSimilarity(
+                        "title",
+                        query
+                    ) +
+                    TrigramSimilarity(
+                        "author__name",
+                        query
+                    )
                 )
             )
-            .filter(rank__gte=0.1)
-            .order_by("-rank")[:10]
+            .annotate(
+                score=(
+                    F("rank") * 0.7 +
+                    F("similarity") * 0.3
+                )
+            )
+            .filter(
+                Q(rank__gte=0.05) |
+                Q(similarity__gt=0.1)
+            )
+            .order_by("-score")[:5]
         )
 
-        serializer = BookSerializer(books, many=True)
+        # Authors
+        authors = (
+            Author.objects
+            .filter(name__icontains=query)
+            .order_by("name")[:5]
+        )
 
-        return Response(serializer.data)
+        # genres
+        genres = (
+            Genre.objects
+            .filter(name__icontains=query)
+            .order_by("name")[:5]
+        )
+
+
+        return Response({
+            "books": BookSerializer(books,many=True).data,
+            "authors": AuthorSerializer(authors,many=True).data,
+            "genres": GenreSerializer(genres,many=True).data,
+        })

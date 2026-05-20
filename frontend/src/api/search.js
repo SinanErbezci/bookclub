@@ -1,6 +1,6 @@
 import { apiFetch } from "./client";
 
-export async function searchBooks(query) {
+export async function searchAll(query) {
   return apiFetch(
     `/search/?q=${encodeURIComponent(query)}`
   );
