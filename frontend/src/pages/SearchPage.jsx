@@ -68,7 +68,7 @@ function SearchPage() {
 
     fetchResults();
 
-  }, [query]);
+  }, [query, page]);
 
   const hasResults =
     results.books.length > 0 ||
