@@ -60,6 +60,23 @@ function SearchBar() {
   const hasResults =
     flatResults.length > 0;
 
+  function handleSearchSubmit() {
+    if (!query.trim() || loading) return;
+
+    navigate(
+      `/search?q=${encodeURIComponent(
+        query
+      )}`
+    );
+    setResults({
+      books: [],
+      authors: [],
+      genres: [],
+    });
+    setSelectedIndex(-1);
+    setOpen(false);
+  }
+
   // close outside click
   useEffect(() => {
     function handleClickOutside(e) {
@@ -104,7 +121,7 @@ function SearchBar() {
         setLoading(true);
 
         const data =
-          await searchAll(query);
+          await searchAll(query, 1, "dropdown");
 
         setResults(data);
 
@@ -159,6 +176,19 @@ function SearchBar() {
   }
 
   function handleKeyDown(e) {
+    if (e.key === "Enter") {
+      if (
+        selectedIndex >= 0 &&
+        flatResults[selectedIndex]
+      ) {
+        navigateToItem(
+          flatResults[selectedIndex]
+        );
+      } else {
+        handleSearchSubmit();
+      }
+    }
+
     if (!open) return;
 
     // DOWN
@@ -187,24 +217,6 @@ function SearchBar() {
     }
 
     // ENTER
-    if (e.key === "Enter") {
-      if (
-        selectedIndex >= 0 &&
-        flatResults[selectedIndex]
-      ) {
-        navigateToItem(
-          flatResults[selectedIndex]
-        );
-      } else {
-        navigate(
-          `/search?q=${encodeURIComponent(
-            query
-          )}`
-        );
-
-        setOpen(false);
-      }
-    }
   }
 
   let currentIndex = -1;
@@ -232,13 +244,13 @@ function SearchBar() {
           <button
             className={styles.button}
             type="button"
+            onClick={handleSearchSubmit}
           >
             <i
-              className={`fa-solid fa-magnifying-glass ${
-                loading
+              className={`fa-solid fa-magnifying-glass ${loading
                   ? styles.loadingIcon
                   : ""
-              }`}
+                }`}
             ></i>
           </button>
 
@@ -277,18 +289,17 @@ function SearchBar() {
                         return (
                           <Link
                             ref={(el) =>
-                              (resultRefs.current[
-                                currentIndex
-                              ] = el)
+                            (resultRefs.current[
+                              currentIndex
+                            ] = el)
                             }
                             key={`book-${book.id}`}
                             to={`/books/${book.id}`}
-                            className={`${styles.result} ${
-                              selectedIndex ===
-                              currentIndex
+                            className={`${styles.result} ${selectedIndex ===
+                                currentIndex
                                 ? styles.active
                                 : ""
-                            }`}
+                              }`}
                             onClick={() => {
                               setOpen(false);
                               setQuery("");
@@ -353,18 +364,17 @@ function SearchBar() {
                         return (
                           <Link
                             ref={(el) =>
-                              (resultRefs.current[
-                                currentIndex
-                              ] = el)
+                            (resultRefs.current[
+                              currentIndex
+                            ] = el)
                             }
                             key={`author-${author.id}`}
                             to={`/authors/${author.id}`}
-                            className={`${styles.result} ${
-                              selectedIndex ===
-                              currentIndex
+                            className={`${styles.result} ${selectedIndex ===
+                                currentIndex
                                 ? styles.active
                                 : ""
-                            }`}
+                              }`}
                             onClick={() => {
                               setOpen(false);
                               setQuery("");
@@ -408,18 +418,17 @@ function SearchBar() {
                         return (
                           <Link
                             ref={(el) =>
-                              (resultRefs.current[
-                                currentIndex
-                              ] = el)
+                            (resultRefs.current[
+                              currentIndex
+                            ] = el)
                             }
                             key={`genre-${genre.id}`}
                             to={`/genres/${genre.id}`}
-                            className={`${styles.result} ${
-                              selectedIndex ===
-                              currentIndex
+                            className={`${styles.result} ${selectedIndex ===
+                                currentIndex
                                 ? styles.active
                                 : ""
-                            }`}
+                              }`}
                             onClick={() => {
                               setOpen(false);
                               setQuery("");

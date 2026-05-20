@@ -26,6 +26,9 @@ function SearchPage() {
   const [results, setResults] =
     useState({
       books: [],
+      books_count: 0,
+      next: null,
+      previous: null,
       authors: [],
       genres: [],
     });
@@ -38,6 +41,9 @@ function SearchPage() {
       if (!query.trim()) {
         setResults({
           books: [],
+          books_count: 0,
+          next: null,
+          previous: null,
           authors: [],
           genres: [],
         });
@@ -51,13 +57,16 @@ function SearchPage() {
         setLoading(true);
 
         const data =
-          await searchAll(query, page);
+          await searchAll(query, page, "full");
 
         setResults(data);
 
       } catch {
         setResults({
           books: [],
+          books_count: 0,
+          next: null,
+          previous: null,
           authors: [],
           genres: [],
         });
@@ -110,9 +119,7 @@ function SearchPage() {
             <section className="mb-5">
 
               <h2 className="form-title mb-4">
-                Books
-                {" "}
-                ({results.books.length})
+                {results.books_count} books found for "{query}"
               </h2>
 
               <div className="genre-grid">
