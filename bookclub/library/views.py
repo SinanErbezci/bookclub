@@ -45,6 +45,9 @@ def update_book_rating(book):
 
 User = get_user_model()
 
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CSRFAPIView(APIView):
     permission_classes = []  # AllowAny

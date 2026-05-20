@@ -66,3 +66,17 @@ jobs:
       - name: Test production build
         run: |
           npm run build
+          
+  docker:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./bookclub
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t bookclub .
