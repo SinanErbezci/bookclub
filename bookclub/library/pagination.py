@@ -9,4 +9,4 @@ class ReviewPagination(PageNumberPagination):
     page_size = 5
 
 class SearchPagination(PageNumberPagination):
-    page_size = 12
+    page_size = 10

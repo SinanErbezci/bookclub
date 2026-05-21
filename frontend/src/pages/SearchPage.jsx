@@ -36,6 +36,10 @@ function SearchPage() {
   const [loading, setLoading] =
     useState(true);
 
+  const totalPages = Math.ceil(
+    results.books_count / 10
+  );
+
   useEffect(() => {
     async function fetchResults() {
       if (!query.trim()) {
@@ -84,6 +88,46 @@ function SearchPage() {
     results.authors.length > 0 ||
     results.genres.length > 0;
 
+
+  function getVisiblePages() {
+    const currentPage = Number(page);
+
+    const pages = [];
+
+    // ALWAYS show first page
+    pages.push(1);
+
+    // LEFT ELLIPSIS
+    if (currentPage > 4) {
+      pages.push("...");
+    }
+
+    // MIDDLE PAGES
+    for (
+      let i = currentPage - 1;
+      i <= currentPage + 1;
+      i++
+    ) {
+      if (
+        i > 1 &&
+        i < totalPages
+      ) {
+        pages.push(i);
+      }
+    }
+
+    // RIGHT ELLIPSIS
+    if (currentPage < totalPages - 3) {
+      pages.push("...");
+    }
+
+    // ALWAYS show last page
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+
+    return [...new Set(pages)];
+  }
   return (
     <div className="container mt-5">
 
@@ -100,7 +144,7 @@ function SearchPage() {
       {loading ? (
         <div className="genre-grid">
           {Array.from({
-            length: 8,
+            length: 10,
           }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
@@ -135,8 +179,7 @@ function SearchPage() {
                 )}
 
               </div>
-
-              <div className="d-flex gap-3 mt-4">
+              <div className="d-flex gap-2 mt-4 align-items-center justify-content-center flex-wrap">
 
                 {results.previous && (
                   <Link
@@ -146,6 +189,35 @@ function SearchPage() {
                   >
                     Previous
                   </Link>
+                )}
+
+                {getVisiblePages().map(
+                  (item, index) => {
+
+                    if (item === "...") {
+                      return (
+                        <span
+                          key={index}
+                          className="px-2"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={item}
+                        to={`/search?q=${query}&page=${item}`}
+                        className={`btn ${Number(page) === item
+                            ? "btn-dark"
+                            : "btn-outline-dark"
+                          }`}
+                      >
+                        {item}
+                      </Link>
+                    );
+                  }
                 )}
 
                 {results.next && (
