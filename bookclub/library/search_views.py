@@ -21,7 +21,7 @@ from .serializers import (
 )
 
 from .pagination import SearchPagination
-
+import logging
 
 class SearchBooksAPIView(APIView):
     permission_classes = [AllowAny]
@@ -30,6 +30,14 @@ class SearchBooksAPIView(APIView):
         query = request.query_params.get("q", "").strip()
 
         mode = request.query_params.get("mode", "full")
+
+        logger = logging.getLogger(__name__)
+
+        logger.info(
+            "Search request | query=%s | mode=%s",
+        query,
+        mode,
+        )
 
         is_dropdown = mode == "dropdown"
 
