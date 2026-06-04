@@ -2,7 +2,7 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["sinanbook.club", "www.sinanbook.club"]
 
 CORS_ALLOW_ALL_ORIGINS = False
 
