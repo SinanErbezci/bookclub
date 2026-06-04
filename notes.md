@@ -75,7 +75,7 @@ author.books?.map(...)
 
 # AWS SETUP
 
-## EC2
+## Basic EC2 Setup
 ### SSH into EC2
 ```
 chmod 400 bookclub.pem # only owner can read
@@ -114,4 +114,21 @@ sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 ```
 sudo dnf install git -y
 git clone https://github.com/SinanErbezci/bookclub.git
+```
+
+## ECR Repo
+- Create repo and copy the url
+- If aws cli is not installed, install it
+```
+aws configure # enter your access key
+aws sts get-caller-identity # check your info
+```
+## Authenticate Docker to ECR
+```
+aws ecr get-login-password  --region eu-west-3  | docker login --username AWS  --password-stdin 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub
+```
+## Tag Current Image and Push
+```
+docker tag bookclub-web:latest 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:latest
+docker push 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:latest
 ```
