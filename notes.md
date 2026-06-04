@@ -71,3 +71,47 @@ author.books?.map(...)
 
 ## To do
 * Improve etl perfomance
+
+
+# AWS SETUP
+
+## EC2
+### SSH into EC2
+```
+chmod 400 bookclub.pem # only owner can read
+ssh -i bookclub.pem ec2-user@Public-IP
+```
+```
+cat /etc/os-release
+```
+
+### Install Docker
+```
+sudo dnf update -y # update package
+sudo dnf install docker -y
+sudo systemctl docker enable docker # enable at boot
+sudo systemctl docker start docker # start service
+docker --version
+```
+### Add yourself to Docker Group
+```
+# you won't use sudo docker ps everytime
+sudo usermod -aG docker ec2-user 
+```
+
+### Installing Docker Compose manually
+```
+sudo mkdir -p /usr/libexec/docker/cli-plugins/
+
+sudo curl -SL \
+https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m) \
+-o /usr/libexec/docker/cli-plugins/docker-compose
+
+sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+```
+
+### Install Git and Clone Rep
+```
+sudo dnf install git -y
+git clone https://github.com/SinanErbezci/bookclub.git
+```

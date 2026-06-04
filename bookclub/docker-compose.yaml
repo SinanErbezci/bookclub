@@ -21,7 +21,7 @@ services:
       - .env
 
     environment:
-      DJANGO_SETTINGS_MODULE: mysite.settings.development
+      DJANGO_SETTINGS_MODULE: mysite.settings.production
 
   nginx:
     image: nginx:stable-alpine
