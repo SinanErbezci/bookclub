@@ -132,4 +132,12 @@ aws ecr get-login-password  --region eu-west-3  | docker login --username AWS  -
 docker tag bookclub-web:latest 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:latest
 docker push 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:latest
 ```
-###
+### SSM Agent
+Rather than using aws configure in ec2, use ssm with iam role. Safer
+- Role -> EC2 - AmazonSSMManagedInstanceCore, AmazonEC2ContainerRegistryReadOnly
+- Attach role to instance
+```
+# check if it's attached
+aws ssm describe-instance-information \
+  --region eu-west-3
+```
