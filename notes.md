@@ -68,6 +68,12 @@ author.books?.map(...)
 "Only continue if the thing before ? exists"
 
 
+### Building npm server and testing
+```
+npm run build # creates build folder
+npx serve -s build # starts server
+```
+
 
 ## To do
 * Improve etl perfomance
@@ -140,4 +146,14 @@ Rather than using aws configure in ec2, use ssm with iam role. Safer
 # check if it's attached
 aws ssm describe-instance-information \
   --region eu-west-3
+```
+
+## Frontend on S3
+### Create ACM certificate on us-east-1
+### Create S3 Bucket
+```
+npm run build # creates build folder
+```
+```
+aws s3 sync build/ s3://sinanbook.club --delete
 ```
