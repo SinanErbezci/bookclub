@@ -5,7 +5,6 @@ import FeaturedGenre from "../features/FeaturedGenre";
 function Browse() {
   return (
     <div className="container mt-4">
-      <h1>deneme</h1>
       <RecentlyAdded />
       <FeaturedAuthor />
       <FeaturedGenre />
