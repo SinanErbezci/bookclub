@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
+from django.db import connection
 from django.contrib import messages
 from django.contrib.auth import authenticate,login, logout, get_user_model
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
@@ -46,7 +47,14 @@ def update_book_rating(book):
 User = get_user_model()
 
 def health_check(request):
-    return JsonResponse({"status": "ok"})
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        return JsonResponse({"status": "healthy"})
+    except Exception:
+        return JsonResponse(
+            {"status": "unhealthy"},
+            status=503,)
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CSRFAPIView(APIView):
