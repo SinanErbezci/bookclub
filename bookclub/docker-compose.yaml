@@ -22,6 +22,13 @@ services:
 
     environment:
       DJANGO_SETTINGS_MODULE: mysite.settings.production
+    
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-west-3
+        awslogs-group: bookclub/web
+        awslogs-stream: django
 
   nginx:
     image: nginx:stable-alpine
@@ -37,6 +44,12 @@ services:
 
     depends_on:
       - web
-
+    
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-west-3
+        awslogs-group: bookclub/nginx
+        awslogs-stream: nginx
 volumes:
   static_volume:
