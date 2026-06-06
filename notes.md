@@ -157,3 +157,9 @@ npm run build # creates build folder
 ```
 aws s3 sync build/ s3://sinanbook.club --delete
 ```
+
+
+#### Checking Log Config
+```
+docker inspect bookclub_web --format='{{.HostConfig.LogConfig.Type}}'
+```

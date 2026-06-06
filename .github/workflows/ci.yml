@@ -124,11 +124,14 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy BookClub" \
             --parameters 'commands=[
-              "cd /home/ec2-user/bookclub/bookclub",
+              "cd /home/ec2-user/bookclub",
+              "git fetch origin",
+              "git reset --hard origin/main",
+              "cd bookclub",
               "aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 796973519136.dkr.ecr.eu-west-3.amazonaws.com",
               "docker compose pull",
               "docker compose up -d --force-recreate",
-              "docker image prune -f"
+              "docker image prune -f""
             ]' \
             --region eu-west-3
 
