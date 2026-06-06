@@ -131,7 +131,7 @@ jobs:
               "aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 796973519136.dkr.ecr.eu-west-3.amazonaws.com",
               "docker compose pull",
               "docker compose up -d --force-recreate",
-              "docker image prune -f""
+              "docker image prune -f"
             ]' \
             --region eu-west-3
 
