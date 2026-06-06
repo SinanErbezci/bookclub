@@ -8,13 +8,14 @@ ALLOWED_HOSTS = [
     "sinanbook.club",
     "www.sinanbook.club",
     "api.sinanbook.club",
+    "172.31.47.209",
 ]
 # For ALB health checks. Adding ec2 private ip
-try:
-    _, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    ALLOWED_HOSTS.extend(ips)
-except Exception:
-    pass
+#try:
+#    _, _, ips = socket.gethostbyname_ex(socket.gethostname())
+#    ALLOWED_HOSTS.extend(ips)
+#except Exception:
+#    pass
 
 CORS_ALLOW_ALL_ORIGINS = False
 

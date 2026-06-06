@@ -163,3 +163,11 @@ aws s3 sync build/ s3://sinanbook.club --delete
 ```
 docker inspect bookclub_web --format='{{.HostConfig.LogConfig.Type}}'
 ```
+
+#### Check Allowed host settings
+```
+docker exec -it bookclub_web python -c "
+from django.conf import settings
+print(settings.ALLOWED_HOSTS)"
+" 
+```
