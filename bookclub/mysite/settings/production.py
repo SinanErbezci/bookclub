@@ -1,5 +1,5 @@
 from .base import *
-
+import socket 
 DEBUG = False
 
 ALLOWED_HOSTS = [
@@ -9,6 +9,12 @@ ALLOWED_HOSTS = [
     "www.sinanbook.club",
     "api.sinanbook.club",
 ]
+# For ALB health checks. Adding ec2 private ip
+try:
+    _, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    ALLOWED_HOSTS.extend(ips)
+except Exception:
+    pass
 
 CORS_ALLOW_ALL_ORIGINS = False
 
