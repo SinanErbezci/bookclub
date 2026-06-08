@@ -12,7 +12,7 @@ python manage.py runserver
 ```bash
 docker compose exec web python manage.py <command> <options>
 ```
-
+```
 frontend/
 ├── public/
 ├── src/
@@ -61,7 +61,7 @@ frontend/
 │
 ├── package.json
 └── vite.config.js / webpack.config.js
-
+```
 ### Javascript notes
 #### Optional chaning
 author.books?.map(...)
@@ -203,6 +203,13 @@ Terraform generates a plan based on desired state.
 
 Terraform treats all .tf files in a directory as one configuration.
 Terraform loads them all together.
+Terraform does not care about filenames.
+
+It loads every .tf file in the directory as one configuration.
+
+automatic dependency resolution is one of Terraform's biggest strengths.
+
+If something doesn't dependent on anything, it'll be created parallel to other things.
 
 Splitting by purpose makes large projects much easier to maintain.
 ```
@@ -219,14 +226,16 @@ It expects you to write the .tf files yourself.
 
 Never edit resources manually after Terraform manages them. Because terraform keeps track of resources on .tfstate
 
-#### Create files
+### Create files
 ```
 touch providers.tf versions.tf variables.tf outputs.tf terraform.tfvars ecr.tf
 ```
 - version -> pins the terraform and provider versions.
 - terraform.tfstate -> terraforms memory
+- outputs -> after creating the resources, it prints the values you want
+- data -> Reads something. Existing resource. Read only.
 
-#### Commands
+### Commands
 format your files
 ```
 terraform fmt
@@ -247,3 +256,9 @@ destroy resources
 ```
 terraform destroy
 ```
+
+### Importing
+```
+terraform import aws_ecr_repository.bookclub bookclub
+```
+Now your manual repo is in terraform.
