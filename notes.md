@@ -194,3 +194,56 @@ IAM Idenitity provider -> Add provider
 Web identity
 - token.actions.githubusercontent.com
 - sts.amazonaws.com
+
+
+# Starting with Terraform
+Terraform = Configuration + Desired State + Automation
+
+Terraform generates a plan based on desired state.
+
+Terraform treats all .tf files in a directory as one configuration.
+Terraform loads them all together.
+
+Splitting by purpose makes large projects much easier to maintain.
+```
+terraform init
+```
+terraform init only:
+
+Downloads providers
+Creates the .terraform/ directory
+Creates .terraform.lock.hcl
+Prepares the working directory
+
+It expects you to write the .tf files yourself.
+
+Never edit resources manually after Terraform manages them. Because terraform keeps track of resources on .tfstate
+
+#### Create files
+```
+touch providers.tf versions.tf variables.tf outputs.tf terraform.tfvars ecr.tf
+```
+- version -> pins the terraform and provider versions.
+- terraform.tfstate -> terraforms memory
+
+#### Commands
+format your files
+```
+terraform fmt
+```
+checks your syntax errors
+```
+terraform validate
+```
+shows what terraform would do
+```
+terraform plan
+```
+apply the plans
+```
+terraform apply
+````
+destroy resources
+```
+terraform destroy
+```
