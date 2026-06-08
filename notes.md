@@ -106,6 +106,8 @@ sudo usermod -aG docker ec2-user
 ```
 
 ### Installing Docker Compose manually
+
+
 ```
 sudo mkdir -p /usr/libexec/docker/cli-plugins/
 
@@ -114,6 +116,12 @@ https://github.com/docker/compose/releases/latest/download/docker-compose-linux-
 -o /usr/libexec/docker/cli-plugins/docker-compose
 
 sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+
+sudo curl -SL \
+https://github.com/docker/buildx/releases/download/v0.34.1/buildx-v0.34.1.linux-amd64 \
+-o /usr/libexec/docker/cli-plugins/docker-buildx
+
+sudo chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
 ```
 
 ### Install Git and Clone Rep
@@ -171,3 +179,18 @@ from django.conf import settings
 print(settings.ALLOWED_HOSTS)"
 " 
 ```
+
+### AWS OIDC
+To avoid manaully adding your aws secrets to github secrets.
+#### Create OIDC Identity Provider
+IAM Idenitity provider -> Add provider
+| Field         | Value                                         |
+| ------------- | --------------------------------------------- |
+| Provider type | OpenID Connect                                |
+| Provider URL  | `https://token.actions.githubusercontent.com` |
+| Audience      | `sts.amazonaws.com`                           |
+#### Create New Role
+- Trusted entity type:
+Web identity
+- token.actions.githubusercontent.com
+- sts.amazonaws.com

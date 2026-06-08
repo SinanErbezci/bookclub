@@ -11,6 +11,10 @@ on:
       - main
       - old-main
 
+permissions:
+  id-token: write
+  contents: read
+  
 jobs:
 
   backend:
@@ -99,9 +103,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: arn:aws:iam::796973519136:role/github-actions-bookclub
+          aws-region: eu-west-3
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -161,9 +164,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::796973519136:role/github-actions-bookclub
+          aws-region: eu-west-3
 
       - name: Upload build to S3
         run: |
