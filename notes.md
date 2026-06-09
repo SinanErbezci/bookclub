@@ -226,6 +226,27 @@ It expects you to write the .tf files yourself.
 
 Never edit resources manually after Terraform manages them. Because terraform keeps track of resources on .tfstate
 
+Some resource attributes are marked by the provider as ForceNew.
+
+That means:
+
+"If this changes, the resource must be destroyed and recreated."
+
+### Remote State and Bootstrap Foler
+store your "terraform.tfstate" in a s3 bucket so it doesn't deleted accidentally.
+
+```
+Terraform
+    │
+    ├── Backend
+    │      └── Where state is stored
+    │
+    ├── Provider
+    │      └── How to talk to AWS
+    │
+    └── Resources
+           └── What to create
+```
 ### Create files
 ```
 touch providers.tf versions.tf variables.tf outputs.tf terraform.tfvars ecr.tf
@@ -262,3 +283,13 @@ terraform destroy
 terraform import aws_ecr_repository.bookclub bookclub
 ```
 Now your manual repo is in terraform.
+
+### Modules and Locals
+Modules -> Functions for terraform resources. Reuse it.
+Locals -> like constanst in programming
+
+### Built-in Functions
+merge() -> takes multiple inputs returns one
+jsonencode() -> lets you write native objects, converts them to JSON
+path.module -> a built-in reference that returns the local filesystem path of the module where the expression is evaluated
+templatefile() -> it can inject variables.

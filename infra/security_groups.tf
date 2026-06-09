@@ -3,8 +3,5 @@ resource "aws_security_group" "alb" {
   description = "Security group for ALB"
   vpc_id      = data.aws_vpc.default.id
 
-  tags = {
-    Project = "BookClub"
-    Managed = "Terraform"
-  }
+  tags = local.common_tags
 }

@@ -34,3 +34,8 @@ etl_rejects*.csv
 
 *tar.gz
 *tar
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+*.tfplan
