@@ -1,6 +1,6 @@
     locals {
   common_tags = {
-    Project     = "BookClub"
+    Project     = "Bookclub"
     Environment = "Production"
     Managed     = "Terraform"
   }

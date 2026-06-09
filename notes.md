@@ -293,3 +293,21 @@ merge() -> takes multiple inputs returns one
 jsonencode() -> lets you write native objects, converts them to JSON
 path.module -> a built-in reference that returns the local filesystem path of the module where the expression is evaluated
 templatefile() -> it can inject variables.
+
+### Looking at current infra
+```
+aws iam list-roles \
+    --query "Roles[*].RoleName"
+
+aws iam list-instance-profiles \
+    --query "InstanceProfiles[*].InstanceProfileName"
+
+aws iam list-attached-role-policies \
+    --role-name YOUR_ROLE_NAME
+
+aws iam get-role \
+  --role-name bookclub-ec2-role
+
+aws iam list-attached-role-policies \
+  --role-name bookclub-ec2-role
+```
