@@ -1,4 +1,3 @@
-```bash
 #!/bin/bash
 
 set -euo pipefail
@@ -7,7 +6,7 @@ echo "======================================"
 echo "Starting BookClub deployment..."
 echo "======================================"
 
-cd /home/ec2-user/bookclub/bookclub
+cd cd /opt/bookclub
 
 echo "Logging into Amazon ECR..."
 
@@ -31,4 +30,3 @@ docker image prune -f
 echo "======================================"
 echo "Deployment completed successfully!"
 echo "======================================"
-```

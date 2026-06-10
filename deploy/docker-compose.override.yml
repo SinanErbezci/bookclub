@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: ../bookclub
+      dockerfile: Dockerfile
+
+    image: bookclub:local
+    volumes:
+      - ../bookclub:/app
+
+    ports:
+      - "8000:8000"
+      
+    command: python manage.py runserver 0.0.0.0:8000
+
+  nginx:
+    ports:
+      - "8080:80"
