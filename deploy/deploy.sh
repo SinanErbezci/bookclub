@@ -2,31 +2,24 @@
 
 set -euo pipefail
 
-echo "======================================"
-echo "Starting BookClub deployment..."
-echo "======================================"
+cd /opt/bookclub
 
-cd cd /opt/bookclub
+aws ssm get-parameter \
+    --name "/bookclub/production/env" \
+    --with-decryption \
+    --query Parameter.Value \
+    --output text \
+    > .env
 
-echo "Logging into Amazon ECR..."
+chmod 600 .env
 
 aws ecr get-login-password --region eu-west-3 \
 | docker login \
     --username AWS \
     --password-stdin 796973519136.dkr.ecr.eu-west-3.amazonaws.com
 
-echo "Pulling latest images..."
-
 docker compose pull
 
-echo "Recreating containers..."
-
-docker compose up -d --force-recreate
-
-echo "Removing unused Docker images..."
+docker compose up -d --force-recreate --remove-orphans
 
 docker image prune -f
-
-echo "======================================"
-echo "Deployment completed successfully!"
-echo "======================================"

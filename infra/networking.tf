@@ -1,10 +1,10 @@
 resource "aws_security_group" "ec2" {
-    name = "launch-wizard-6"
-    description = "launch-wizard-6 created 2026-06-04T08:46:00.889Z"
+  name        = "launch-wizard-6"
+  description = "launch-wizard-6 created 2026-06-04T08:46:00.889Z"
 
-    vpc_id = "vpc-02871713f3675bb3e"
+  vpc_id = "vpc-02871713f3675bb3e"
 
-    tags = local.common_tags
+  tags = local.common_tags
 }
 
 resource "aws_security_group" "alb" {

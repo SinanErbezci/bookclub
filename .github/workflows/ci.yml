@@ -120,6 +120,10 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Upload deployment assets
+        run: |
+          aws s3 sync deploy/ s3://sinan-bookclub-deploy-assets --delete
+
       - name: Deploy via SSM
         run: |
           aws ssm send-command \
@@ -127,10 +131,10 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy BookClub" \
             --parameters 'commands=[
-              "sudo -u ec2-user git -C /home/ec2-user/bookclub fetch origin",
-              "sudo -u ec2-user git -C /home/ec2-user/bookclub reset --hard origin/main",
-              "chmod +x /home/ec2-user/bookclub/deploy.sh",
-              "/home/ec2-user/bookclub/deploy.sh"
+              "aws s3 sync s3://sinan-bookclub-deploy-assets /opt/bookclub --delete
+              chmod +x /opt/bookclub/deploy.sh
+              cd /opt/bookclub
+              ./deploy.sh"
             ]' \
             --region eu-west-3
 

@@ -1,12 +1,12 @@
 services:
   web:
     build:
-      context: ../bookclub
+      context: .
       dockerfile: Dockerfile
 
     image: bookclub:local
     volumes:
-      - ../bookclub:/app
+      - .:/app
 
     ports:
       - "8000:8000"

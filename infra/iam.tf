@@ -44,3 +44,29 @@ resource "aws_iam_role_policy_attachment" "ecr" {
   role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
+
+resource "aws_iam_policy" "deploy_assets_read" {
+  name = "bookclub-deploy-assets-read"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.deploy_assets.arn,
+          "${aws_s3_bucket.deploy_assets.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "deploy_assets_read" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.deploy_assets_read.arn
+}

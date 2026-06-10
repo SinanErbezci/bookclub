@@ -311,3 +311,31 @@ aws iam get-role \
 aws iam list-attached-role-policies \
   --role-name bookclub-ec2-role
 ```
+
+# Bash Commands
+```
+set -euxo
+```
+e -> Exit immediately if any command fails.
+u -> Treat undefined variables as errors. Not empty string
+x -> Print every command before executing it.
+-o pipefail -> the pipeline fails if any command in it fails.
+```
+exec > >(tee /var/log/user-data.log)
+```
+output is:
+
+displayed on the console
+and written to:
+```
+sudo cat /var/log/user-data.log
+# to look at your logs
+```
+
+```
+aws ssm put-parameter \
+  --name "/bookclub/production/env" \
+  --type "SecureString" \
+  --value "$(cat bookclub/.env)" \
+  --overwrite
+```
