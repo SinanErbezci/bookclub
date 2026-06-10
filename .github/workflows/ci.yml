@@ -124,8 +124,10 @@ jobs:
         run: |
           aws s3 sync deploy/ s3://sinan-bookclub-deploy-assets --delete
 
+
       - name: Deploy via SSM
         run: |
+          set -e
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
@@ -136,20 +138,21 @@ jobs:
               "cd /opt/bookclub",
               "./deploy.sh"
             ]' \
-            --region eu-west-3
+            --region eu-west-3 \
             --query "Command.CommandId" \
             --output text)
-          
+
           echo "Command ID: $COMMAND_ID"
 
-          sleep 5
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
 
-          aws ssm wait command-executed \ 
-          --command-id "$COMMAND_ID" \ 
-          --instance-id "${{ secrets.EC2_INSTANCE_ID }}" 
-          aws ssm get-command-invocation \ 
-          --command-id "$COMMAND_ID" \ 
-          --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+
+
 
   frontend-deploy:
     runs-on: ubuntu-latest
