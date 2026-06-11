@@ -339,3 +339,20 @@ aws ssm put-parameter \
   --value "$(cat bookclub/.env)" \
   --overwrite
 ```
+
+#### Listing AWS resources
+```
+aws iam list-open-id-connect-providers
+aws s3 ls
+aws cloudfront list-distributions
+aws route53 list-hosted-zones
+aws acm list-certificates --region us-east-1
+aws acm list-certificates --region eu-west-3
+aws elbv2 describe-load-balancers
+aws elbv2 describe-target-groups
+aws elbv2 describe-listeners --load-balancer-arn <your-alb-arn>
+aws ec2 describe-vpcs
+aws ec2 describe-subnets
+aws ec2 describe-internet-gateways
+aws ec2 describe-route-tables
+```

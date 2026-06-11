@@ -22,3 +22,11 @@ resource "aws_s3_bucket_versioning" "deploy_assets" {
     status = "Enabled"
   }
 }
+
+resource "aws_s3_bucket" "frontend" {
+  bucket = "sinanbook.club"
+
+  tags = local.common_tags
+
+  provider = aws.us_east_1
+}
