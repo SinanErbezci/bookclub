@@ -1,5 +1,5 @@
 from .base import *
-import os, socket
+import os
 
 DEBUG = False
 
@@ -12,11 +12,10 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-try:
-    _, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    ALLOWED_HOSTS = list(set(ALLOWED_HOSTS + ips))
-except Exception:
-    pass
+private_ip = os.getenv("EC2_PRIVATE_IP")
+
+if private_ip:
+    ALLOWED_HOSTS.append(private_ip)
 
 CORS_ALLOW_ALL_ORIGINS = False
 
