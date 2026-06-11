@@ -272,12 +272,17 @@ terraform plan
 apply the plans
 ```
 terraform apply
-````
+```
 destroy resources
 ```
 terraform destroy
 ```
-
+```
+terraform plan -generate-config-out=generated.tf
+```
+```
+terraform state show aws_cloudfront_distribution.frontend
+```
 ### Importing
 ```
 terraform import aws_ecr_repository.bookclub bookclub
@@ -355,4 +360,19 @@ aws ec2 describe-vpcs
 aws ec2 describe-subnets
 aws ec2 describe-internet-gateways
 aws ec2 describe-route-tables
+aws ec2 describe-instances \
+  --filters Name=instance-state-name,Values=running \
+  --query "Reservations[].Instances[].{Id:InstanceId,Name:Tags[?Key=='Name']|[0].Value}" \
+  --output table
+```
+sending ssm command and getting the output
+```
+aws ssm send-command \
+  --instance-ids i-0e3d4e4ab6b9fd17a \
+  --document-name AWS-RunShellScript \
+  --parameters commands='["docker ps","curl -i http://localhost/health/"]'
+
+aws ssm get-command-invocation \
+  --command-id ac306d3b-b0a4-4b60-8ff7-a7f2dda7794f \
+  --instance-id i-0e3d4e4ab6b9fd17a
 ```
