@@ -1,5 +1,5 @@
 from .base import *
-import os 
+import os, socket
 
 DEBUG = False
 
@@ -7,16 +7,16 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(
         "DJANGO_ALLOWED_HOSTS",
-        "localhost,127.0.0.1,sinanbook.club,www.sinanbook.club"
+        "localhost,127.0.0.1"
     ).split(",")
     if host.strip()
 ]
-# For ALB health checks. Adding ec2 private ip
-#try:
-#    _, _, ips = socket.gethostbyname_ex(socket.gethostname())
-#    ALLOWED_HOSTS.extend(ips)
-#except Exception:
-#    pass
+
+try:
+    _, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    ALLOWED_HOSTS = list(set(ALLOWED_HOSTS + ips))
+except Exception:
+    pass
 
 CORS_ALLOW_ALL_ORIGINS = False
 
