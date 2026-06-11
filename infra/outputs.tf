@@ -11,3 +11,8 @@ output "bookclub_v2_public_dns" {
   description = "Public DNS of the bookclub-v2 instance"
   value       = aws_instance.bookclub_v2.public_dns
 }
+
+output "loadbalancer_arn" {
+  description = "Arn of loadbalancer"
+  value       = aws_lb.bookclub.arn
+}
