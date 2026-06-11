@@ -1,14 +1,15 @@
 from .base import *
-import socket 
+import os 
+
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "sinanbook.club",
-    "www.sinanbook.club",
-    "api.sinanbook.club",
-    "172.31.47.209",
+    host.strip()
+    for host in os.getenv(
+        "DJANGO_ALLOWED_HOSTS",
+        "localhost,127.0.0.1,sinanbook.club,www.sinanbook.club"
+    ).split(",")
+    if host.strip()
 ]
 # For ALB health checks. Adding ec2 private ip
 #try:
