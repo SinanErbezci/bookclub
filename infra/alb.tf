@@ -13,9 +13,9 @@ resource "aws_lb" "bookclub" {
 
   tags = local.common_tags
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 }
 
 resource "aws_lb_target_group" "bookclub" {
@@ -31,9 +31,9 @@ resource "aws_lb_target_group" "bookclub" {
     unhealthy_threshold = 2
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   tags = local.common_tags
 }
