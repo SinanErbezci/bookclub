@@ -1,7 +1,3 @@
-output "ecr_repository_name" {
-  value = aws_ecr_repository.bookclub.repository_url
-}
-
 output "bookclub_v2_public_ip" {
   description = "Public IP of the bookclub-v2 instance"
   value       = aws_instance.web.public_ip
@@ -24,4 +20,12 @@ output "target_group_arn" {
 
 output "hosted_zone_id" {
   value = aws_route53_zone.main.zone_id
+}
+
+output "alb_dns_name" {
+  value = aws_lb.bookclub.dns_name
+}
+
+output "cloudfront_distribution_id" {
+  value = aws_cloudfront_distribution.frontend.id
 }

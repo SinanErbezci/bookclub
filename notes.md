@@ -364,8 +364,13 @@ aws ec2 describe-instances \
   --filters Name=instance-state-name,Values=running \
   --query "Reservations[].Instances[].{Id:InstanceId,Name:Tags[?Key=='Name']|[0].Value}" \
   --output table
-```
+
+  
+aws logs describe-log-groups \
+  --query "logGroups[].logGroupName"
 sending ssm command and getting the output
+```
+
 ```
 aws ssm send-command \
   --instance-ids i-0e3d4e4ab6b9fd17a \
