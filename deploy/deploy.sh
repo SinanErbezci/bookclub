@@ -21,6 +21,10 @@ PRIVATE_IP=$(curl -s \
 
 printf "\nEC2_PRIVATE_IP=%s\n" "$PRIVATE_IP" >> .env
 
+IMAGE_TAG=$(cat image-tag.txt)
+
+printf "IMAGE_TAG=%s\n" "$IMAGE_TAG" >> .env
+
 chmod 600 .env
 
 aws ecr get-login-password --region eu-west-3 \

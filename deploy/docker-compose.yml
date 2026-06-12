@@ -1,6 +1,6 @@
 services:
   web:
-    image: 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:latest
+    image: 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:${IMAGE_TAG}
     
     healthcheck:
       test: ["CMD", "curl",  "-f", "http://localhost:8000/health/"]
