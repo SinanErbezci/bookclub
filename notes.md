@@ -370,12 +370,20 @@ sending ssm command and getting the output
 aws ssm send-command \
   --instance-ids i-0e3d4e4ab6b9fd17a \
   --document-name AWS-RunShellScript \
-  --parameters commands='["docker ps","curl -i http://localhost/health/"]'
+  --parameters commands='["docker ps","curl -i http://localhost/health/"]' \
+  --query "Command.CommandId"
 
 aws ssm get-command-invocation \
   --command-id ac306d3b-b0a4-4b60-8ff7-a7f2dda7794f \
   --instance-id i-0e3d4e4ab6b9fd17a
+
+sudo docker inspect bookclub-web-1 \
+  --format='{{.Config.Image}}'
 ```
 
 # Other Stuff
 "${{ github.sha }}" -> full commit hash of the commit that triggered the workflow.
+
+c58ff55c-1a31-490d-97cf-c95a5b9e753d
+
+

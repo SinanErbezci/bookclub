@@ -25,25 +25,6 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_instance" "web" {
-  ami           = "ami-0a2448cb3133c8a05"
-  instance_type = "t3.micro"
-
-  subnet_id = "subnet-0ed286b4f00553381"
-
-  vpc_security_group_ids = [
-    aws_security_group.ec2.id
-  ]
-
-  iam_instance_profile = aws_iam_instance_profile.ec2.name
-
-  key_name = "bookclub"
-
-  tags = {
-    Name = "bookclub-prod"
-  }
-}
-
-resource "aws_instance" "bookclub_v2" {
   ami           = "ami-0e47b3d5b1489276c" # you can use data source 
   instance_type = "t3.micro"
 
@@ -69,7 +50,7 @@ resource "aws_instance" "bookclub_v2" {
   ebs_optimized = true
 
   tags = merge(local.common_tags, {
-    Name = "bookclub-v2"
+    Name = "bookclub-prod"
   })
 
   root_block_device {
