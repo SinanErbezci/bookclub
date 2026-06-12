@@ -21,3 +21,7 @@ output "target_group_arn" {
   description = "Bookclub target group ARN"
   value       = aws_lb_target_group.bookclub.arn
 }
+
+output "hosted_zone_id" {
+  value = aws_route53_zone.main.zone_id
+}

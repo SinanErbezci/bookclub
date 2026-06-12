@@ -81,3 +81,9 @@ resource "aws_lb_listener" "https" {
     }
   }
 }
+
+resource "aws_lb_target_group_attachment" "web" {
+  target_group_arn = aws_lb_target_group.bookclub.arn
+  target_id        = aws_instance.web.id
+  port             = 80
+}

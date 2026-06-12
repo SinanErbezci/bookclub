@@ -237,6 +237,15 @@ resource "aws_iam_policy" "github_actions" {
         ]
 
         Resource = "*"
+      },
+      {
+        Sid = "EC2InstanceID"
+        Effect = "Allow"
+
+        Action = [
+          "ec2:DescribeInstances"
+        ]
+        Resource = "*"
       }
     ]
   })
