@@ -1,17 +1,17 @@
 resource "aws_security_group" "ec2" {
-  name        = "launch-wizard-6"
-  description = "launch-wizard-6 created 2026-06-04T08:46:00.889Z"
+  name        = "bookclub-ec2"
+  description = "EC2 security group"
 
-  vpc_id = "vpc-02871713f3675bb3e"
+  vpc_id = aws_vpc.main.id
 
   tags = local.common_tags
 }
 
 resource "aws_security_group" "alb" {
-  name        = "alb-security-group"
-  description = "bookclub"
+  name        = "bookclub-alb"
+  description = "ALB security group"
 
-  vpc_id = "vpc-02871713f3675bb3e"
+  vpc_id = aws_vpc.main.id
 
   tags = local.common_tags
 }
@@ -39,18 +39,6 @@ resource "aws_vpc_security_group_ingress_rule" "http_from_alb" {
 
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ssh" {
-
-  security_group_id = aws_security_group.ec2.id
-
-  ip_protocol = "tcp"
-
-  from_port = 22
-  to_port   = 22
-
-  cidr_ipv4 = "94.55.25.219/32"
-
-}
 
 resource "aws_vpc_security_group_ingress_rule" "alb_http" {
 

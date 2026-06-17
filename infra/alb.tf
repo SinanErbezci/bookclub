@@ -6,35 +6,31 @@ resource "aws_lb" "bookclub" {
   security_groups = [aws_security_group.alb.id]
 
   subnets = [
-    "subnet-0189105bc05b188e0",
-    "subnet-0073e6c08bfc14274",
-    "subnet-0ed286b4f00553381",
+    aws_subnet.public_a.id,
+    aws_subnet.public_b.id,
   ]
 
   tags = local.common_tags
-
-  # lifecycle {
-  #   prevent_destroy = true
-  # }
 }
+
 
 resource "aws_lb_target_group" "bookclub" {
   name     = "bookclub-target"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = "vpc-02871713f3675bb3e"
+  vpc_id   = aws_vpc.main.id
 
   health_check {
-    enabled             = true
-    path                = "/health/"
+    enabled  = true
+    path     = "/health/"
+    protocol = "HTTP"
+    matcher  = "200"
+
     healthy_threshold   = 5
     unhealthy_threshold = 2
+    interval            = 30
+    timeout             = 5
   }
-
-  # lifecycle {
-  #   prevent_destroy = true
-  # }
-
   tags = local.common_tags
 }
 

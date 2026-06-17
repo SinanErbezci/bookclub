@@ -33,7 +33,7 @@ resource "aws_s3_bucket" "frontend" {
 
 resource "aws_s3_bucket_policy" "frontend" {
   provider = aws.us_east_1
-  bucket = aws_s3_bucket.frontend.id
+  bucket   = aws_s3_bucket.frontend.id
 
   policy = jsonencode({
     Version = "2008-10-17"

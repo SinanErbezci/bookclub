@@ -1,13 +1,3 @@
-output "bookclub_v2_public_ip" {
-  description = "Public IP of the bookclub-v2 instance"
-  value       = aws_instance.web.public_ip
-}
-
-output "bookclub_v2_public_dns" {
-  description = "Public DNS of the bookclub-v2 instance"
-  value       = aws_instance.web.public_dns
-}
-
 output "loadbalancer_arn" {
   description = "Arn of loadbalancer"
   value       = aws_lb.bookclub.arn

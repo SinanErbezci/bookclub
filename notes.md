@@ -392,3 +392,75 @@ sudo docker inspect bookclub-web-1 \
 c58ff55c-1a31-490d-97cf-c95a5b9e753d
 
 
+# Creating Golden AMI
+```
+sudo dnf update -y
+sudo dnf install -y docker
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo systemctl status docker
+sudo dnf install -y amazon-cloudwatch-agent
+sudo mkdir -p /usr/libexec/docker/cli-plugins
+sudo curl -fsSL \
+https://github.com/docker/compose/releases/download/v2.39.1/docker-compose-linux-$(uname -m) \
+-o /usr/libexec/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+sudo usermod -aG docker ec2-user
+sudo mkdir -p /opt/bookclub/nginx
+
+sudo chown -R ec2-user:ec2-user /opt/bookclub
+
+sudo chmod 755 /opt/bookclub
+docker --version
+docker compose version
+aws --version
+id ec2-user
+
+sudo dnf clean all
+sudo rm -rf /var/cache/dnf
+sudo rm -rf /tmp/*
+sudo truncate -s 0 /var/log/user-data.log || true
+```
+
+#### old user-data
+```
+
+#!/bin/bash
+set -euxo pipefail
+
+exec > >(tee /var/log/user-data.log)
+exec 2>&1
+
+dnf install -y docker
+
+systemctl enable docker
+systemctl start docker
+
+until docker info >/dev/null 2>&1; do
+  sleep 1
+done
+
+# Install Docker Compose plugin
+
+mkdir -p /usr/libexec/docker/cli-plugins
+
+curl -fsSL \
+  "https://github.com/docker/compose/releases/download/v2.39.1/docker-compose-linux-$(uname -m)" \
+  -o /usr/libexec/docker/cli-plugins/docker-compose
+
+chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+
+test -x /usr/libexec/docker/cli-plugins/docker-compose
+
+usermod -aG docker ec2-user
+
+mkdir -p /opt/bookclub/nginx
+chown -R ec2-user:ec2-user /opt/bookclub
+chmod 755 /opt/bookclub
+
+docker --version
+docker compose version
+aws --version
+
+echo "EC2 bootstrap complete"
+```

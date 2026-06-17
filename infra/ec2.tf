@@ -25,15 +25,17 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_instance" "web" {
-  ami           = "ami-0e47b3d5b1489276c" # you can use data source 
+  ami           = var.base_ami # you can use data source 
   instance_type = "t3.micro"
 
-  subnet_id              = "subnet-0ed286b4f00553381"
+
+  subnet_id                   = aws_subnet.private_a.id
+  associate_public_ip_address = false
+
   vpc_security_group_ids = [aws_security_group.ec2.id]
 
   iam_instance_profile = aws_iam_instance_profile.ec2.name
 
-  key_name = "bookclub"
 
   user_data = templatefile(
     "${path.module}/templates/user_data.sh.tpl",
@@ -56,9 +58,10 @@ resource "aws_instance" "web" {
   root_block_device {
     volume_type = "gp3"
     volume_size = 8
+      delete_on_termination = true
 
     tags = merge(local.common_tags, {
-      Name = "bookclub-v2-root"
+      Name = "bookclub-root"
     })
   }
 }

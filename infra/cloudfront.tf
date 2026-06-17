@@ -54,11 +54,11 @@ resource "aws_cloudfront_distribution" "frontend" {
 
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
 
-    compress           = true
-    min_ttl            = 0
-    default_ttl        = 0
-    max_ttl            = 0
-    smooth_streaming   = false
+    compress         = true
+    min_ttl          = 0
+    default_ttl      = 0
+    max_ttl          = 0
+    smooth_streaming = false
 
     grpc_config {
       enabled = false
