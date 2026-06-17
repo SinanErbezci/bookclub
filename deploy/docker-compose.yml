@@ -19,7 +19,7 @@ services:
       - .env
 
   nginx:
-    image: nginx:stable-alpine
+    image: 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:nginx
     restart: unless-stopped
 
     ports:
