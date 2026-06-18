@@ -17,6 +17,13 @@ services:
 
     env_file:
       - .env
+    
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-west-3
+        awslogs-group: bookclub/web
+        awslogs-stream: django
 
   nginx:
     image: 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:nginx
@@ -31,6 +38,13 @@ services:
 
     depends_on:
       - web
+
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: eu-west-3
+        awslogs-group: bookclub/nginx
+        awslogs-stream: nginx
     
 volumes:
   static_volume:
