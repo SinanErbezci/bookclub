@@ -102,7 +102,11 @@ Also Terraform state stored in S3 bucket rather in local computer. This enables 
 ## CI/CD Pipeline
 The project uses GitHub Actions to automate frontend and backend deployments. Every push triggers a validation stage that verifies the frontend, backend, and Docker configuration before deployment artifacts are built and published. Successful backend deployments build and publish a Docker image to Amazon ECR, while frontend deployments build the React application and publish static assets to Amazon S3, followed by a CloudFront cache invalidation.
 
-![CI/CD](docs/images/cicd.png)
+<p align="center">
+  <img src="docs/images/cicd.png" height="700">
+</p>
+
+
 ## Future Roadmap
 
 - Migrate from Neon PostgreSQL to Amazon RDS.
