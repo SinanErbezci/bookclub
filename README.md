@@ -38,6 +38,16 @@ The project originally started as my [CS50W Final Project](https://github.com/Si
 - 🔑 Secrets management with AWS Systems Manager Parameter Store
 - 💰 Cost-optimized infrastructure using a custom AMI, VPC endpoints, and selective resource provisioning
 ## Screenshots
+<p align="center"><b>Home Page</b></p> 
+<p align="center"> <img src="docs/images/homepage.png" width="800"> </p> 
+<p align="center"><b>Book Page</b></p>
+<p align="center"> <img src="docs/images/bookpage.png" width="800"> </p> 
+<p align="center"><b>Profile</b></p> 
+<p align="center"> <img src="docs/images/profilepage.png" width="800"> </p> 
+<p align="center"><b>Search Bar</b></p> 
+<p align="center"> <img src="docs/images/searchbar.png" width="800"> </p> 
+<p align="center"><b>Search Page</b></p>
+<p align="center"> <img src="docs/images/searchpage.png" width="800"> </p> 
 
 ## Architecture
 BookClub follows a decoupled full-stack architecture with separate frontend and backend services. The React frontend is hosted on Amazon S3 and distributed globally through Amazon CloudFront, while the Django REST API runs inside Docker containers on Amazon EC2 behind an Application Load Balancer.
