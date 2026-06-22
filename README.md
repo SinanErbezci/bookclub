@@ -5,12 +5,7 @@
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange)
 ![Docker](https://img.shields.io/badge/Docker-Container-blue)
 
-A full-stack cloud-native social platform for book enthusiasts, built with React, Django, Docker, Terraform, and AWS.
-
-Bookclub is social platform where you can find your favourite books,genres and authors and also write reviews, create your own lists and check out other fellow book readers.
-## Overview
-
-BookClub allows users to discover books, authors, and genres, write reviews, create personalized reading lists, and explore recommendations from other readers.
+[BookClub](https://sinanbook.club/)  allows users to discover books, authors, and genres, write reviews, create personalized reading lists, and explore recommendations from other readers.
 
 The project originally started as my [CS50W Final Project](https://github.com/SinanErbezci/cs50w_final) and has since evolved into a production-style application with a React frontend, Django REST backend, and infrastructure fully managed with Terraform on AWS.
 
@@ -42,13 +37,7 @@ The project originally started as my [CS50W Final Project](https://github.com/Si
 - 📊 Centralized container logging with CloudWatch
 - 🔑 Secrets management with AWS Systems Manager Parameter Store
 - 💰 Cost-optimized infrastructure using a custom AMI, VPC endpoints, and selective resource provisioning
-## Live Demo
-
 ## Screenshots
-
-## Features
-
-## Tech Stack
 
 ## Architecture
 BookClub follows a decoupled full-stack architecture with separate frontend and backend services. The React frontend is hosted on Amazon S3 and distributed globally through Amazon CloudFront, while the Django REST API runs inside Docker containers on Amazon EC2 behind an Application Load Balancer.
@@ -98,10 +87,17 @@ All AWS infrastructure is provisioned and managed through Terraform. Networking,
 
 To further optimize costs during development, custom startup and shutdown scripts are included to automate the creation and removal of the most expensive infrastructure components when they are not needed. This allows the environment to be recreated on demand while minimizing ongoing AWS costs.
 
+Also Terraform state stored in S3 bucket rather in local computer. This enables more secure and collaborative development.
+
 ## CI/CD Pipeline
 The project uses GitHub Actions to automate frontend and backend deployments. Every push triggers a validation stage that verifies the frontend, backend, and Docker configuration before deployment artifacts are built and published. Successful backend deployments build and publish a Docker image to Amazon ECR, while frontend deployments build the React application and publish static assets to Amazon S3, followed by a CloudFront cache invalidation.
 
 ![CI/CD](docs/images/cicd.png)
 ## Future Roadmap
 
-## Lessons Learned
+- Migrate from Neon PostgreSQL to Amazon RDS.
+- Move the application tier into private subnets.
+- Implement Auto Scaling.
+- Add CloudWatch dashboards and alerts.
+- Improve search and recommendation features.
+- Experiment with ECS.
