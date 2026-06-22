@@ -4,6 +4,7 @@
 ![Terraform](https://img.shields.io/badge/Terraform-IaC-purple)
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange)
 ![Docker](https://img.shields.io/badge/Docker-Container-blue)
+
 A full-stack cloud-native social platform for book enthusiasts, built with React, Django, Docker, Terraform, and AWS.
 
 Bookclub is social platform where you can find your favourite books,genres and authors and also write reviews, create your own lists and check out other fellow book readers.
@@ -50,21 +51,57 @@ The project originally started as my [CS50W Final Project](https://github.com/Si
 ## Tech Stack
 
 ## Architecture
+BookClub follows a decoupled full-stack architecture with separate frontend and backend services. The React frontend is hosted on Amazon S3 and distributed globally through Amazon CloudFront, while the Django REST API runs inside Docker containers on Amazon EC2 behind an Application Load Balancer.
+
+Domain routing is managed through Amazon Route 53, and application data is stored in a managed PostgreSQL database hosted on Neon.
 ![Architecture](docs/images/architecture.jpg)
 ## Infrastructure
+All infrastructure is provisioned and managed through Terraform. The project evolved from a simple EC2 deployment to a production-style AWS environment featuring a custom VPC, centralized logging, automated deployments, secrets management, and immutable infrastructure practices.
+
+### Custom VPC
+
+The application is deployed inside a custom VPC rather than the default AWS VPC. The networking infrastructure is provisioned through Terraform and includes custom subnets, route tables, an internet gateway, and security groups.
+
+The backend infrastructure is isolated behind an Application Load Balancer (ALB). The EC2 instance does not accept direct public traffic and is only accessible through security group rules that allow connections originating from the ALB.
+
+Administrative access is provided through AWS Systems Manager (SSM) Session Manager instead of SSH. This eliminates the need to expose port 22 or manage SSH key pairs, reducing the attack surface while maintaining secure access for deployments and maintenance.
+
+### Domain & DNS
+
+A custom domain (`sinanbook.club`) was purchased from Namecheap and configured using Amazon Route 53. The application uses separate domains for the frontend and backend:
+
+* `sinanbook.club` → React frontend hosted on Amazon S3 and distributed through CloudFront
+* `api.sinanbook.club` → Django REST API served through an Application Load Balancer
+
+DNS records are managed through Route 53, allowing traffic to be routed to the appropriate AWS services. TLS certificates are provisioned and managed through AWS Certificate Manager (ACM), enabling HTTPS for both frontend and backend services.
+
+### Secrets Management
+
+Production secrets and environment variables are stored in AWS Systems Manager Parameter Store rather than being committed to source control or stored directly on the EC2 instance.
+
+During deployment, the EC2 instance retrieves encrypted parameters from Parameter Store and generates the runtime environment configuration required by the application. This approach centralizes secret management, simplifies credential rotation, and keeps sensitive information out of the codebase.
+
+### Centralized Logging
+
+Application and web server logs are centralized using Amazon CloudWatch Logs. Docker containers are configured with the `awslogs` logging driver, allowing Django and nginx logs to be streamed directly to CloudWatch.
+
+Centralized logging simplifies troubleshooting and monitoring by providing a single location to inspect application behavior, deployment issues, and runtime errors without requiring direct access to the server.
+
+### Golden AMI
+
+A custom Amazon Machine Image (AMI) was created with Docker and Docker Compose pre-installed. New EC2 instances can be launched in a deployment-ready state without repeating the initial server bootstrap process.
+
+Using a golden AMI reduces instance provisioning time, improves consistency between environments, and ensures that required dependencies are available immediately after launch.
+### Terraform
+
+All AWS infrastructure is provisioned and managed through Terraform. Networking, compute resources, DNS configuration, certificates, logging, container registry, and supporting AWS services are defined as code and version controlled alongside the application.
+
+To further optimize costs during development, custom startup and shutdown scripts are included to automate the creation and removal of the most expensive infrastructure components when they are not needed. This allows the environment to be recreated on demand while minimizing ongoing AWS costs.
 
 ## CI/CD Pipeline
+The project uses GitHub Actions to automate frontend and backend deployments. Every push triggers a validation stage that verifies the frontend, backend, and Docker configuration before deployment artifacts are built and published. Successful backend deployments build and publish a Docker image to Amazon ECR, while frontend deployments build the React application and publish static assets to Amazon S3, followed by a CloudFront cache invalidation.
+
 ![CI/CD](docs/images/cicd.png)
-## Terraform
-
-## Security
-
-## Cost Optimization
-
-## Local Development
-
-## Deployment
-
-## Future Improvements
+## Future Roadmap
 
 ## Lessons Learned
