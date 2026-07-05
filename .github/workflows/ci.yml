@@ -159,6 +159,7 @@ jobs:
             --comment "Deploy BookClub" \
             --parameters 'commands=[
               "aws s3 sync s3://sinan-bookclub-deploy-assets /opt/bookclub --delete",
+              "aws s3 cp s3://sinan-bookclub-deploy-assets/image-tag.txt /opt/bookclub/image-tag.txt",
               "chmod +x /opt/bookclub/deploy.sh",
               "cd /opt/bookclub",
               "./deploy.sh"
