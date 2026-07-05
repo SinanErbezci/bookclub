@@ -7,5 +7,5 @@ class LibraryConfig(AppConfig):
     name = 'library'
 
     def ready(self):
-        logger.info("CORS signal called for %s", request.path)
+        logger.info("LibraryConfig.ready() called")
         import library.cors
