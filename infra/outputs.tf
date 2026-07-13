@@ -8,10 +8,6 @@ output "target_group_arn" {
   value       = aws_lb_target_group.bookclub.arn
 }
 
-output "hosted_zone_id" {
-  value = aws_route53_zone.main.zone_id
-}
-
 output "alb_dns_name" {
   value = aws_lb.bookclub.dns_name
 }

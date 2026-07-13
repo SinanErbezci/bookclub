@@ -5,7 +5,7 @@
 ![AWS](https://img.shields.io/badge/AWS-Cloud-orange)
 ![Docker](https://img.shields.io/badge/Docker-Container-blue)
 
-[BookClub](https://sinanbook.club/)  allows users to discover books, authors, and genres, write reviews, create personalized reading lists, and explore recommendations from other readers.
+[BookClub](https://bookclub.sinanerbezci.com/)  allows users to discover books, authors, and genres, write reviews, create personalized reading lists, and explore recommendations from other readers.
 
 The project originally started as my [CS50W Final Project](https://github.com/SinanErbezci/cs50w_final) and has since evolved into a production-style application with a React frontend, Django REST backend, and infrastructure fully managed with Terraform on AWS.
 
@@ -67,10 +67,10 @@ Administrative access is provided through AWS Systems Manager (SSM) Session Mana
 
 ### Domain & DNS
 
-A custom domain (`sinanbook.club`) was purchased from Namecheap and configured using Amazon Route 53. The application uses separate domains for the frontend and backend:
+A custom domain (`sinanerbezci.com`) was purchased from Cloudfront and configured using Amazon Route 53. The application uses separate domains for the frontend and backend:
 
-* `sinanbook.club` → React frontend hosted on Amazon S3 and distributed through CloudFront
-* `api.sinanbook.club` → Django REST API served through an Application Load Balancer
+* `sinanerbezci.com` → React frontend hosted on Amazon S3 and distributed through CloudFront
+* `api.sinanerbezci.com` → Django REST API served through an Application Load Balancer
 
 DNS records are managed through Route 53, allowing traffic to be routed to the appropriate AWS services. TLS certificates are provisioned and managed through AWS Certificate Manager (ACM), enabling HTTPS for both frontend and backend services.
 
