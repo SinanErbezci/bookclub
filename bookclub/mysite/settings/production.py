@@ -22,13 +22,11 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://sinanbook.club",
-    "https://www.sinanbook.club",
+    "https://bookclub.sinanerbezci.com",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://sinanbook.club",
-    "https://www.sinanbook.club",
+    "https://bookclub.sinanerbezci.com",    
 ]
 
 SESSION_COOKIE_SAMESITE = "None"

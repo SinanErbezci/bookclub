@@ -25,8 +25,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   web_acl_id          = "arn:aws:wafv2:us-east-1:796973519136:global/webacl/CreatedByCloudFront-0662ba61/830b47ea-1c50-4205-9129-f305bc78e2ec"
 
   aliases = [
-    "sinanbook.club",
-    "www.sinanbook.club",
+    local.frontend_domain,
   ]
 
   origin {
