@@ -28,7 +28,10 @@ def build_book_embedding_text(book: Book) -> str:
 
     genres = ", ".join(
         genre.name
-        for genre in book.genres.all().order_by("name")
+        for genre in sorted(
+            book.genres.all(),
+            key=lambda genre: genre.name,
+        )
     )
 
     add_field("Genres", genres)
@@ -46,7 +49,8 @@ class EmbeddingService:
         )
 
         self.model = SentenceTransformer(
-            settings.EMBEDDING_MODEL_NAME
+            settings.EMBEDDING_MODEL_NAME,
+            device=settings.EMBEDDING_DEVICE,
         )
 
         logger.info("Embedding model loaded successfully.")

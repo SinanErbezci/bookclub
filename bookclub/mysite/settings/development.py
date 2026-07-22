@@ -1,4 +1,5 @@
 from .base import *
+import dj_database_url
 
 DEBUG = True
 
@@ -17,6 +18,12 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+
+DATABASES = {
+    "default": dj_database_url.parse(
+        os.environ["DEV_DATABASE_URL"]
+    )
+}
 
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"

@@ -80,12 +80,6 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL")
-    )
-}
 # DATABASES = {
 # "default": {
 #     "ENGINE": "django.db.backends.postgresql",
@@ -202,3 +196,4 @@ LOGGING = {
 # -------------------------------------------------------------------
 
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_DEVICE = "cpu"
