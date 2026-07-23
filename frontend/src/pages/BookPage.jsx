@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getBookById, getBooksByGenre } from "../api/books";
+import {
+  getBookById,
+  getBookRecommendations,
+} from "../api/books";  
 import { getReviewsByBook } from "../api/reviews";
 import CarouselSection from "../components/CarouselSection/CarouselSection";
 import ReviewSection from "../features/reviews/ReviewSection";
@@ -51,27 +54,36 @@ function BookPage() {
     fetchBook();
   }, [id]);
 
-  // 📚 Fetch similar books
-  useEffect(() => {
-    if (!book?.genres?.length) return;
+  // 📚 Fetch Recommendation
+useEffect(() => {
+  if (!book) {
+    return;
+  }
 
-    async function fetchSimilar() {
-      try {
-        setLoadingSimilar(true);
-        const genreId = book.genres[0].id;
-        const data = await getBooksByGenre(genreId);
+  async function fetchRecommendations() {
+    try {
+      setLoadingSimilar(true);
 
-        const filtered = data.filter((b) => b.id !== book.id);
-        setSimilarBooks(filtered);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingSimilar(false);
-      }
+      const recommendations =
+        await getBookRecommendations(
+          book.id
+        );
+
+      setSimilarBooks(
+        recommendations
+      );
+
+    } catch (err) {
+      console.error(err);
+      setSimilarBooks([]);
+    } finally {
+      setLoadingSimilar(false);
     }
+  }
 
-    fetchSimilar();
-  }, [book]);
+  fetchRecommendations();
+
+}, [book]);
 
   // ✍️ Fetch reviews
   useEffect(() => {
@@ -187,7 +199,7 @@ if (loading) {
       />
 
       <CarouselSection
-        title="Similar Books"
+        title="You May Also Like"
         items={similarBooks}
         loading={loadingSimilar}
         renderItem={(book) => (

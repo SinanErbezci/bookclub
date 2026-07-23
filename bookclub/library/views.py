@@ -30,7 +30,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action
 from django.db.models import  Avg
 
-
+from library.ai.recommendations import RecommendationService
 
 # ====== API Views ======
 
@@ -175,7 +175,23 @@ class BookViewSet(ReadOnlyModelViewSet):
         if self.action == "list":
             return BookListSerializer
         return BookSerializer
-    
+
+class BookRecommendationsAPIVieW(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, book_id):
+        book = get_object_or_404(
+            Book,
+            pk=book_id,
+        )
+
+        service = RecommendationService()
+
+        recommendations = service.recommend(book)
+
+        serializer = BookListSerializer(recommendations, many=True)
+
+        return Response(serializer.data)
 class AuthorViewSet(ReadOnlyModelViewSet):
     queryset = Author.objects.all()
 

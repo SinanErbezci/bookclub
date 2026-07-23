@@ -28,3 +28,12 @@ export async function getBooksByGenrePaginated(
     `/books/?genres__id=${genreId}&page=${page}`
   );
 }
+
+export async function getBookRecommendations(
+  bookId,
+  limit = 8,
+) {
+  return apiFetch(
+    `/books/${bookId}/recommendations/?limit=${limit}`
+  );
+}
