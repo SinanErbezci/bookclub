@@ -18,11 +18,14 @@ from .serializers import (
     SearchBookSerializer,
     SearchAuthorSerializer,
     SearchGenreSerializer,
+    SemanticSearchBookSerializer
 )
 
 from .pagination import SearchPagination
 import logging
 
+from library.ai.semantic_search import SemanticSearchService
+ 
 class SearchBooksAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -133,3 +136,44 @@ class SearchBooksAPIView(APIView):
                 "genres": SearchGenreSerializer(genres, many=True).data,
             }
         )
+
+
+class SemanticSearchAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        query = request.query_params.get(
+            "q",
+            ""
+        ).strip()
+
+        if not query:
+            return Response(
+                {
+                    "detail": (
+                        "Query parameter 'q' is required."
+                    )
+                },
+                status=400,
+            )
+
+        limit = int(
+            request.query_params.get(
+                "limit",
+                10,
+            )
+        )
+
+        service = SemanticSearchService()
+
+        books = service.search(
+            query=query,
+            limit=limit,
+        )
+
+        serializer = SemanticSearchBookSerializer(
+            books,
+            many=True,
+        )
+
+        return Response(serializer.data)

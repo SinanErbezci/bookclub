@@ -8,7 +8,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import { searchAll } from "../api/search";
+import { searchAll, semanticSearch } from "../api/search";
 
 import BookCard from "../components/BookCard";
 import SkeletonCard from "../components/SkeletonCard";
@@ -33,12 +33,16 @@ function SearchPage() {
       genres: [],
     });
 
+  const [semanticBooks, setSemanticBooks] =
+    useState([]);
+
   const [loading, setLoading] =
     useState(true);
 
   const totalPages = Math.ceil(
     results.books_count / 10
   );
+
 
   useEffect(() => {
     async function fetchResults() {
@@ -52,6 +56,8 @@ function SearchPage() {
           genres: [],
         });
 
+        setSemanticBooks([]);
+
         setLoading(false);
 
         return;
@@ -60,10 +66,34 @@ function SearchPage() {
       try {
         setLoading(true);
 
-        const data =
-          await searchAll(query, page, "full");
+        const [
+          searchResponse,
+          semanticResponse,
+        ] = await Promise.allSettled([
+          searchAll(query, page, "full"),
+          semanticSearch(query),
+        ]);
 
-        setResults(data);
+        if (searchResponse.status === "fulfilled") {
+          setResults(searchResponse.value);
+        } else {
+          setResults({
+            books: [],
+            books_count: 0,
+            next: null,
+            previous: null,
+            authors: [],
+            genres: [],
+          });
+        }
+
+        if (semanticResponse.status === "fulfilled") {
+          setSemanticBooks(
+            semanticResponse.value
+          );
+        } else {
+          setSemanticBooks([]);
+        }
 
       } catch {
         setResults({
@@ -74,6 +104,9 @@ function SearchPage() {
           authors: [],
           genres: [],
         });
+
+        setSemanticBooks([]);
+
       } finally {
         setLoading(false);
       }
@@ -85,9 +118,9 @@ function SearchPage() {
 
   const hasResults =
     results.books.length > 0 ||
+    semanticBooks.length > 0 ||
     results.authors.length > 0 ||
     results.genres.length > 0;
-
 
   function getVisiblePages() {
     const currentPage = Number(page);
@@ -210,8 +243,8 @@ function SearchPage() {
                         key={item}
                         to={`/search?q=${query}&page=${item}`}
                         className={`btn ${Number(page) === item
-                            ? "btn-dark"
-                            : "btn-outline-dark"
+                          ? "btn-dark"
+                          : "btn-outline-dark"
                           }`}
                       >
                         {item}
@@ -235,6 +268,27 @@ function SearchPage() {
             </section>
           )}
 
+          {semanticBooks.length > 0 && (
+            <section className="mb-5">
+
+              <h2 className="form-title mb-4">
+                ✨ AI Recommendations
+              </h2>
+
+              <div className="genre-grid">
+
+                {semanticBooks.map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    showAuthor
+                  />
+                ))}
+
+              </div>
+
+            </section>
+          )}
           {/* AUTHORS */}
           {results.authors.length > 0 && (
             <section className="mb-5">

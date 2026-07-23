@@ -140,3 +140,22 @@ class SearchGenreSerializer(serializers.ModelSerializer):
             "id",
             "name",
         ]
+
+class SemanticSearchBookSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(
+        source="author.name",
+        read_only=True,
+    )
+
+    distance = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "title",
+            "cover",
+            "author",
+            "author_name",
+            "distance",
+        ]
