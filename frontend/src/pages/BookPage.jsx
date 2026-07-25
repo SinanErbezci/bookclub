@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import {
   getBookById,
   getBookRecommendations,
-} from "../api/books";  
+  getRecommendationExplanation,
+} from "../api/books";
 import { getReviewsByBook } from "../api/reviews";
 import CarouselSection from "../components/CarouselSection/CarouselSection";
 import ReviewSection from "../features/reviews/ReviewSection";
@@ -30,11 +31,23 @@ function BookPage() {
   const description = book?.description || "";
   const isLong = description.length > 300;
 
+  const handleExplain = async (sourceId, recommendedId) => {
+    try {
+      const data = await getRecommendationExplanation(
+        sourceId,
+        recommendedId
+      );
+
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   // 📘 Fetch book
   useEffect(() => {
     const isValidAuthorId = /^\d+$/.test(id);
 
-      if (!isValidAuthorId) {
+    if (!isValidAuthorId) {
       setBook(null);
       setLoading(false);
       return;
@@ -55,35 +68,35 @@ function BookPage() {
   }, [id]);
 
   // 📚 Fetch Recommendation
-useEffect(() => {
-  if (!book) {
-    return;
-  }
+  useEffect(() => {
+    if (!book) {
+      return;
+    }
 
-  async function fetchRecommendations() {
-    try {
-      setLoadingSimilar(true);
+    async function fetchRecommendations() {
+      try {
+        setLoadingSimilar(true);
 
-      const recommendations =
-        await getBookRecommendations(
-          book.id
+        const recommendations =
+          await getBookRecommendations(
+            book.id
+          );
+
+        setSimilarBooks(
+          recommendations
         );
 
-      setSimilarBooks(
-        recommendations
-      );
-
-    } catch (err) {
-      console.error(err);
-      setSimilarBooks([]);
-    } finally {
-      setLoadingSimilar(false);
+      } catch (err) {
+        console.error(err);
+        setSimilarBooks([]);
+      } finally {
+        setLoadingSimilar(false);
+      }
     }
-  }
 
-  fetchRecommendations();
+    fetchRecommendations();
 
-}, [book]);
+  }, [book]);
 
   // ✍️ Fetch reviews
   useEffect(() => {
@@ -99,14 +112,14 @@ useEffect(() => {
     fetchReviews();
   }, [id]);
 
-if (loading) {
-  return (
-    <LoadingScreen
-      text="Loading book..."
-      fullPage
-    />
-  );
-}
+  if (loading) {
+    return (
+      <LoadingScreen
+        text="Loading book..."
+        fullPage
+      />
+    );
+  }
   if (!book) return <NotFoundPage />
 
   return (
@@ -129,9 +142,9 @@ if (loading) {
             ⭐ {book.rating} ({book.num_ratings})
           </div>
 
-{user && (
-  <ListDropdown book={book} />
-)}
+          {user && (
+            <ListDropdown book={book} />
+          )}
         </div>
 
         {/* RIGHT */}
@@ -202,8 +215,13 @@ if (loading) {
         title="You May Also Like"
         items={similarBooks}
         loading={loadingSimilar}
-        renderItem={(book) => (
-          <BookCard key={book.id} book={book} />
+        renderItem={(recommendedBook) => (
+          <BookCard
+            key={recommendedBook.id}
+            book={recommendedBook}
+            recommendationSourceId={book.id}
+            onExplain={handleExplain}
+          />
         )}
       />
     </div>

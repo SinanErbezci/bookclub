@@ -37,3 +37,12 @@ export async function getBookRecommendations(
     `/books/${bookId}/recommendations/?limit=${limit}`
   );
 }
+
+export async function getRecommendationExplanation(
+  sourceId,
+  recommendedId,
+) {
+  return apiFetch(
+    `/books/${sourceId}/recommendations/${recommendedId}/explanation/`
+  );
+}

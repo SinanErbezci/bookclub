@@ -31,6 +31,7 @@ from rest_framework.decorators import action
 from django.db.models import  Avg
 
 from library.ai.recommendations import RecommendationService
+from library.ai.explanations import ExplanationService
 
 # ====== API Views ======
 
@@ -176,6 +177,7 @@ class BookViewSet(ReadOnlyModelViewSet):
             return BookListSerializer
         return BookSerializer
 
+# Book AI Views
 class BookRecommendationsAPIVieW(APIView):
     permission_classes = [AllowAny]
 
@@ -192,6 +194,29 @@ class BookRecommendationsAPIVieW(APIView):
         serializer = BookListSerializer(recommendations, many=True)
 
         return Response(serializer.data)
+
+class BookRecommendationExplanationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, source_id, recommended_id):
+        source_book = get_object_or_404(
+            Book,
+            pk=source_id
+        )
+
+        recommended_book = get_object_or_404(
+            Book,
+            pk=recommended_id
+        )
+
+        service = ExplanationService()
+
+        explanation = service.explain_book_recommendation(source_book, recommended_book)
+
+        return Response({
+            "explanation": explanation
+        })
+
 class AuthorViewSet(ReadOnlyModelViewSet):
     queryset = Author.objects.all()
 

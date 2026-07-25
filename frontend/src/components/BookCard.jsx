@@ -6,7 +6,9 @@ function BookCard({
   book,
   showAuthor = false,
   action = null,
-  onAction = null
+  onAction = null,
+  recommendationSourceId = null,
+  onExplain = null,
 }) {
   return (
     <div className={styles.card}>
@@ -37,7 +39,10 @@ function BookCard({
 
       <div className={styles.body}>
         <div className="twoliner">
-          <Link to={`/books/${book.id}`} className={`book-link ${styles.title}`}>
+          <Link
+            to={`/books/${book.id}`}
+            className={`book-link ${styles.title}`}
+          >
             {book.title}
           </Link>
         </div>
@@ -51,6 +56,16 @@ function BookCard({
           </Link>
         )}
 
+        {recommendationSourceId !== null && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onExplain?.(recommendationSourceId, book.id);
+            }}
+          >
+            ✨ Why?
+          </button>
+        )}
       </div>
     </div>
   );
