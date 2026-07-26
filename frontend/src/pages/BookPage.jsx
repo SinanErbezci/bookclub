@@ -14,6 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import NotFoundPage from "./NotFoundPage";
 import LoadingScreen from "../components/LoadingScreen";
 import ListDropdown from "../components/lists/ListDropdown";
+import RecommendationModal from "../components/RecommendationModal/RecommendationModal";
 
 function BookPage() {
   const { id } = useParams();
@@ -34,6 +35,14 @@ function BookPage() {
   const [explanations, setExplanations] = useState({});
   const [loadingExplanations, setLoadingExplanations] = useState({});
 
+  const [selectedRecommendationId, setSelectedRecommendationId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [recommendationErrors, setRecommendationErrors] = useState({});
+
+  const explanation = explanations[selectedRecommendationId];
+  const isLoading = loadingExplanations[selectedRecommendationId];
+  const hasError = recommendationErrors[selectedRecommendationId];
+
   const handleExplain = async (sourceId, recommendedId) => {
     if (explanations[recommendedId]) {
       return;
@@ -43,6 +52,10 @@ function BookPage() {
     }
 
     try {
+      setRecommendationErrors(prev => ({
+        ...prev,
+        [recommendedId]: false,
+      }));
       setLoadingExplanations(prev => ({
         ...prev,
         [recommendedId]: true,
@@ -57,10 +70,12 @@ function BookPage() {
         ...prev,
         [recommendedId]: data,
       }));
-
-      console.log(data);
     } catch (err) {
       console.error(err);
+      setRecommendationErrors(prev => ({
+        ...prev,
+        [recommendedId]: true,
+      }));
     } finally {
       setLoadingExplanations(prev => ({
         ...prev,
@@ -68,6 +83,13 @@ function BookPage() {
       }));
     }
   };
+
+  const clickRecommendation = (sourceBookId, recommendationId) => {
+    setSelectedRecommendationId(recommendationId);
+    setIsModalOpen(true);
+    handleExplain(sourceBookId, recommendationId);
+  };
+
   // 📘 Fetch book
   useEffect(() => {
     const isValidAuthorId = /^\d+$/.test(id);
@@ -247,9 +269,16 @@ function BookPage() {
             recommendationSourceId={book.id}
             explanation={explanations[recommendedBook.id]}
             loadingExplanations={loadingExplanations[recommendedBook.id]}
-            onExplain={handleExplain}
+            onExplain={clickRecommendation}
           />
         )}
+      />
+      <RecommendationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        explanation={explanation}
+        isLoading={isLoading}
+        hasError={hasError}
       />
     </div>
   );

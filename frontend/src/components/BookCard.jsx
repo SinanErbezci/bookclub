@@ -58,12 +58,13 @@ function BookCard({
 
         {recommendationSourceId !== null && (
           <button
+            className={styles.explainButton}
             onClick={(e) => {
               e.stopPropagation();
               onExplain?.(recommendationSourceId, book.id);
             }}
           >
-            ✨ Why?
+            ✨ Explain
           </button>
         )}
       </div>
