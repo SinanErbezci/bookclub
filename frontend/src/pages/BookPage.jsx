@@ -31,16 +31,41 @@ function BookPage() {
   const description = book?.description || "";
   const isLong = description.length > 300;
 
+  const [explanations, setExplanations] = useState({});
+  const [loadingExplanations, setLoadingExplanations] = useState({});
+
   const handleExplain = async (sourceId, recommendedId) => {
+    if (explanations[recommendedId]) {
+      return;
+    }
+    if (loadingExplanations[recommendedId]) {
+      return;
+    }
+
     try {
+      setLoadingExplanations(prev => ({
+        ...prev,
+        [recommendedId]: true,
+      }));
+
       const data = await getRecommendationExplanation(
         sourceId,
         recommendedId
       );
 
+      setExplanations(prev => ({
+        ...prev,
+        [recommendedId]: data,
+      }));
+
       console.log(data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingExplanations(prev => ({
+        ...prev,
+        [recommendedId]: false,
+      }));
     }
   };
   // 📘 Fetch book
@@ -220,6 +245,8 @@ function BookPage() {
             key={recommendedBook.id}
             book={recommendedBook}
             recommendationSourceId={book.id}
+            explanation={explanations[recommendedBook.id]}
+            loadingExplanations={loadingExplanations[recommendedBook.id]}
             onExplain={handleExplain}
           />
         )}
