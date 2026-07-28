@@ -87,6 +87,11 @@ function BookPage() {
   const clickRecommendation = (sourceBookId, recommendationId) => {
     setSelectedRecommendationId(recommendationId);
     setIsModalOpen(true);
+
+    if (!user){
+      return;
+    }
+    
     handleExplain(sourceBookId, recommendationId);
   };
 
@@ -279,6 +284,7 @@ function BookPage() {
         explanation={explanation}
         isLoading={isLoading}
         hasError={hasError}
+        user={user}
       />
     </div>
   );

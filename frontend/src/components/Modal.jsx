@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function Modal({ isOpen, onClose, children }) {
+export default function Modal({ isOpen, onClose, children, className= "", }) {
   const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(isOpen);
 
@@ -30,7 +30,7 @@ export default function Modal({ isOpen, onClose, children }) {
       onClick={onClose}
     >
       <div
-        className="modal-content"
+        className={`modal-content ${className ?? ""}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button className="modal-close" onClick={onClose}>

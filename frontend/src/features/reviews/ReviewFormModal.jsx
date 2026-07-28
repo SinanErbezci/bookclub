@@ -65,8 +65,8 @@ export default function ReviewFormModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.form}>
+    <Modal isOpen={isOpen} onClose={onClose} className={styles.modalContent}>
+      <div className={styles.container}>
 
         <h2 className={styles.title}>
           {mode === "create" ? "Write a Review" : "Edit Your Review"}

@@ -31,7 +31,7 @@ from rest_framework.decorators import action
 from django.db.models import  Avg
 
 from library.ai.recommendations import RecommendationService
-from library.ai.explanations import ExplanationService
+from ai.services.explanations import ExplanationService
 
 # ====== API Views ======
 

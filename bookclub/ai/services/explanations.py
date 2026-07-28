@@ -1,5 +1,5 @@
-from library.ai.llm import LLMService
-from library.ai.prompts import (
+from .llm import LLMService
+from ..prompts.recommendation import (
     RECOMMENDATION_SYSTEM_PROMPT,
     build_recommendation_user_prompt,
 )

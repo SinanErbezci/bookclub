@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from library.ai.llm import LLMService
+from bookclub.ai.services.llm import LLMService
 
 
 class Command(BaseCommand):

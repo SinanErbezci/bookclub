@@ -5,21 +5,25 @@ export default function ReviewModal({ review, isOpen, onClose }) {
   if (!isOpen || !review) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.header}>
-        <img className={styles.avatar} src="/assets/default-avatar.svg" alt="profile" />
-        <h3>{review.user?.username || "You"}'s Review</h3>
-      </div>
-
-      <div className={styles.body}>
-        <div className="star-outer" style={{ alignSelf: "center"}}>
-          <div
-            className="star-inner"
-            style={{ width: `${(review.rating / 5) * 100}%` }}
-          />
+    <Modal isOpen={isOpen} onClose={onClose} className={styles.modalContent}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <img className={styles.avatar} src="/assets/default-avatar.svg" alt="profile" />
+          <h3>{review.user?.username || "You"}'s Review</h3>
         </div>
 
-        <p>{review.content}</p>
+        <div className={styles.body}>
+          <div className={styles.rating}>
+            <div className="star-outer">
+              <div
+                className="star-inner"
+                style={{ width: `${(review.rating / 5) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <p>{review.content}</p>
+        </div>
       </div>
     </Modal>
   );

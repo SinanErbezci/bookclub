@@ -1,5 +1,6 @@
 import styles from "./RecommendationModal.module.css";
 import Modal from "../Modal";
+import { Link } from "react-router-dom";
 
 export default function RecommendationModal({
   isOpen,
@@ -7,15 +8,30 @@ export default function RecommendationModal({
   explanation,
   isLoading,
   hasError,
+  user,
 }) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} className={styles.modalContent}>
       <div className={styles.container}>
         <h2 className={styles.title}>
           🤖 AI Recommendation
         </h2>
 
-        {isLoading ? (
+        {!user ? (
+          <div className={styles.loginRequired}>
+            <h4>🔒 Sign in required</h4>
+            <p>
+              AI explanations are available for signed-in users.
+            </p>
+            <Link
+              to="/login"
+              className="btn btn-primary"
+              onClick={onClose}
+            >
+              Log In
+            </Link>
+          </div>
+        ) : isLoading ? (
           <div className={styles.loading}>
             <div
               className="spinner-border"

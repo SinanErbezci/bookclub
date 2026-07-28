@@ -1,4 +1,8 @@
-.form {
+.modalContent {
+  width: min(800px, 95vw);
+}
+
+.container {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
@@ -6,9 +10,15 @@
 
 /* TITLE */
 .title {
+  margin: 0;
+
+  padding-bottom: .75rem;
+
+  border-bottom: 1px solid var(--bs-border-color);
+
   text-align: center;
-  font-weight: bold;
-  text-decoration: underline;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 /* SECTION */
@@ -31,7 +41,7 @@
   padding: 14px 16px;
 
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--bs-border-color);
 
   font-family: var(--FONT);
   font-size: 1rem;
@@ -42,7 +52,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: #5D3A1A;
+  border-color: var(--COLOR-GOLD);
   box-shadow: 0 0 4px rgba(93, 58, 26, 0.4);
 }
 
@@ -50,7 +60,7 @@
 .charCount {
   font-size: 0.8rem;
   text-align: right;
-  color: #666;
+  color: var(--bs-secondary-color);
 }
 
 /* ACTIONS */
