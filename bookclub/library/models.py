@@ -173,26 +173,3 @@ class ListBook(models.Model):
                 name="uniq_book_list"
             )
         ]
-
-class BookAI(models.Model):
-    class Status(models.TextChoices):
-        PENDING = "pending", "Pending"
-        PROCESSING = "processing", "Processing"
-        COMPLETED = "completed", "Completed"
-        FAILED = "failed", "Failed"
-
-    book = models.OneToOneField(
-        Book,
-        on_delete=models.CASCADE,
-        related_name="ai",
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.PENDING,
-    )
-
-    summary = models.TextField(blank=True)
-
-    
