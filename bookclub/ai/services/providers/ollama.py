@@ -7,6 +7,8 @@ DEFAULT_MODEL = "qwen3:8b"
 
 
 class OllamaSummaryProvider(SummaryProvider):
+    name = "ollama"
+    
     def __init__(
         self,
         *,

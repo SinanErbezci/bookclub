@@ -1,0 +1,171 @@
+[
+  {
+    "id": 33,
+    "title": "Harry Potter and the Sorcerer's Stone",
+    "categories": [
+      "popular",
+      "fantasy",
+      "series",
+      "childrens"
+    ]
+  },
+  {
+    "id": 148,
+    "title": "The Hobbit, or There and Back Again",
+    "categories": [
+      "classic",
+      "fantasy",
+      "childrens"
+    ]
+  },
+  {
+    "id": 1,
+    "title": "The Hunger Games",
+    "categories": [
+      "popular",
+      "science_fiction",
+      "young_adult",
+      "series"
+    ]
+  },
+  {
+    "id": 81,
+    "title": "1984",
+    "categories": [
+      "classic",
+      "science_fiction"
+    ]
+  },
+  {
+    "id": 21,
+    "title": "Fahrenheit 451",
+    "categories": [
+      "classic",
+      "science_fiction"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "To Kill a Mockingbird",
+    "categories": [
+      "classic",
+      "literary_fiction"
+    ]
+  },
+  {
+    "id": 28,
+    "title": "The Great Gatsby",
+    "categories": [
+      "classic",
+      "literary_fiction"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Pride and Prejudice",
+    "categories": [
+      "classic",
+      "romance"
+    ]
+  },
+  {
+    "id": 11,
+    "title": "The Fault in Our Stars",
+    "categories": [
+      "romance",
+      "young_adult"
+    ]
+  },
+  {
+    "id": 24,
+    "title": "Romeo and Juliet",
+    "categories": [
+      "classic",
+      "romance"
+    ]
+  },
+  {
+    "id": 140,
+    "title": "The Lion, the Witch and the Wardrobe",
+    "categories": [
+      "fantasy",
+      "childrens",
+      "series"
+    ]
+  },
+  {
+    "id": 43,
+    "title": "The Lightning Thief",
+    "categories": [
+      "fantasy",
+      "young_adult",
+      "series"
+    ]
+  },
+  {
+    "id": 61,
+    "title": "The Handmaid's Tale",
+    "categories": [
+      "science_fiction",
+      "dystopian"
+    ]
+  },
+  {
+    "id": 37,
+    "title": "The Time Traveler's Wife",
+    "categories": [
+      "science_fiction",
+      "romance"
+    ]
+  },
+  {
+    "id": 5677,
+    "title": "The Art of Startup Fundraising",
+    "categories": [
+      "nonfiction",
+      "business"
+    ]
+  },
+  {
+    "id": 38161,
+    "title": "Prehistoric Life: The Definitive Visual History of Life on Earth",
+    "categories": [
+      "nonfiction",
+      "reference",
+      "long_description"
+    ]
+  },
+  {
+    "id": 10310,
+    "title": "Layer Cake",
+    "categories": [
+      "crime",
+      "thriller",
+      "very_long_description"
+    ]
+  },
+  {
+    "id": 7586,
+    "title": "D.Gray-man, Vol. 1",
+    "categories": [
+      "manga",
+      "short_description"
+    ]
+  },
+  {
+    "id": 29655,
+    "title": "NARUTO -ナルト- 巻ノ四十三",
+    "categories": [
+      "manga",
+      "short_description"
+    ]
+  },
+  {
+    "id": 46412,
+    "title": "The Sword in the Stone",
+    "categories": [
+      "fantasy",
+      "short_description"
+    ]
+  }
+]

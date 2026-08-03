@@ -200,4 +200,4 @@ EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 EMBEDDING_DEVICE = "cpu"
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
