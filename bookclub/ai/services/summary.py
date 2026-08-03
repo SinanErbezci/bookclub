@@ -1,4 +1,4 @@
-from ai.prompts.summary import (
+from bookclub.ai.prompts.summary_v1 import (
     SYSTEM_PROMPT,
     USER_PROMPT_TEMPLATE,
 )
