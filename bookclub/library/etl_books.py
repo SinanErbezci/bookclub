@@ -18,9 +18,14 @@ PARENS_TAIL = re.compile(r"(?:\s*\([^()]*\))+\s*$")
 def clean_text(val: Any) -> Optional[str]:
     if val is None or (isinstance(val, float) and pd.isna(val)) or pd.isna(val):
         return None
+    
     s = fix_text(str(val))
     s = unicodedata.normalize("NFC", s)
     s = s.strip()
+
+    if s.lower() in {"nan", "none", "null"}:
+        return None
+
     return s or None
 
 def clean_author(val):
