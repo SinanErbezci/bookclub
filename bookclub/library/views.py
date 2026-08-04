@@ -30,7 +30,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action
 from django.db.models import  Avg
 
-from library.ai.recommendations import RecommendationService
+from bookclub.ai.services.recommendations import RecommendationService
 from ai.services.explanations import ExplanationService
 
 # ====== API Views ======

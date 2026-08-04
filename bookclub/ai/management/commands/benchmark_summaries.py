@@ -3,7 +3,7 @@ import json
 
 import time
 from statistics import mean
-from datetime import datetime
+from datetime import datetime, UTC
 
 from django.core.management.base import (
     BaseCommand,
@@ -157,10 +157,12 @@ class Command(BaseCommand):
             for result in results
         ]
 
+        created_at = datetime.now(UTC)
+
         output = {
             "provider": provider.name,
             "model": provider.model,
-            "created_at": datetime.now().isoformat(),
+            "created_at": created_at.isoformat(),
             "book_count": len(results),
             "average_duration": mean(durations),
             "fastest_duration": min(durations),
@@ -168,13 +170,22 @@ class Command(BaseCommand):
             "books": results,
         }
 
+        timestamp = created_at.strftime("%Y%m%d_%H%M%S")
+
+        filename = (
+            f"{provider.name}_"
+            f"{provider.model.replace(':', '_')}_"
+            f"{timestamp}"
+        )
+
         output_path = (
             Path(__file__).resolve().parents[2]
             / "benchmark"
             / "summary"
             / "results"
-            / f"{provider.model.replace(':', '_')}.json"
+            / f"{filename}.json"
         )
+
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 

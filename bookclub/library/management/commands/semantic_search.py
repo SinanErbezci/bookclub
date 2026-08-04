@@ -2,7 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from library.ai.semantic_search import SemanticSearchService
+from ai.services.semantic_search import SemanticSearchService
 
 logger = logging.getLogger(__name__)
 

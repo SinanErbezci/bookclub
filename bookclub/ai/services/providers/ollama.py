@@ -4,7 +4,7 @@ from .base import SummaryProvider
 
 import os
 
-DEFAULT_MODEL = "qwen3:8b"
+DEFAULT_MODEL = "qwen3:4b-instruct"
 
 DEFAULT_HOST = os.getenv(
     "OLLAMA_HOST",

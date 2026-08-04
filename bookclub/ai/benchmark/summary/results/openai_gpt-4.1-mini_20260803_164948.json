@@ -1,0 +1,220 @@
+{
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "created_at": "2026-08-03T16:49:48.936395+00:00",
+    "book_count": 20,
+    "average_duration": 2.345207878800102,
+    "fastest_duration": 1.3814728030010883,
+    "slowest_duration": 5.053855071000726,
+    "books": [
+        {
+            "id": 33,
+            "title": "Harry Potter and the Sorcerer's Stone",
+            "categories": [
+                "popular",
+                "fantasy",
+                "series",
+                "childrens"
+            ],
+            "duration": 2.8860214359992824,
+            "summary": "Harry Potter and the Sorcerer's Stone follows Harry Potter, an orphaned boy living with unkind relatives, who discovers he is a wizard and attends Hogwarts School of Witchcraft and Wizardry. Known as \"the boy who lived,\" Harry is the only survivor of an attack by the dark wizard Lord Voldemort. During his first year, Harry uncovers a dangerous secret object hidden within Hogwarts and takes on the responsibility to protect it from evil forces. The novel introduces a richly detailed magical world with sympathetic characters and sets up future high-stakes adventures."
+        },
+        {
+            "id": 148,
+            "title": "The Hobbit, or There and Back Again",
+            "categories": [
+                "classic",
+                "fantasy",
+                "childrens"
+            ],
+            "duration": 1.6953741930010437,
+            "summary": "The Hobbit, by J.R.R. Tolkien, is a classic fantasy novel introducing the hobbit Bilbo Baggins, the wizard Gandalf, and creatures like Gollum in the world of Middle-earth. It explores Bilbo’s unexpected adventures involving a powerful and dangerous ring and the encounter with the dragon Smaug. The story combines themes of heroism, adventure, and the discovery of courage within a richly imagined fantasy setting."
+        },
+        {
+            "id": 1,
+            "title": "The Hunger Games",
+            "categories": [
+                "popular",
+                "science_fiction",
+                "young_adult",
+                "series"
+            ],
+            "duration": 2.318864383998516,
+            "summary": "The Hunger Games is a dystopian young adult novel set in Panem, a nation composed of a Capitol and twelve districts. The oppressive Capitol maintains control by forcing each district to send one boy and one girl aged twelve to eighteen to participate in the annual Hunger Games, a televised fight to the death. The story follows sixteen-year-old Katniss Everdeen, who volunteers to take her sister’s place in the Games. The novel explores themes of survival, the moral dilemmas between humanity and brutality, and the complexities of life, love, and power within a post-apocalyptic society."
+        },
+        {
+            "id": 81,
+            "title": "1984",
+            "categories": [
+                "classic",
+                "science_fiction"
+            ],
+            "duration": 1.8394212069997593,
+            "summary": "Nineteen Eighty-Four by George Orwell is a dystopian novel that presents a totalitarian and bureaucratic society where the government exerts pervasive control through surveillance, language manipulation, and political oppression. The story explores themes of individuality, freedom, and the distortion of truth in a tightly controlled world, highlighting Orwell's foresight into modern societal issues such as ubiquitous media and propaganda. The novel serves as a political critique and cautionary tale about the dangers of authoritarianism."
+        },
+        {
+            "id": 21,
+            "title": "Fahrenheit 451",
+            "categories": [
+                "classic",
+                "science_fiction"
+            ],
+            "duration": 2.1029194869988714,
+            "summary": "Fahrenheit 451 by Ray Bradbury is a dystopian science fiction novel set in a society where firemen burn books and suppress literature to maintain control, promoting television and superficial entertainment instead. The protagonist, Guy Montag, is a fireman who enforces this censorship without question until encounters with his free-spirited neighbor Clarisse and his wife Mildred's attempted suicide prompt him to critically reevaluate his role and the oppressive world around him. The novel explores themes of censorship, the impact of technology on society, and the power of literature and individual thought."
+        },
+        {
+            "id": 3,
+            "title": "To Kill a Mockingbird",
+            "categories": [
+                "classic",
+                "literary_fiction"
+            ],
+            "duration": 2.035250586000984,
+            "summary": "To Kill a Mockingbird is a classic novel set in a Southern town that explores themes of childhood innocence, conscience, human behavior, kindness, cruelty, love, and hatred. The story addresses profound moral and social issues through a narrative rooted in experience and compassion. Recognized as a masterpiece of American literature, the book combines elements of historical fiction and young adult literature, and its regional setting conveys universal themes."
+        },
+        {
+            "id": 28,
+            "title": "The Great Gatsby",
+            "categories": [
+                "classic",
+                "literary_fiction"
+            ],
+            "duration": 1.944482359000176,
+            "summary": "The Great Gatsby by F. Scott Fitzgerald is a classic novel set in the 1920s Jazz Age, focusing on the wealthy Jay Gatsby and his love for Daisy Buchanan. The story explores themes of wealth, love, and excess against the backdrop of lavish Long Island parties during a period marked by widespread indulgence and social change in America."
+        },
+        {
+            "id": 4,
+            "title": "Pride and Prejudice",
+            "categories": [
+                "classic",
+                "romance"
+            ],
+            "duration": 1.6830957219990523,
+            "summary": "Pride and Prejudice is a classic novel by Jane Austen centered on the romantic and social interactions between the spirited Elizabeth Bennet and the proud Mr. Darcy. Set in Regency England, it explores themes of love, class, manners, and misunderstandings through sharp wit and civilized dialogue, exemplifying a comedy of manners within historical and romantic fiction."
+        },
+        {
+            "id": 11,
+            "title": "The Fault in Our Stars",
+            "categories": [
+                "romance",
+                "young_adult"
+            ],
+            "duration": 2.053751927000121,
+            "summary": "The Fault in Our Stars by John Green is a young adult romance and contemporary realistic fiction novel that explores the lives of Hazel, a terminally ill girl affected by cancer despite medical advances, and Augustus Waters, whom she meets at a cancer support group. The novel delves into themes of love, mortality, and the complexities of living and experiencing life while facing terminal illness, presenting an insightful, bold, and emotionally raw portrayal of growth, connection, and the human condition."
+        },
+        {
+            "id": 24,
+            "title": "Romeo and Juliet",
+            "categories": [
+                "classic",
+                "romance"
+            ],
+            "duration": 5.053855071000726,
+            "summary": "Romeo and Juliet, a play by William Shakespeare, explores the tragic love story of two young individuals from feuding families, the Montagues and the Capulets. Set in a violent world marked by a deadly family feud, the narrative centers on their intense and immediate love, which ultimately leads to their fatal union. The play is recognized for its poetic language and embodies themes of young love amid conflict, making it a classic representation of romance and tragedy."
+        },
+        {
+            "id": 140,
+            "title": "The Lion, the Witch and the Wardrobe",
+            "categories": [
+                "fantasy",
+                "childrens",
+                "series"
+            ],
+            "duration": 2.478582923999056,
+            "summary": "The Lion, the Witch and the Wardrobe by C.S. Lewis is a fantasy novel about four siblings who discover the magical land of Narnia through a wardrobe. Narnia is under the eternal winter enchantment of the White Witch, and the children, upon meeting the lion Aslan, are drawn into a great adventure to free the land from the Witch’s evil spell. The story explores themes of magic, bravery, and the struggle between good and evil."
+        },
+        {
+            "id": 43,
+            "title": "The Lightning Thief",
+            "categories": [
+                "fantasy",
+                "young_adult",
+                "series"
+            ],
+            "duration": 2.4397746980012016,
+            "summary": "The Lightning Thief follows Percy Jackson, a young boy struggling with school and temper issues, who discovers he is a demigod, the son of Poseidon. Sent to Camp Half-Blood, a safe haven for demigods, Percy embarks on a quest across the United States with his friends—a satyr and the daughter of Athena—to reach the Underworld and prevent a war among the Greek gods. The novel integrates elements of fantasy, Greek mythology, magic, and adventure within a contemporary urban setting."
+        },
+        {
+            "id": 61,
+            "title": "The Handmaid's Tale",
+            "categories": [
+                "science_fiction",
+                "dystopian"
+            ],
+            "duration": 2.4730345159987337,
+            "summary": "The Handmaid's Tale, set in the dystopian Republic of Gilead, follows Offred, a Handmaid valued solely for her fertility in a society experiencing declining births. Women are stripped of their rights, including the ability to read, and Offred's daily existence is controlled by the Commander and his wife. She contrasts her current oppression with memories of her past life, where she had autonomy, family, and access to knowledge. The novel explores themes of authoritarian control, the subjugation of women, loss of identity, and reproductive rights."
+        },
+        {
+            "id": 37,
+            "title": "The Time Traveler's Wife",
+            "categories": [
+                "science_fiction",
+                "romance"
+            ],
+            "duration": 2.410489306001182,
+            "summary": "The Time Traveler's Wife by Audrey Niffenegger is a contemporary romantic fantasy that explores the complex effects of involuntary time travel on the marriage of Clare, an art student, and Henry, a librarian diagnosed with Chrono-Displacement Disorder. Henry randomly and uncontrollably shifts to different moments in his past and future, creating unpredictable challenges for their relationship. The novel examines themes of love, fate, and the impact of time on personal connections, portraying Clare and Henry's struggle to maintain a normal life amid the disruptions caused by his condition. The story is told from both their perspectives, highlighting the emotional and practical consequences of time travel on their bond."
+        },
+        {
+            "id": 5677,
+            "title": "The Art of Startup Fundraising",
+            "categories": [
+                "nonfiction",
+                "business"
+            ],
+            "duration": 2.3186605450009665,
+            "summary": "The Art of Startup Fundraising by Alejandro Cremades presents an updated guide to raising capital for startups amid the evolving landscape of startup finance, emphasizing the impact of new regulations like the JOBS Act and the growing role of online funding. It offers practical advice for founders and investors on securing startup financing from early to growth stages, including pitching strategies, identifying suitable investors, building momentum, and avoiding common mistakes. The book focuses on the necessity of adapting to the changing financial environment and provides accessible, expert insights into contemporary fundraising processes and digital finance realities, aiming to equip entrepreneurs with effective tools for navigating modern startup funding challenges."
+        },
+        {
+            "id": 38161,
+            "title": "Prehistoric Life: The Definitive Visual History of Life on Earth",
+            "categories": [
+                "nonfiction",
+                "reference",
+                "long_description"
+            ],
+            "duration": 2.9707152470000437,
+            "summary": "Prehistoric Life: The Definitive Visual History of Life on Earth by David Burnie is a comprehensive nonfiction reference that catalogs hundreds of prehistoric species from Earth's earliest life 3.8 billion years ago through to the rise of Homo sapiens. The book integrates geological context, evolutionary biology, and paleontological discoveries to detail the development and extinction of diverse organisms, including bacteria, plants, invertebrates, amphibians, reptiles, birds, mammals, and dinosaurs. It explores fossil formation, geological timescales, classification systems, and modern technologies like CT scanning used to reconstruct ancient life. The volume concludes with an extensive section on human evolution, examining anatomical changes, tool use, culture, and societal development across multiple hominin species. Richly illustrated with scientifically accurate artwork and fossil imagery, it provides an authoritative, detailed visual and textual encyclopedia of Earth's prehistoric biodiversity and evolutionary history."
+        },
+        {
+            "id": 10310,
+            "title": "Layer Cake",
+            "categories": [
+                "crime",
+                "thriller",
+                "very_long_description"
+            ],
+            "duration": 3.232222771999659,
+            "summary": "Layer Cake is a British crime thriller narrated by a savvy 29-year-old London cocaine dealer who has established a respected position within England’s Mafia elite. The story explores the layered complexities of the London drug underworld as the narrator navigates between high-level trafficking and street-level chaos, working with a veteran partner, Mortimer. Tasked by a powerful crime boss, Jimmy Price, to find a missing rich socialite’s daughter, the narrator becomes entangled in a network of deception, double-crosses, and violent factions including neo-Nazis and Yakuza connections. Amidst dangerous drug deals involving two million ecstasy tablets and shifting alliances, he faces betrayals from crime kingpins and law enforcement informants. Severely wounded and forced into exile, the narrator reflects on the brutal drug trade, the elusive promise of retirement, and the layered nature of criminal life—captured through a vernacular textured with British slang, underworld jargon, and noir sensibilities."
+        },
+        {
+            "id": 7586,
+            "title": "D.Gray-man, Vol. 1",
+            "categories": [
+                "manga",
+                "short_description"
+            ],
+            "duration": 1.582504821000839,
+            "summary": "D.Gray-man, Vol. 1 is a manga blending fantasy, supernatural, and action genres that centers on the battle between exorcists and Akuma—tragic, evil weapons made from machinery, souls, and tragedy. The protagonist Allen, an exorcist wielding a divine cross on his left hand, fights against the Millennium Earl, who manufactures Akuma and seeks the world's end."
+        },
+        {
+            "id": 29655,
+            "title": "NARUTO -ナルト- 巻ノ四十三",
+            "categories": [
+                "manga",
+                "short_description"
+            ],
+            "duration": 2.0036635720007325,
+            "summary": "In this volume of Naruto, Sasuke launches a final attack by provoking Itachi's inescapable \"Amaterasu\" technique amidst thunderclouds, testing whether his jutsu can affect Itachi. Simultaneously, Naruto and his team confront the Akatsuki organization to defeat Tobi and break through their opposition. The story focuses on intense battles involving powerful techniques and confrontations with key adversaries."
+        },
+        {
+            "id": 46412,
+            "title": "The Sword in the Stone",
+            "categories": [
+                "fantasy",
+                "short_description"
+            ],
+            "duration": 1.3814728030010883,
+            "summary": "The Sword in the Stone, retold by the Walt Disney Company, is a classic children's fantasy picture book that presents the magical story of a young boy destined to become a legendary figure by pulling a sword from a stone."
+        }
+    ]
+}

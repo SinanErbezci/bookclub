@@ -3,7 +3,7 @@ import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from library.ai.embeddings import (
+from ai.services.embeddings import (
     EmbeddingService,
     build_book_embedding_text,
 )

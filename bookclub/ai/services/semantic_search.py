@@ -8,7 +8,7 @@ import logging
 
 from pgvector.django import CosineDistance
 
-from library.ai.embeddings import EmbeddingService
+from .embeddings import EmbeddingService
 from library.models import Book
 
 logger = logging.getLogger(__name__)
