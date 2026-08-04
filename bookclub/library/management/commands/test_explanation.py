@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from bookclub.ai.services.explanations import ExplanationService
+from ai.services.explanations import ExplanationService
 from library.models import Book
 
 

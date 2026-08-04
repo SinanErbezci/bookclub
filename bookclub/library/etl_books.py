@@ -11,6 +11,7 @@ from ftfy import fix_text
 SOURCE = "best_books_ever_csv_v1"
 CSV_ID_COLUMN = "bookId"
 MAX_ERROR_PRINTS = 50
+BATCH_SIZE = 100
 
 SPLIT_FIRST = re.compile(r"\s*(?:,|;|&|\band\b)\s*", re.IGNORECASE)
 PARENS_TAIL = re.compile(r"(?:\s*\([^()]*\))+\s*$")
@@ -153,6 +154,7 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
 
     df["bookId"] = df["bookId"].apply(clean_text)
     df["title"] = df["title"].apply(clean_text)
+    df["language"] = df["language"].apply(clean_text)
     df["description"] = df["description"].apply(clean_text)
     df["author"] = df["author"].apply(clean_author)
     df["publisher"] = df["publisher"].apply(clean_text)
@@ -180,16 +182,19 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
             series_cache = preload_name_cache(cur, "library_series")
             genre_cache = preload_name_cache(cur, "library_genre")
 
-            for idx, row in df.iterrows():
-                source_row_id = row["bookId"]
-                title = row.get("title")
+            processed = 0
+            for idx, row in enumerate(
+                df.itertuples(index=False),
+            ):
+                source_row_id = row.bookId
+                title = row.title
 
                 if not source_row_id:
                     rejected += 1
                     rejects.append({"row": idx, "bookId": None, "title": title, "reason": "missing_bookId"})
                     continue
 
-                author_name = row["author"]
+                author_name = row.author
                 if not author_name:
                     rejected += 1
                     rejects.append({"row": idx, "bookId": source_row_id, "title": title, "reason": "missing_author"})
@@ -200,29 +205,30 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
                     if not author_id:
                         raise RuntimeError("author_id could not be resolved (unexpected)")
 
-                    publisher_id = get_or_create_by_name(cur, "library_publisher", row["publisher"], publisher_cache)
-                    series_id = get_or_create_by_name(cur, "library_series", row["series_name"], series_cache)
+                    publisher_id = get_or_create_by_name(cur, "library_publisher", row.publisher, publisher_cache)
+                    series_id = get_or_create_by_name(cur, "library_series", row.series_name, series_cache)
 
-                    pages = safe_int(row.get("pages_num"))
-                    series_num = safe_smallint(row.get("series_num"))
-                    num_ratings = row.get("num_ratings_num") or 0
-                    rating = row.get("rating_dec") or Decimal("0.0")
+                    pages = safe_int(row.pages_num)
+                    series_num = safe_smallint(row.series_num)
+                    num_ratings = row.num_ratings_num or 0
+                    rating = row.rating_dec or Decimal("0.0")
 
                     cur.execute(
                         """
                         INSERT INTO library_book (
                             source, source_row_id,
-                            title, description, pub_date,
+                            title, description, pub_date, language,
                             author_id, pages, series_id, series_num,
                             publisher_id, cover,
                             num_ratings, rating
                         )
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s)
                         ON CONFLICT (source, source_row_id)
                         DO UPDATE SET
                             title = EXCLUDED.title,
                             description = EXCLUDED.description,
                             pub_date = EXCLUDED.pub_date,
+                            language= EXCLUDED.language,
                             author_id = EXCLUDED.author_id,
                             pages = EXCLUDED.pages,
                             series_id = EXCLUDED.series_id,
@@ -235,15 +241,16 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
                         """,
                         (
                             SOURCE, source_row_id,
-                            row["title"],
-                            row["description"] or "",
-                            row["pub_date"],
+                            row.title,
+                            row.description or "",
+                            row.pub_date,
+                            row.language,
                             author_id,
                             pages,
                             series_id,
                             series_num,
                             publisher_id,
-                            row["coverImg"],
+                            row.coverImg,
                             num_ratings,
                             rating,
                         ),
@@ -251,7 +258,7 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
                     book_id, was_inserted = cur.fetchone()
 
                     cur.execute("DELETE FROM library_book_genres WHERE book_id = %s", (book_id,))
-                    for g in row["genres_list"]:
+                    for g in row.genres_list:
                         genre_id = get_or_create_by_name(cur, "library_genre", g, genre_cache)
                         if not genre_id:
                             continue
@@ -264,22 +271,25 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
                             (book_id, genre_id),
                         )
 
-                    conn.commit()
+                    processed += 1
+
                     if was_inserted:
                         inserted += 1
                     else:
                         updated += 1
 
-                except Exception as e:
-                    conn.rollback()
-                    db_errors += 1
-                    # classify as reject vs db_error
-                    reason = str(e)
-                    rejects.append({"row": idx, "bookId": source_row_id, "title": title, "reason": reason})
-                    if db_errors <= MAX_ERROR_PRINTS:
-                        print(f"[ERROR] row={idx} bookId={source_row_id!r} title={title!r} err={e}")
-                    continue
+                    if processed % BATCH_SIZE == 0:
+                        conn.commit()
 
+                        print(
+                            f"Processed {processed:,}/{len(df):,} books..."
+                        )
+
+                except Exception:
+                    conn.rollback()
+                    raise
+
+            conn.commit()            
     if rejects:
         pd.DataFrame(rejects).to_csv(rejects_csv, index=False)
 

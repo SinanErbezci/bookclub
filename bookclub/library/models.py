@@ -59,6 +59,10 @@ class Book(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     pub_date = models.DateField(null=True, blank=True)
+    language = models.CharField(
+        max_length=50,
+        blank=True,
+    )
     author = models.ForeignKey(Author, related_name='books', on_delete=models.CASCADE)
     pages = models.IntegerField(blank=True, null=True)
     series = models.ForeignKey(Series,blank=True,null=True, on_delete=models.SET_NULL, related_name='books')

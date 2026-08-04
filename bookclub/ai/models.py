@@ -2,49 +2,73 @@ from django.db import models
 from pgvector.django import VectorField
 
 
-class BookAI(models.Model):
-    class Status(models.TextChoices):
-        PENDING = "pending", "Pending"
-        PROCESSING = "processing", "Processing"
-        COMPLETED = "completed", "Completed"
-        FAILED = "failed", "Failed"
+class BookSummary(models.Model):
+    class BookSummary(models.Model):
+        book = models.OneToOneField(
+            "library.Book",
+            on_delete=models.CASCADE,
+            related_name="summary",
+        )
 
-    book = models.OneToOneField(
-        "library.Book",
-        on_delete=models.CASCADE,
-        related_name="ai",
-    )
+        content = models.TextField(
+            null=True,
+            blank=True,
+        )
 
-    summary_status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.PENDING,
-    )
-    embedding_status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.PENDING,
-    )
+        model_name = models.CharField(
+            max_length=100,
+            blank=True,
+        )
 
-    summary = models.TextField(blank=True)
+        created_at = models.DateTimeField(
+            auto_now_add=True,
+        )
 
-    text_embedding = VectorField(
-        dimensions=384,
-        null=True,
-        blank=True,
-    )
+        updated_at = models.DateTimeField(
+            auto_now=True,
+        )
 
-    summary_model_name = models.CharField(max_length=100, blank=True)
-
-    embedding_model_name = models.CharField(max_length=100, blank=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"AI for {self.book.title}"
+        def __str__(self):
+            return f"Summary for {self.book.title}"
 
     class Meta:
         ordering = ["book"]
         verbose_name = "Book AI"
         verbose_name_plural = "Book AI Records"
+
+class BookEmbedding(models.Model):
+    class EmbeddingType(models.TextChoices):
+        DESCRIPTION = "description", "Description"
+        SUMMARY = "summary", "Summary"
+        ENRICHED = "enriched", "Enriched"
+
+    book = models.ForeignKey(
+        "library.Book",
+        on_delete=models.CASCADE,
+        related_name="embeddings",
+    )
+
+    embedding_type = models.CharField(
+        max_length=20,
+        choices=EmbeddingType.choices,
+    )
+
+    model_name = models.CharField(
+        max_length=100,
+    )
+
+    embedding = VectorField(
+        dimensions=384,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["book", "embedding_type"],
+                name="uniq_book_embedding_type",
+            )
+        ]

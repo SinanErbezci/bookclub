@@ -24,7 +24,7 @@ from .serializers import (
 from .pagination import SearchPagination
 import logging
 
-from bookclub.ai.services.semantic_search import SemanticSearchService
+from ai.services.semantic_search import SemanticSearchService
  
 class SearchBooksAPIView(APIView):
     permission_classes = [AllowAny]
