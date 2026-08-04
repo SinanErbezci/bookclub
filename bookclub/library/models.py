@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-from pgvector.django import VectorField
 # Create your models here.
 
 class User(AbstractUser):
@@ -49,12 +48,6 @@ class Publisher(models.Model):
 class Book(models.Model):
     source = models.CharField(max_length=50)
     source_row_id = models.TextField()
-
-    text_embedding = VectorField(
-        dimensions=384,
-        null=True,
-        blank=True,
-    )
 
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)

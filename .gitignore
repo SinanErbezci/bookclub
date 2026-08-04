@@ -41,3 +41,5 @@ terraform.tfstate.*
 *.tfplan
 
 tfexercises.txt
+
+*.dump

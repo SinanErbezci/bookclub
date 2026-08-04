@@ -3,38 +3,38 @@ from pgvector.django import VectorField
 
 
 class BookSummary(models.Model):
-    class BookSummary(models.Model):
-        book = models.OneToOneField(
-            "library.Book",
-            on_delete=models.CASCADE,
-            related_name="summary",
-        )
+    book = models.OneToOneField(
+        "library.Book",
+        on_delete=models.CASCADE,
+        related_name="summary",
+    )
 
-        content = models.TextField(
-            null=True,
-            blank=True,
-        )
+    content = models.TextField(
+        null=True,
+        blank=True,
+    )
 
-        model_name = models.CharField(
-            max_length=100,
-            blank=True,
-        )
+    model_name = models.CharField(
+        max_length=100,
+        blank=True,
+    )
 
-        created_at = models.DateTimeField(
-            auto_now_add=True,
-        )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
 
-        updated_at = models.DateTimeField(
-            auto_now=True,
-        )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
 
-        def __str__(self):
-            return f"Summary for {self.book.title}"
+    def __str__(self):
+        return f"Summary for {self.book.title}"
 
     class Meta:
         ordering = ["book"]
-        verbose_name = "Book AI"
-        verbose_name_plural = "Book AI Records"
+        verbose_name = "Book Summary"
+        verbose_name_plural = "Book Summaries"
+
 
 class BookEmbedding(models.Model):
     class EmbeddingType(models.TextChoices):
@@ -63,6 +63,10 @@ class BookEmbedding(models.Model):
 
     created_at = models.DateTimeField(
         auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
     )
 
     class Meta:

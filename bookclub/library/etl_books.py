@@ -17,14 +17,14 @@ SPLIT_FIRST = re.compile(r"\s*(?:,|;|&|\band\b)\s*", re.IGNORECASE)
 PARENS_TAIL = re.compile(r"(?:\s*\([^()]*\))+\s*$")
 
 def clean_text(val: Any) -> Optional[str]:
-    if val is None or (isinstance(val, float) and pd.isna(val)) or pd.isna(val):
+    if pd.isna(val):
         return None
-    
+
     s = fix_text(str(val))
     s = unicodedata.normalize("NFC", s)
     s = s.strip()
 
-    if s.lower() in {"nan", "none", "null"}:
+    if s.casefold() in {"nan", "none", "null"}:
         return None
 
     return s or None
@@ -152,14 +152,14 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
     if CSV_ID_COLUMN not in df.columns:
         raise RuntimeError(f"CSV must contain {CSV_ID_COLUMN!r} column.")
 
-    df["bookId"] = df["bookId"].apply(clean_text)
-    df["title"] = df["title"].apply(clean_text)
-    df["language"] = df["language"].apply(clean_text)
-    df["description"] = df["description"].apply(clean_text)
-    df["author"] = df["author"].apply(clean_author)
-    df["publisher"] = df["publisher"].apply(clean_text)
-    df["coverImg"] = df["coverImg"].apply(clean_text)
+    # df["bookId"] = df["bookId"].apply(clean_text)
+    # df["title"] = df["title"].apply(clean_text)
+    # df["language"] = df["language"].apply(clean_text)
+    # df["description"] = df["description"].apply(clean_text)
+    # df["publisher"] = df["publisher"].apply(clean_text)
+    # df["coverImg"] = df["coverImg"].apply(clean_text)
 
+    df["author"] = df["author"].apply(clean_author)
     df[["series_name", "series_num"]] = df["series"].apply(parse_series).apply(pd.Series)
     df["pub_date"] = df["publishDate"].apply(parse_date_mmddyy)
     df["genres_list"] = df["genres"].apply(parse_list_cell)
@@ -186,15 +186,21 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
             for idx, row in enumerate(
                 df.itertuples(index=False),
             ):
-                source_row_id = row.bookId
-                title = row.title
+
+                
+                source_row_id = clean_text(row.bookId)
+                title = clean_text(row.title)
+                description = clean_text(row.description) or ""
+                language = clean_text(row.language) or ""
+                cover = clean_text(row.coverImg)
+                publisher = clean_text(row.publisher)
+                author_name = row.author
 
                 if not source_row_id:
                     rejected += 1
                     rejects.append({"row": idx, "bookId": None, "title": title, "reason": "missing_bookId"})
                     continue
 
-                author_name = row.author
                 if not author_name:
                     rejected += 1
                     rejects.append({"row": idx, "bookId": source_row_id, "title": title, "reason": "missing_author"})
@@ -205,7 +211,7 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
                     if not author_id:
                         raise RuntimeError("author_id could not be resolved (unexpected)")
 
-                    publisher_id = get_or_create_by_name(cur, "library_publisher", row.publisher, publisher_cache)
+                    publisher_id = get_or_create_by_name(cur, "library_publisher", publisher, publisher_cache)
                     series_id = get_or_create_by_name(cur, "library_series", row.series_name, series_cache)
 
                     pages = safe_int(row.pages_num)
@@ -241,16 +247,16 @@ def run_import(csv_path: str, db_dsn: str, rejects_csv: str = "etl_reject.csv"):
                         """,
                         (
                             SOURCE, source_row_id,
-                            row.title,
-                            row.description or "",
+                            title,
+                            description,
                             row.pub_date,
-                            row.language,
+                            language,
                             author_id,
                             pages,
                             series_id,
                             series_num,
                             publisher_id,
-                            row.coverImg,
+                            cover,
                             num_ratings,
                             rating,
                         ),
