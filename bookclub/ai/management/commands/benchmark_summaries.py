@@ -10,9 +10,9 @@ from django.core.management.base import (
     CommandError,
 )
 
-from ai.services.summary import SummaryService
-from ai.services.providers.ollama import OllamaSummaryProvider
-from ai.services.providers.openai import OpenAISummaryProvider
+from ai.services.summary.summary import SummaryService
+from ai.services.summary.providers.ollama import OllamaSummaryProvider
+from ai.services.summary.providers.openai import OpenAISummaryProvider
 
 from library.models import Book
 
@@ -61,22 +61,15 @@ class Command(BaseCommand):
             return json.load(file)
 
     def _load_books(self, benchmark):
-        ids = [
-            entry["id"]
-            for entry in benchmark
-        ]
+        ids = [entry["id"] for entry in benchmark]
 
         books = (
-            Book.objects
-            .filter(id__in=ids)
+            Book.objects.filter(id__in=ids)
             .select_related("author")
             .prefetch_related("genres")
         )
 
-        books_by_id = {
-            book.id: book
-            for book in books
-        }
+        books_by_id = {book.id: book for book in books}
 
         benchmark_books = []
 
@@ -84,9 +77,7 @@ class Command(BaseCommand):
             book = books_by_id.get(entry["id"])
 
             if book is None:
-                raise CommandError(
-                    f"Benchmark book {entry['id']} not found."
-                )
+                raise CommandError(f"Benchmark book {entry['id']} not found.")
 
             benchmark_books.append((entry, book))
 
@@ -100,18 +91,14 @@ class Command(BaseCommand):
                 return OpenAISummaryProvider()
 
             case _:
-                raise CommandError(
-                    f"Unknown Provider: {provider_name}"
-                )
-            
+                raise CommandError(f"Unknown Provider: {provider_name}")
+
     def _run_benchmark(self, benchmark_books, service):
         results = []
         total_books = len(benchmark_books)
 
         self.stdout.write("")
-        self.stdout.write(
-            f"Benchmarking {total_books} books..."
-        )
+        self.stdout.write(f"Benchmarking {total_books} books...")
         self.stdout.write("")
 
         for index, (benchmark, book) in enumerate(
@@ -120,22 +107,17 @@ class Command(BaseCommand):
         ):
             start = time.perf_counter()
 
-            summary = service.generate(
+            result = service.generate(
                 title=book.title,
                 author=book.author.name,
-                genres=[
-                    genre.name
-                    for genre in book.genres.all()
-                ],
+                genres=[genre.name for genre in book.genres.all()],
                 description=book.description,
             )
 
             elapsed = time.perf_counter() - start
 
             self.stdout.write(
-                f"[{index}/{total_books}] "
-                f"{book.title} "
-                f"({elapsed:.2f}s)"
+                f"[{index}/{total_books}] " f"{book.title} " f"({elapsed:.2f}s)"
             )
 
             results.append(
@@ -144,7 +126,10 @@ class Command(BaseCommand):
                     "title": benchmark["title"],
                     "categories": benchmark["categories"],
                     "duration": elapsed,
-                    "summary": summary,
+                    "summary": result.summary,
+                    "prompt_tokens": result.prompt_tokens,
+                    "completion_tokens": result.completion_tokens,
+                    "total_tokens": result.total_tokens,
                 }
             )
 
@@ -152,9 +137,24 @@ class Command(BaseCommand):
         return results
 
     def _save_results(self, results, provider):
-        durations = [
-            result["duration"]
+        durations = [result["duration"] for result in results]
+
+        prompt_tokens = [
+            result["prompt_tokens"]
             for result in results
+            if result["prompt_tokens"] is not None
+        ]
+
+        completion_tokens = [
+            result["completion_tokens"]
+            for result in results
+            if result["completion_tokens"] is not None
+        ]
+
+        total_tokens = [
+            result["total_tokens"]
+            for result in results
+            if result["total_tokens"] is not None
         ]
 
         created_at = datetime.now(UTC)
@@ -167,15 +167,21 @@ class Command(BaseCommand):
             "average_duration": mean(durations),
             "fastest_duration": min(durations),
             "slowest_duration": max(durations),
+            "total_prompt_tokens": sum(prompt_tokens),
+            "total_completion_tokens": sum(completion_tokens),
+            "total_tokens": sum(total_tokens),
+            "average_prompt_tokens": (mean(prompt_tokens) if prompt_tokens else None),
+            "average_completion_tokens": (
+                mean(completion_tokens) if completion_tokens else None
+            ),
+            "average_total_tokens": (mean(total_tokens) if total_tokens else None),
             "books": results,
         }
 
         timestamp = created_at.strftime("%Y%m%d_%H%M%S")
 
         filename = (
-            f"{provider.name}_"
-            f"{provider.model.replace(':', '_')}_"
-            f"{timestamp}"
+            f"{provider.name}_" f"{provider.model.replace(':', '_')}_" f"{timestamp}"
         )
 
         output_path = (
@@ -185,7 +191,6 @@ class Command(BaseCommand):
             / "results"
             / f"{filename}.json"
         )
-
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -199,7 +204,5 @@ class Command(BaseCommand):
 
         self.stdout.write("")
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Benchmark results saved to {output_path}"
-            )
+            self.style.SUCCESS(f"Benchmark results saved to {output_path}")
         )

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-
+from ..result import SummaryResult
 
 class SummaryProvider(ABC):
     @abstractmethod
@@ -8,6 +8,6 @@ class SummaryProvider(ABC):
         *,
         system_prompt: str,
         user_prompt: str,
-    ) -> str:
+    ) -> SummaryResult:
         """Generate a summary from the supplied prompts."""
         raise NotImplementedError

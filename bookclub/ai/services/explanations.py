@@ -3,7 +3,7 @@ from ..prompts.recommendation import (
     build_recommendation_user_prompt,
 )
 
-from .providers.base import SummaryProvider
+from .summary.providers.base import SummaryProvider
 
 
 class ExplanationService:

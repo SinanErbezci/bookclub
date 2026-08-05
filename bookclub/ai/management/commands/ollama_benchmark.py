@@ -4,8 +4,8 @@ from statistics import mean
 
 from django.core.management.base import BaseCommand
 
-from ai.services.providers.ollama import OllamaSummaryProvider
-from ai.services.summary import SummaryService
+from bookclub.ai.services.summary.providers.ollama import OllamaSummaryProvider
+from bookclub.ai.services.summary.summary import SummaryService
 from library.models import Book
 
 

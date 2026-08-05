@@ -1,6 +1,7 @@
 """
-Utilities for generating text embeddings used by BookClub AI.
+Utilities for generating text embeddings.
 """
+
 from __future__ import annotations
 from sentence_transformers import SentenceTransformer
 from django.conf import settings
@@ -10,7 +11,10 @@ from library.models import Book
 
 logger = logging.getLogger(__name__)
 
-def build_book_embedding_text(book: Book) -> str:
+
+def build_description_embedding_text(
+    book: Book,
+) -> str:
     """
     Build a natural language representation of a book suitable
     for semantic embeddings.
@@ -22,9 +26,8 @@ def build_book_embedding_text(book: Book) -> str:
             value = value.strip()
             if value:
                 parts.append(f"{label}: {value}")
-    
+
     add_field("Title", book.title)
-    add_field("Author",  book.author.name if book.author else None)
 
     genres = ", ".join(
         genre.name
@@ -38,6 +41,7 @@ def build_book_embedding_text(book: Book) -> str:
     add_field("Description", book.description)
 
     return "\n\n".join(parts)
+
 
 class EmbeddingService:
     """Service responsible for generating text embeddings."""
@@ -55,7 +59,7 @@ class EmbeddingService:
 
         logger.info("Embedding model loaded successfully.")
 
-    def generate(self, text: str) -> list[float]:
+    def embed_text(self, text: str) -> list[float]:
         """
         Generate an embedding for a single piece of text.
         """
@@ -71,7 +75,7 @@ class EmbeddingService:
 
         return embedding.tolist()
 
-    def generate_batch(self, texts: list[str]) -> list[list[float]]:
+    def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """
         Generate embeddings for multiple texts.
         """

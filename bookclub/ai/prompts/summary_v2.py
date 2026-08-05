@@ -17,10 +17,7 @@ When information is limited, produce a shorter summary instead of adding missing
 
 Requirements:
 
-- Preserve the central premise.
-- Preserve the main themes, important concepts, and notable entities.
-- Focus on what the book is about rather than recounting the sequence of events.
-- Avoid chronological plot summaries whenever possible.
+- Describe the book's central premise, themes, conflicts, world-building, notable entities, and key concepts rather than retelling the plot chronologically.
 - Mention the setting only when it is important or explicitly described.
 - Use the provided genres only as supporting context.
 - Remove marketing language, review quotes, awards, promotional text, and redundant information.
@@ -29,7 +26,6 @@ Requirements:
 - Avoid revealing major plot twists or the ending.
 - Do not include publication history, author biography, or other metadata unless it is part of the provided description and essential to understanding the book.
 - Write one concise paragraph.
-- Return only the summary.
 """.strip()
 
 USER_PROMPT_TEMPLATE = """

@@ -47,5 +47,6 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"{index:2}. "
                 f"{book.distance:.4f}  "
-                f"{book.title}"
+                f"{book.title} "
+                f"({book.author.name})"
             )

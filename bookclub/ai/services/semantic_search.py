@@ -10,6 +10,7 @@ from pgvector.django import CosineDistance
 
 from .embeddings import EmbeddingService
 from library.models import Book
+from ai.models import BookEmbedding
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +22,7 @@ class SemanticSearchService:
         self,
         embedding_service: EmbeddingService | None = None,
     ) -> None:
-        self.embedding_service = (
-            embedding_service
-            or EmbeddingService()
-        )
+        self.embedding_service = embedding_service or EmbeddingService()
 
     def search(
         self,
@@ -44,26 +42,33 @@ class SemanticSearchService:
 
         logger.info("Generating query embedding.")
 
-        query_embedding = self.embedding_service.generate(
-            query
-        )
+        query_embedding = self.embedding_service.embed_text(query)
 
         logger.info("Searching for similar books.")
 
-        books = list(
-            Book.objects
+        embeddings = list(
+            BookEmbedding.objects.filter(
+                embedding_type=BookEmbedding.EmbeddingType.DESCRIPTION,
+            )
+            .select_related("book")
             .annotate(
                 distance=CosineDistance(
-                    "text_embedding",
+                    "embedding",
                     query_embedding,
                 )
             )
             .order_by("distance")[:limit]
         )
 
+        books = []
+
+        for item in embeddings:
+            item.book.distance = item.distance
+            books.append(item.book)
+
         logger.info(
             "Found %d matching books.",
             len(books),
         )
-
+        
         return books

@@ -2,14 +2,14 @@ from openai import OpenAI, OpenAIError
 from django.conf import settings
 
 from .base import SummaryProvider
-
+from ..result import SummaryResult
 
 DEFAULT_MODEL = "gpt-4.1-mini"
 
 
 class OpenAISummaryProvider(SummaryProvider):
     name = "openai"
-    
+
     def __init__(
         self,
         *,
@@ -29,7 +29,7 @@ class OpenAISummaryProvider(SummaryProvider):
         *,
         system_prompt: str,
         user_prompt: str,
-    ) -> str:
+    ) -> SummaryResult:
         try:
             response = self.client.responses.create(
                 model=self.model,
@@ -45,7 +45,12 @@ class OpenAISummaryProvider(SummaryProvider):
                 ],
             )
 
-            return response.output_text.strip()
+            return SummaryResult(
+                summary=response.output_text.strip(),
+                prompt_tokens=response.usage.input_tokens,
+                completion_tokens=response.usage.output_tokens,
+                total_tokens=response.usage.total_tokens,
+            )
 
         except OpenAIError as exc:
             raise RuntimeError(f"OpenAI request failed: {exc}") from exc

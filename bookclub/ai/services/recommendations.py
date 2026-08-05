@@ -1,6 +1,7 @@
 """
 Utilities for book recommendations using pgvector.
 """
+
 from __future__ import annotations
 
 import logging
@@ -8,6 +9,7 @@ import logging
 from pgvector.django import CosineDistance
 
 from library.models import Book
+from ai.models import BookEmbedding
 
 logger = logging.getLogger(__name__)
 
@@ -25,11 +27,14 @@ class RecommendationService:
         to the given book.
         """
         if limit <= 0:
-            raise ValueError(
-                "Limit must be greater than zero."
-            )
+            raise ValueError("Limit must be greater than zero.")
 
-        if book.text_embedding is None:
+        book_embedding = BookEmbedding.objects.filter(
+            book=book,
+            embedding_type=BookEmbedding.EmbeddingType.DESCRIPTION,
+        ).first()
+
+        if book_embedding is None:
             return []
 
         logger.info(
@@ -39,6 +44,7 @@ class RecommendationService:
 
         candidates = self._retrieve_candidates(
             book,
+            book_embedding.embedding,
         )
 
         logger.info(
@@ -61,27 +67,37 @@ class RecommendationService:
     def _retrieve_candidates(
         self,
         book: Book,
+        embedding: list[float],
         candidate_limit: int = 100,
     ) -> list[Book]:
         """
         Retrieve the most semantically similar books.
         """
-        return list(
-            Book.objects
+        embeddings = list(
+            BookEmbedding.objects
             .filter(
-                text_embedding__isnull=False,
+                embedding_type=BookEmbedding.EmbeddingType.DESCRIPTION,
             )
             .exclude(
-                id=book.id,
+                book=book,
             )
+            .select_related("book")
             .annotate(
                 distance=CosineDistance(
-                    "text_embedding",
-                    book.text_embedding,
+                    "embedding",
+                    embedding,
                 )
             )
             .order_by("distance")[:candidate_limit]
         )
+
+        candidates = []
+
+        for item in embeddings:
+            item.book.distance = item.distance
+            candidates.append(item.book)
+
+        return candidates
 
     def _filter_candidates(
         self,
@@ -121,7 +137,4 @@ class RecommendationService:
             "omnibus",
         )
 
-        return any(
-            keyword in title
-            for keyword in keywords
-        )
+        return any(keyword in title for keyword in keywords)

@@ -4,6 +4,9 @@ from ai.prompts.summary_v2 import (
 )
 
 from .providers.base import SummaryProvider
+from .result import SummaryResult
+
+MAX_DESCRIPTION_LENGTH = 4000
 
 
 class SummaryService:
@@ -17,7 +20,7 @@ class SummaryService:
         author: str,
         genres: list[str],
         description: str,
-    ) -> str:
+    ) -> SummaryResult:
 
         user_prompt = self._build_user_prompt(
             title=title,
@@ -39,6 +42,9 @@ class SummaryService:
         genres: list[str],
         description: str,
     ) -> str:
+
+        description = self._truncate_description(description)
+
         return USER_PROMPT_TEMPLATE.format(
             title=title,
             author=author,
@@ -46,4 +52,18 @@ class SummaryService:
             description=description,
         )
 
+    def _truncate_description(
+        self,
+        description: str,
+    ) -> str:
+        if len(description) <= MAX_DESCRIPTION_LENGTH:
+            return description
 
+        truncated = description[:MAX_DESCRIPTION_LENGTH]
+
+        last_space = truncated.rfind(" ")
+
+        if last_space != -1:
+            truncated = truncated[:last_space]
+
+        return truncated

@@ -1,7 +1,7 @@
 from ollama import Client, ResponseError
 
 from .base import SummaryProvider
-
+from ..result import SummaryResult
 import os
 
 DEFAULT_MODEL = "qwen3:4b-instruct"
@@ -10,10 +10,11 @@ DEFAULT_HOST = os.getenv(
     "OLLAMA_HOST",
     "http://127.0.0.1:11434",
 )
-print(DEFAULT_HOST)
+
+
 class OllamaSummaryProvider(SummaryProvider):
     name = "ollama"
-    
+
     def __init__(
         self,
         *,
@@ -28,7 +29,7 @@ class OllamaSummaryProvider(SummaryProvider):
         *,
         system_prompt: str,
         user_prompt: str,
-    ) -> str:
+    ) -> SummaryResult:
         try:
             response = self.client.chat(
                 model=self.model,
@@ -45,7 +46,12 @@ class OllamaSummaryProvider(SummaryProvider):
                 ],
             )
 
-            return response.message.content.strip()
+            return SummaryResult(
+                summary=response.message.content.strip(),
+                prompt_tokens=response.prompt_eval_count,
+                completion_tokens=response.eval_count,
+                total_tokens=(response.prompt_eval_count + response.eval_count),
+            )
 
         except ResponseError as exc:
             raise RuntimeError(f"Ollama request failed: {exc}") from exc
