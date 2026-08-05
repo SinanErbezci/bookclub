@@ -1,3 +1,5 @@
+PROMPT_VERSION = "v2"
+
 SYSTEM_PROMPT = """
 You are an AI assistant that prepares books for semantic search and recommendation systems.
 

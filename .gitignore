@@ -43,3 +43,6 @@ terraform.tfstate.*
 tfexercises.txt
 
 *.dump
+
+# OpenAI Batch API files
+bookclub/ai/batch/
