@@ -3,10 +3,13 @@ Utilities for generating text embeddings.
 """
 
 from __future__ import annotations
-from sentence_transformers import SentenceTransformer
-from django.conf import settings
+
 import logging
 
+from django.conf import settings
+from sentence_transformers import SentenceTransformer
+
+from ai.models import BookSummary
 from library.models import Book
 
 logger = logging.getLogger(__name__)
@@ -15,30 +18,76 @@ logger = logging.getLogger(__name__)
 def build_description_embedding_text(
     book: Book,
 ) -> str:
+    return _build_embedding_text(
+        title=book.title,
+        genres=[
+            genre.name
+            for genre in sorted(
+                book.genres.all(),
+                key=lambda genre: genre.name,
+            )
+        ],
+        body=book.description,
+        body_label="Description",
+    )
+
+
+def build_summary_embedding_text(
+    summary: BookSummary,
+) -> str:
+    return _build_embedding_text(
+        title=summary.book.title,
+        genres=[
+            genre.name
+            for genre in sorted(
+                summary.book.genres.all(),
+                key=lambda genre: genre.name,
+            )
+        ],
+        body=summary.content,
+        body_label="Summary",
+    )
+
+
+def _build_embedding_text(
+    *,
+    title: str,
+    genres: list[str],
+    body: str | None,
+    body_label: str,
+) -> str:
     """
-    Build a natural language representation of a book suitable
-    for semantic embeddings.
+    Build a natural language representation suitable for semantic
+    embeddings.
     """
     parts: list[str] = []
 
-    def add_field(label: str, value: str | None) -> None:
+    def add_field(
+        label: str,
+        value: str | None,
+    ) -> None:
         if value:
             value = value.strip()
+
             if value:
-                parts.append(f"{label}: {value}")
+                parts.append(
+                    f"{label}: {value}"
+                )
 
-    add_field("Title", book.title)
-
-    genres = ", ".join(
-        genre.name
-        for genre in sorted(
-            book.genres.all(),
-            key=lambda genre: genre.name,
-        )
+    add_field(
+        "Title",
+        title,
     )
 
-    add_field("Genres", genres)
-    add_field("Description", book.description)
+    add_field(
+        "Genres",
+        ", ".join(genres),
+    )
+
+    add_field(
+        body_label,
+        body,
+    )
 
     return "\n\n".join(parts)
 
@@ -46,46 +95,54 @@ def build_description_embedding_text(
 class EmbeddingService:
     """Service responsible for generating text embeddings."""
 
+    _model = None
+
+    QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
+    
+
     def __init__(self):
-        logger.info(
-            "Loading embedding model: %s",
-            settings.EMBEDDING_MODEL_NAME,
-        )
+        if self.__class__._model is None:
+            logger.info(
+                "Loading embedding model: %s",
+                settings.EMBEDDING_MODEL_NAME,
+            )
 
-        self.model = SentenceTransformer(
-            settings.EMBEDDING_MODEL_NAME,
-            device=settings.EMBEDDING_DEVICE,
-        )
+            self.__class__._model = SentenceTransformer(
+                settings.EMBEDDING_MODEL_NAME,
+                device=settings.EMBEDDING_DEVICE,
+            )
 
-        logger.info("Embedding model loaded successfully.")
+            logger.info(
+                "Embedding model loaded successfully."
+            )
 
-    def embed_text(self, text: str) -> list[float]:
+        self.model = self.__class__._model
+
+    def _embed(
+        self,
+        texts: str | list[str],
+    ) -> list[float] | list[list[float]]:
         """
-        Generate an embedding for a single piece of text.
+        Generate embeddings for one or more texts.
         """
-        if not text.strip():
-            raise ValueError("Cannot generate embedding from empty text.")
 
-        logger.debug("Generating embedding.")
+        if isinstance(texts, str):
+            if not texts.strip():
+                raise ValueError(
+                    "Cannot generate embedding from empty text."
+                )
+        else:
+            if not texts:
+                raise ValueError(
+                    "Cannot generate embeddings from an empty list."
+                )
 
-        embedding = self.model.encode(
-            text,
-            convert_to_numpy=True,
-        )
+            if any(not text.strip() for text in texts):
+                raise ValueError(
+                    "Cannot generate embeddings from empty text."
+                )
 
-        return embedding.tolist()
-
-    def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """
-        Generate embeddings for multiple texts.
-        """
-        if not texts:
-            raise ValueError("Cannot generate embeddings from an empty list.")
-
-        logger.debug(
-            "Generating embeddings for %d texts.",
-            len(texts),
-        )
+        logger.debug("Generating embeddings.")
 
         embeddings = self.model.encode(
             texts,
@@ -93,3 +150,46 @@ class EmbeddingService:
         )
 
         return embeddings.tolist()
+
+    def embed_document(
+        self,
+        text: str,
+    ) -> list[float]:
+        """
+        Generate an embedding for a document.
+        """
+        return self._embed(text)
+
+    def embed_documents(
+        self,
+        texts: list[str],
+    ) -> list[list[float]]:
+        """
+        Generate embeddings for multiple documents.
+        """
+        return self._embed(texts)
+
+    def embed_query(
+        self,
+        query: str,
+    ) -> list[float]:
+        """
+        Generate an embedding for a search query.
+        """
+        return self._embed(
+            self.QUERY_PREFIX + query,
+        )
+
+    def embed_queries(
+        self,
+        queries: list[str],
+    ) -> list[list[float]]:
+        """
+        Generate embeddings for multiple search queries.
+        """
+        return self._embed(
+            [
+                self.QUERY_PREFIX + query
+                for query in queries
+            ]
+        )

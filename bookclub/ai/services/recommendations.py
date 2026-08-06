@@ -31,7 +31,7 @@ class RecommendationService:
 
         book_embedding = BookEmbedding.objects.filter(
             book=book,
-            embedding_type=BookEmbedding.EmbeddingType.DESCRIPTION,
+            embedding_type=BookEmbedding.EmbeddingType.SUMMARY
         ).first()
 
         if book_embedding is None:
@@ -76,7 +76,7 @@ class RecommendationService:
         embeddings = list(
             BookEmbedding.objects
             .filter(
-                embedding_type=BookEmbedding.EmbeddingType.DESCRIPTION,
+                embedding_type=BookEmbedding.EmbeddingType.SUMMARY,
             )
             .exclude(
                 book=book,

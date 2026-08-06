@@ -3,12 +3,28 @@ from pgvector.django import VectorField
 
 
 class BookSummary(models.Model):
-    book = models.OneToOneField(
+    book = models.ForeignKey(
         "library.Book",
         on_delete=models.CASCADE,
-        related_name="summary",
+        related_name="summaries",
     )
 
+    prompt_version = models.CharField(
+        max_length=20,
+        blank=True,
+    )
+
+    input_tokens = models.PositiveIntegerField(
+        default=0,
+    )
+
+    output_tokens = models.PositiveIntegerField(
+        default=0,
+    )
+
+    total_tokens = models.PositiveIntegerField(
+        default=0,
+    )
     content = models.TextField(
         null=True,
         blank=True,
@@ -34,6 +50,17 @@ class BookSummary(models.Model):
         ordering = ["book"]
         verbose_name = "Book Summary"
         verbose_name_plural = "Book Summaries"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "book",
+                    "prompt_version",
+                    "model_name",
+                ],
+                name="unique_book_summary",
+            )
+        ]
 
 
 class BookEmbedding(models.Model):

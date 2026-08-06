@@ -196,7 +196,7 @@ LOGGING = {
 # AI
 # -------------------------------------------------------------------
 
-EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 EMBEDDING_DEVICE = "cpu"
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")

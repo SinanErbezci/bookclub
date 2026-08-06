@@ -27,11 +27,17 @@ class SemanticSearchService:
     def search(
         self,
         query: str,
+        embedding_type: BookEmbedding.EmbeddingType = (
+            BookEmbedding.EmbeddingType.SUMMARY
+        ),
         limit: int = 10,
     ) -> list[Book]:
         """
         Return the books most semantically similar to the query.
         """
+
+        if embedding_type not in BookEmbedding.EmbeddingType.values:
+            raise ValueError(f"Unknown embedding type: {embedding_type}")
         query = query.strip()
 
         if not query:
@@ -42,13 +48,14 @@ class SemanticSearchService:
 
         logger.info("Generating query embedding.")
 
-        query_embedding = self.embedding_service.embed_text(query)
+        query_embedding = self.embedding_service.embed_query(query)
+
 
         logger.info("Searching for similar books.")
 
         embeddings = list(
             BookEmbedding.objects.filter(
-                embedding_type=BookEmbedding.EmbeddingType.DESCRIPTION,
+                embedding_type=embedding_type,
             )
             .select_related("book")
             .annotate(
@@ -70,5 +77,5 @@ class SemanticSearchService:
             "Found %d matching books.",
             len(books),
         )
-        
+
         return books
