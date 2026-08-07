@@ -67,6 +67,7 @@ class BookEmbedding(models.Model):
     class EmbeddingType(models.TextChoices):
         DESCRIPTION = "description", "Description"
         SUMMARY = "summary", "Summary"
+        SUMMARY_NO_TITLE = "summary_no_title", "Summary (No Title)"
         ENRICHED = "enriched", "Enriched"
 
     book = models.ForeignKey(
