@@ -20,13 +20,7 @@ def build_description_embedding_text(
 ) -> str:
     return _build_embedding_text(
         title=book.title,
-        genres=[
-            genre.name
-            for genre in sorted(
-                book.genres.all(),
-                key=lambda genre: genre.name,
-            )
-        ],
+        genres=_sorted_genres(book),
         body=book.description,
         body_label="Description",
     )
@@ -37,24 +31,41 @@ def build_summary_embedding_text(
 ) -> str:
     return _build_embedding_text(
         title=summary.book.title,
-        genres=[
-            genre.name
-            for genre in sorted(
-                summary.book.genres.all(),
-                key=lambda genre: genre.name,
-            )
-        ],
+        genres=_sorted_genres(summary.book),
         body=summary.content,
         body_label="Summary",
     )
 
 
+def build_summary_without_title_embedding_text(
+    summary: BookSummary,
+) -> str:
+    return _build_embedding_text(
+        genres=_sorted_genres(summary.book),
+        body=summary.content,
+        body_label="Summary",
+        include_title=False,
+    )
+
+
+def _sorted_genres(
+    book: Book,
+) -> list[str]:
+    return [
+        genre.name
+        for genre in sorted(
+            book.genres.all(),
+            key=lambda genre: genre.name,
+        )
+    ]
+
 def _build_embedding_text(
     *,
-    title: str,
     genres: list[str],
     body: str | None,
     body_label: str,
+    title: str | None = None,
+    include_title: bool = True,
 ) -> str:
     """
     Build a natural language representation suitable for semantic
@@ -74,10 +85,11 @@ def _build_embedding_text(
                     f"{label}: {value}"
                 )
 
-    add_field(
-        "Title",
-        title,
-    )
+    if include_title:
+        add_field(
+            "Title",
+            title,
+        )
 
     add_field(
         "Genres",
@@ -90,6 +102,8 @@ def _build_embedding_text(
     )
 
     return "\n\n".join(parts)
+
+
 
 
 class EmbeddingService:
