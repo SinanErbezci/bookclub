@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import SkeletonRow from "../SkeletonRow";
+import CarouselSkeleton from "./CarouselSkeleton";
 import styles from "./CarouselSection.module.css"
 import { Link } from "react-router-dom";
+
 function CarouselSection({
   title,
   titleLink,
   items = [],
-  loading,
+  loading = false,
   renderItem,
 }) {
   const containerRef = useRef(null);
@@ -101,7 +102,7 @@ function CarouselSection({
             }}
           >
             {loading ? (
-              <SkeletonRow count={Math.max(visibleCount, 4)} />
+              <CarouselSkeleton count={Math.max(visibleCount, 4)} />
             ) : itemCount === 0 ? (
               <p>No items found.</p>
             ) : (

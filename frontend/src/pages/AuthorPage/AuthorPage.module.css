@@ -51,3 +51,30 @@
     border-top: 1px solid var(--BORDERCOLOR1);
     padding-top: 24px;
 }
+
+/* Skeleton */ 
+.skeletonAvatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}
+
+.skeletonName {
+  width: 280px;
+  height: 40px;
+}
+
+.skeletonMeta {
+  width: 90px;
+  height: 16px;
+}
+
+.skeletonDesc {
+  width: 260px;
+  height: 18px;
+}
+
+.skeletonBooksTitle {
+  width: 280px;
+  height: 28px;
+}

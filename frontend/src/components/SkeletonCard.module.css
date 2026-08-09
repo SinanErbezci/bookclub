@@ -7,9 +7,6 @@
   width: 100%;
   height: 270px;
   border-radius: 12px;
-  background: #e5e7eb;
-  position: relative;
-  overflow: hidden;
 }
 
 .body {
@@ -19,9 +16,6 @@
 .text {
   height: 14px;
   border-radius: 6px;
-  background: #e5e7eb;
-  position: relative;
-  overflow: hidden;
 }
 
 .title {
@@ -31,26 +25,4 @@
 
 .author {
   width: 60%;
-}
-
-/* shimmer effect */
-.image::after,
-.text::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,255,255,0.45),
-    transparent
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
 }

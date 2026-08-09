@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import Browse from "./pages/Browse";
-import BookPage from "./pages/BookPage";
-import AuthorPage from "./pages/AuthorPage";
+import BookPage from "./pages/BookPage/BookPage";
+import AuthorPage from "./pages/AuthorPage/AuthorPage";
 import GenrePage from "./pages/GenrePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";

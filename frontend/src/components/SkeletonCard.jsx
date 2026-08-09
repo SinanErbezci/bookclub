@@ -1,13 +1,14 @@
-import styles from "./SkeletonCard.module.css"
+import Skeleton from "./Skeleton/Skeleton";
+import styles from "./SkeletonCard.module.css";
 
 function SkeletonCard() {
   return (
     <div className={styles.card}>
-      <div className={styles.image} />
+      <Skeleton className={styles.image} />
 
       <div className={styles.body}>
-        <div className={`${styles.text} ${styles.title}`} />
-        <div className={`${styles.text} ${styles.author}`} />
+        <Skeleton className={`${styles.text} ${styles.title}`} />
+        <Skeleton className={`${styles.text} ${styles.author}`} />
       </div>
     </div>
   );

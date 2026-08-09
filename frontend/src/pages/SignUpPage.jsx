@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signupUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import styles from "./Auth.module.css";
 
 function SignupPage() {
   const { user, loading, refreshUser } = useAuth();
@@ -76,12 +77,12 @@ function SignupPage() {
     isSubmitting;
 
   return (
-    <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSubmit}>
+    <div className={styles.authPage}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <h2>Sign Up</h2>
-        <p className="auth-subtitle">Create your account 🚀</p>
+        <p className={styles.subtitle}>Create your account 🚀</p>
 
-        {error && <p className="auth-error">{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
 
         <input
           name="username"
@@ -92,7 +93,7 @@ function SignupPage() {
         />
 
         {/* Password */}
-        <div className="password-field">
+        <div className={styles.passwordField}>
           <input
             name="password"
             type={showPassword ? "text" : "password"}
@@ -102,7 +103,8 @@ function SignupPage() {
           />
 
           <span
-            className={`password-toggle ${showPassword ? "active" : ""}`}
+            className={`${styles.passwordToggle} ${showPassword ? styles.active : ""
+              }`}
             onClick={() => setShowPassword((s) => !s)}
           >
             👁
@@ -126,14 +128,14 @@ function SignupPage() {
         />
 
         {form.confirmPassword && !passwordsMatch && (
-          <p className="input-error">Passwords do not match</p>
+          <p className={styles.inputError}>Passwords do not match</p>
         )}
 
         <button disabled={isDisabled}>
           {isSubmitting ? "Creating..." : "Sign Up"}
         </button>
 
-        <p className="auth-switch">
+        <p className={styles.authSwitch}>
           Already have an account? <Link to="/login">Login</Link>
         </p>
       </form>

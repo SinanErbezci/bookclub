@@ -4,18 +4,18 @@ import {
   getBookById,
   getBookRecommendations,
   getRecommendationExplanation,
-} from "../api/books";
-import { getReviewsByBook } from "../api/reviews";
-import CarouselSection from "../components/CarouselSection/CarouselSection";
-import ReviewSection from "../features/reviews/ReviewSection";
-import BookCard from "../components/BookCard";
-import placeholder_book from "../assets/placeholder_book.png";
-import { useAuth } from "../context/AuthContext";
-import NotFoundPage from "./NotFoundPage";
-import LoadingScreen from "../components/LoadingScreen";
-import ListDropdown from "../components/lists/ListDropdown";
-import RecommendationModal from "../components/RecommendationModal/RecommendationModal";
+} from "../../api/books";
+import { getReviewsByBook } from "../../api/reviews";
+import CarouselSection from "../../components/CarouselSection/CarouselSection";
+import ReviewSection from "../../features/reviews/ReviewSection";
+import BookCard from "../../components/BookCard";
+import placeholder_book from "../../assets/placeholder_book.png";
+import { useAuth } from "../../context/AuthContext";
+import NotFoundPage from "../NotFoundPage";
+import ListDropdown from "../../components/lists/ListDropdown";
+import RecommendationModal from "../../components/RecommendationModal/RecommendationModal";
 import styles from "./BookPage.module.css";
+import BookPageSkeleton from "./BookPageSkeleton";
 
 function BookPage() {
   const { id } = useParams();
@@ -166,12 +166,7 @@ function BookPage() {
   }, [id]);
 
   if (loading) {
-    return (
-      <LoadingScreen
-        text="Loading book..."
-        fullPage
-      />
-    );
+    return <BookPageSkeleton />;
   }
   if (!book) return <NotFoundPage />
 

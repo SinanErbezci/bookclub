@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { getAuthorById } from "../api/authors";
-import CarouselSection from "../components/CarouselSection/CarouselSection";
-import BookCard from "../components/BookCard";
-import AuthorPageSkeleton from "../components/AuthorPageSkeleton";
-import personPlaceholder from "../assets/profile.svg"
-import NotFoundPage from "./NotFoundPage";
+import { getAuthorById } from "../../api/authors";
+import CarouselSection from "../../components/CarouselSection/CarouselSection";
+import BookCard from "../../components/BookCard";
+import AuthorPageSkeleton from "./AuthorPageSkeleton";
+import personPlaceholder from "../../assets/profile.svg"
+import NotFoundPage from "../NotFoundPage";
 import styles from "./AuthorPage.module.css";
+
 
 function AuthorPage() {
   const { id } = useParams();

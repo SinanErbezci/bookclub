@@ -6,12 +6,12 @@ import {
 } from "react";
 import { useParams } from "react-router-dom";
 
-import { getBooksByGenrePaginated } from "../api/books";
-import { getGenreById } from "../api/genres";
+import { getBooksByGenrePaginated } from "../../api/books";
+import { getGenreById } from "../../api/genres";
 
-import BookCard from "../components/BookCard";
-import SkeletonCard from "../components/SkeletonCard";
-import NotFoundPage from "./NotFoundPage";
+import BookCard from "../../components/BookCard";
+import SkeletonCard from "../../components/SkeletonCard";
+import NotFoundPage from "../NotFoundPage";
 
 function GenrePage() {
   const { id } = useParams();

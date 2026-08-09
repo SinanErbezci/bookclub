@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
+import styles from "./Auth.module.css";
 
 function LoginPage() {
   const { user, loading, refreshUser } = useAuth();
@@ -53,12 +54,12 @@ function LoginPage() {
   const isDisabled = !form.username || !form.password || isSubmitting;
 
   return (
-    <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSubmit}>
+    <div className={styles.authPage}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <h2>Login</h2>
-        <p className="auth-subtitle">Welcome back 👋</p>
+        <p className={styles.subtitle}>Welcome back 👋</p>
 
-        {error && <p className="auth-error">{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
 
         <input
           name="username"
@@ -68,7 +69,7 @@ function LoginPage() {
           autoFocus
         />
 
-        <div className="password-field">
+        <div className={styles.passwordField}>
           <input
             name="password"
             type={showPassword ? "text" : "password"}
@@ -78,7 +79,8 @@ function LoginPage() {
           />
 
           <span
-            className="password-toggle"
+            className={`${styles.passwordToggle} ${showPassword ? styles.active : ""
+              }`}
             onClick={() => setShowPassword((s) => !s)}
           >
             👁
@@ -89,7 +91,7 @@ function LoginPage() {
           {isSubmitting ? "Logging in..." : "Login"}
         </button>
 
-        <p className="auth-switch">
+        <p className={styles.authSwitch}>
           Don’t have an account? <Link to="/signup">Sign up</Link>
         </p>
       </form>
