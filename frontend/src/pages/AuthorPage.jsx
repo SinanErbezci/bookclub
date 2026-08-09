@@ -7,6 +7,7 @@ import BookCard from "../components/BookCard";
 import AuthorPageSkeleton from "../components/AuthorPageSkeleton";
 import personPlaceholder from "../assets/profile.svg"
 import NotFoundPage from "./NotFoundPage";
+import styles from "./AuthorPage.module.css";
 
 function AuthorPage() {
   const { id } = useParams();
@@ -53,25 +54,25 @@ function AuthorPage() {
     <div className="container mt-5">
 
       {/* HEADER */}
-      <div className="author-header">
-        <div className="author-avatar">
+      <div className={styles.header}>
+        <div className={styles.avatar}>
           <img
             src={personPlaceholder}
             alt={author.name}
-            className="author-avatar-img"
+            className={styles.avatarImg}
           />
         </div>
-        <div className="author-info">
-          <h1 className="author-name">{author.name}</h1>
-          <p className="author-meta">
+        <div className={styles.info}>
+          <h1 className={styles.name}>{author.name}</h1>
+          <p className={styles.meta}>
             {author.books?.length || 0} books
           </p>
-          <p className="author-desc">Information about the author</p>
+          <p className={styles.desc}>Information about the author</p>
         </div>
       </div>
 
       {/* BOOKS */}
-      <div className="author-books-section">
+      <div className={styles.booksSection}>
         <CarouselSection
           title={`Books by ${author.name}`}
           items={author.books || []}

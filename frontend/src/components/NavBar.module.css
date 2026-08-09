@@ -1,0 +1,122 @@
+.navbar {
+  background-color: var(--BGCOLOR1);
+  color: var(--FONTCOLOR);
+  border-bottom: thin solid;
+
+  padding: 12px 24px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.container {
+  flex-wrap: nowrap !important;
+  align-items: center;
+  max-width: 1600px;
+}
+
+.options {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 10px 14px;
+
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--FONTCOLOR);
+  border: none;
+  background: none;
+  border-radius: 999px;
+
+  text-decoration: none;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.link:hover {
+  background-color: var(--FONTCOLOR);
+  color: white;
+}
+
+.active {
+  position: relative;
+}
+
+.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+
+  width: 50%;
+  height: 2px;
+
+  background: var(--COLOR-GOLD);
+  opacity: 0.6;
+
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+.login {
+  font-weight: 600;
+  border: 1px solid var(--BORDERCOLOR1);
+  padding: 5px 14px;
+
+  transition: all 0.2s ease;
+}
+
+.login:hover {
+  background-color: var(--BORDERCOLOR1);
+  color: white;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 8px 14px;
+
+  font-family: var(--FONT);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  color: var(--FONTCOLOR);
+  text-decoration: none;
+  border-radius: 8px;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.brand:hover {
+  background-color: var(--FONTCOLOR);
+  color: white;
+}
+
+.brand:active {
+  transform: scale(0.98);
+}
+
+.togglerIcon {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+@media (min-width: 992px) {
+  .options {
+    flex-wrap: nowrap;
+  }
+
+  .options > a:last-child {
+    border: 0;
+  }
+}

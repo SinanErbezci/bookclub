@@ -15,6 +15,7 @@ import NotFoundPage from "./NotFoundPage";
 import LoadingScreen from "../components/LoadingScreen";
 import ListDropdown from "../components/lists/ListDropdown";
 import RecommendationModal from "../components/RecommendationModal/RecommendationModal";
+import styles from "./BookPage.module.css";
 
 function BookPage() {
   const { id } = useParams();
@@ -88,10 +89,10 @@ function BookPage() {
     setSelectedRecommendationId(recommendationId);
     setIsModalOpen(true);
 
-    if (!user){
+    if (!user) {
       return;
     }
-    
+
     handleExplain(sourceBookId, recommendationId);
   };
 
@@ -175,22 +176,22 @@ function BookPage() {
   if (!book) return <NotFoundPage />
 
   return (
-    <div className="book-page container mt-5">
-      <div className="book-layout">
+    <div className="container mt-5">
+      <div className={styles.layout}>
 
         {/* LEFT */}
-        <div className="book-cover-wrapper">
+        <div className={styles.coverWrapper}>
           <img
             src={book.cover || placeholder_book}
             alt={book.title}
-            className="book-cover-img"
+            className={styles.coverImage}
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = placeholder_book;
             }}
           />
 
-          <div className="book-rating">
+          <div className={styles.rating}>
             ⭐ {book.rating} ({book.num_ratings})
           </div>
 
@@ -200,17 +201,17 @@ function BookPage() {
         </div>
 
         {/* RIGHT */}
-        <div className="book-info">
-          <h2 className="book-title">{book.title}</h2>
+        <div className={styles.info}>
+          <h2 className={styles.title}>{book.title}</h2>
 
-          <h5 className="book-author">
+          <h5 className={styles.author}>
             by{" "}
-            <Link to={`/authors/${book.author}`}>
+            <Link to={`/authors/${book.author}`} className={styles.entityLink}>
               {book.author_name}
             </Link>
           </h5>
 
-          <p className="book-meta">
+          <p className={styles.meta}>
             {book.publisher_name && (
               <>
                 <span>Publisher: {book.publisher_name}</span> |{" "}
@@ -223,7 +224,28 @@ function BookPage() {
             )}
           </p>
 
-          <div className="book-genres">
+          {book.series && (
+            <div className={styles.series}>
+              <span className={styles.seriesLabel}>
+                Series:
+              </span>{" "}
+              <Link
+                to={`/series/${book.series.id}`}
+                className={styles.seriesLink}
+              >
+                {book.series.name}
+              </Link>
+
+              {book.series_num && (
+                <span className={styles.seriesNumber}>
+                  {" "}
+                  (#{book.series_num})
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className={styles.genres}>
             {book.genres?.map((genre) => (
               <Link
                 key={genre.id}
@@ -238,7 +260,7 @@ function BookPage() {
           {book.description && (
             <>
               <div
-                className={`book-description ${expanded ? "expanded" : ""
+                className={`${styles.description} ${expanded ? styles.expanded : ""
                   }`}
               >
                 <p>{description}</p>
@@ -246,7 +268,7 @@ function BookPage() {
 
               {isLong && (
                 <button
-                  className="btn btn-ghost read-more-btn"
+                  className={`btn btn-ghost ${styles.readMoreBtn}`}
                   onClick={() => setExpanded(!expanded)}
                 >
                   {expanded ? "Read less" : "Read more"}

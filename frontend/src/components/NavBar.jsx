@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { useEffect } from "react";
 import SearchBar from "./SearchBar/SearchBar";
+import styles from "./NavBar.module.css";
 
 function NavBar() {
   const { user, logout } = useAuth();
@@ -49,21 +50,31 @@ function NavBar() {
   }, []);
 
   const getNavClass = ({ isActive }) =>
-    "nav-link " + (isActive ? "active" : "");
+    `${styles.link} ${isActive ? styles.active : ""}`;
 
   const renderNavLinks = () => {
     if (isAuthenticated) {
       return (
         <>
-          <NavLink to="/profile" className={getNavClass}>
-            Profile <i className="fa-solid fa-user"></i>
+          <NavLink
+            to="/profile"
+            className={getNavClass}
+          >
+            Profile
           </NavLink>
 
-          <NavLink to="/" end className={getNavClass}>
+          <NavLink
+            to="/"
+            end
+            className={getNavClass}
+          >
             Browse
           </NavLink>
 
-          <button className="nav-link" onClick={handleLogout}>
+          <button
+            className={styles.link}
+            onClick={handleLogout}
+          >
             <i className="fa-solid fa-arrow-right-from-bracket"></i>
           </button>
         </>
@@ -72,11 +83,17 @@ function NavBar() {
 
     return (
       <>
-        <NavLink to="/signup" className={getNavClass}>
+        <NavLink
+          to="/signup"
+          className={getNavClass}
+        >
           Sign Up
         </NavLink>
 
-        <Link className="nav-link nav-login" to="/login">
+        <Link
+          className={`${styles.link} ${styles.login}`}
+          to="/login"
+        >
           Log In
         </Link>
       </>
@@ -85,11 +102,17 @@ function NavBar() {
 
   return (
     <header>
-      <nav className="navbar navbar-expand-lg">
-        <div className="container nav-contain d-flex align-items-center">
-
+      <nav
+        className={`${styles.navbar} navbar navbar-expand-lg`}
+      >
+        <div
+          className={`${styles.container} container`}
+        >
           {/* LOGO */}
-          <Link to="/" className="brand-name">
+          <Link
+            to="/"
+            className={styles.brand}
+          >
             Book<span>Club</span>
           </Link>
 
@@ -99,7 +122,9 @@ function NavBar() {
           </div>
 
           {/* DESKTOP NAV */}
-          <div className="nav-options d-none d-lg-flex ms-auto">
+          <div
+            className={`${styles.options} d-none d-lg-flex ms-auto`}
+          >
             {renderNavLinks()}
           </div>
 
@@ -110,7 +135,9 @@ function NavBar() {
             data-bs-toggle="offcanvas"
             data-bs-target="#mobileMenu"
           >
-            <span className="navbar-toggler-icon"></span>
+            <span
+              className={`navbar-toggler-icon ${styles.togglerIcon}`}
+            ></span>
           </button>
 
           {/* MOBILE MENU */}
@@ -119,7 +146,10 @@ function NavBar() {
             id="mobileMenu"
           >
             <div className="offcanvas-header">
-              <div className="brand-name">BookClub</div>
+              <div className={styles.brand}>
+                BookClub
+              </div>
+
               <button
                 className="btn-close"
                 data-bs-dismiss="offcanvas"
@@ -127,7 +157,6 @@ function NavBar() {
             </div>
 
             <div className="offcanvas-body">
-
               {/* MOBILE SEARCH */}
               <div className="search-bar mb-3">
                 <SearchBar />
@@ -138,10 +167,8 @@ function NavBar() {
                   {renderNavLinks()}
                 </li>
               </ul>
-
             </div>
           </div>
-
         </div>
       </nav>
     </header>
