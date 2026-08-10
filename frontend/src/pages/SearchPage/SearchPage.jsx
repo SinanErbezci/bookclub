@@ -8,10 +8,9 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import { searchAll, semanticSearch } from "../api/search";
-
-import BookCard from "../components/BookCard";
-import SkeletonCard from "../components/SkeletonCard";
+import { searchAll, semanticSearch } from "../../api/search";
+import BookGrid from "../../components/BookGrid/BookGrid";
+import styles from "./SearchPage.module.css";
 
 function SearchPage() {
   const [searchParams] =
@@ -164,24 +163,18 @@ function SearchPage() {
   return (
     <div className="container mt-5">
 
-      <h1 className="mb-2">
+      <h1 className={styles.title}>
         Search Results
       </h1>
 
-      <p className="mb-5">
-        Results for:
-        {" "}
-        <strong>{query}</strong>
+      <p className={styles.query}>
+        Results for: <strong>{query}</strong>
       </p>
-
       {loading ? (
-        <div className="genre-grid">
-          {Array.from({
-            length: 10,
-          }).map((_, i) => (
-            <SkeletonCard key={i} />
-          ))}
-        </div>
+        <BookGrid
+          loading={true}
+          skeletonCount={10}
+        />
 
       ) : !hasResults ? (
         <p>
@@ -193,26 +186,17 @@ function SearchPage() {
         <>
           {/* BOOKS */}
           {results.books.length > 0 && (
-            <section className="mb-5">
+            <section className={styles.section}>
 
-              <h2 className="form-title mb-4">
+              <h2 className={styles.sectionTitle}>
                 {results.books_count} books found for "{query}"
               </h2>
 
-              <div className="genre-grid">
-
-                {results.books.map(
-                  (book) => (
-                    <BookCard
-                      key={book.id}
-                      book={book}
-                      showAuthor
-                    />
-                  )
-                )}
-
-              </div>
-              <div className="d-flex gap-2 mt-4 align-items-center justify-content-center flex-wrap">
+              <BookGrid
+                books={results.books}
+                showAuthor
+              />
+              <div className={styles.pagination}>
 
                 {results.previous && (
                   <Link
@@ -231,7 +215,7 @@ function SearchPage() {
                       return (
                         <span
                           key={index}
-                          className="px-2"
+                          className={styles.ellipsis}
                         >
                           ...
                         </span>
@@ -269,44 +253,37 @@ function SearchPage() {
           )}
 
           {semanticBooks.length > 0 && (
-            <section className="mb-5">
+            <section className={styles.section}>
 
-              <h2 className="form-title mb-4">
+              <h2 className={styles.sectionTitle}>
                 ✨ AI Recommendations
               </h2>
 
-              <div className="genre-grid">
-
-                {semanticBooks.map((book) => (
-                  <BookCard
-                    key={book.id}
-                    book={book}
-                    showAuthor
-                  />
-                ))}
-
-              </div>
+              <BookGrid
+                books={semanticBooks}
+                showAuthor
+              />
 
             </section>
           )}
           {/* AUTHORS */}
           {results.authors.length > 0 && (
-            <section className="mb-5">
+            <section className={styles.section}>
 
-              <h2 className="form-title mb-4">
+              <h2 className={styles.sectionTitle}>
                 Authors
                 {" "}
                 ({results.authors.length})
               </h2>
 
-              <div className="d-flex flex-column gap-3">
+              <div className={styles.resultList}>
 
                 {results.authors.map(
                   (author) => (
                     <Link
                       key={author.id}
                       to={`/authors/${author.id}`}
-                      className="book-link"
+                      className={styles.resultLink}
                     >
                       {author.name}
                     </Link>
@@ -320,22 +297,22 @@ function SearchPage() {
 
           {/* GENRES */}
           {results.genres.length > 0 && (
-            <section className="mb-5">
+            <section className={styles.section}>
 
-              <h2 className="form-title mb-4">
+              <h2 className={styles.sectionTitle}>
                 Genres
                 {" "}
                 ({results.genres.length})
               </h2>
 
-              <div className="d-flex flex-column gap-3">
+              <div className={styles.resultList}>
 
                 {results.genres.map(
                   (genre) => (
                     <Link
                       key={genre.id}
                       to={`/genres/${genre.id}`}
-                      className="book-link"
+                      className={styles.resultLink}
                     >
                       {genre.name}
                     </Link>

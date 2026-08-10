@@ -8,10 +8,9 @@ import { useParams } from "react-router-dom";
 
 import { getBooksByGenrePaginated } from "../../api/books";
 import { getGenreById } from "../../api/genres";
-
-import BookCard from "../../components/BookCard";
-import SkeletonCard from "../../components/SkeletonCard";
+import BookGrid from "../../components/BookGrid/BookGrid";
 import NotFoundPage from "../NotFoundPage";
+import styles from "./GenrePage.module.css";
 
 function GenrePage() {
   const { id } = useParams();
@@ -132,36 +131,29 @@ function GenrePage() {
   return (
     <div className="container mt-5">
 
-      {/* 🔹 Title */}
-      <h1 className="genre-title">
+      <h1 className={styles.title}>
         {genre ? genre.name : "Loading..."}
       </h1>
 
-      {/* 🔹 Grid */}
-<div className="genre-grid">
+      <BookGrid
+        books={books}
+        loading={loading && books.length === 0}
+        skeletonCount={8}
+      />
 
-  {books.map((book) => (
-    <BookCard key={book.id} book={book} />
-  ))}
-
-  {loading && books.length === 0 &&
-    Array.from({ length: 8 }).map((_, i) => (
-      <SkeletonCard key={i} />
-    ))
-  }
-
-</div>
-
-      {/* 🔹 Loading more indicator */}
       {loading && books.length > 0 && (
-        <div className="loading-more">Loading...</div>
+        <div className={styles.loadingMore}>
+          Loading...
+        </div>
       )}
 
-      {/* 🔹 Sentinel element */}
-      <div ref={loaderRef} className="infinite-loader" />
+      <div
+        ref={loaderRef}
+        className={styles.infiniteLoader}
+      />
 
     </div>
   );
-}
+};
 
 export default GenrePage;
