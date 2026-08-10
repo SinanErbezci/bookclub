@@ -1,0 +1,53 @@
+.section {
+  max-width: 1000px;
+  margin: 2.5rem auto;
+}
+
+.title {
+  margin-bottom: 1.5rem;
+}
+
+.error {
+  color: var(--COLOR-ERROR);
+}
+
+.yourReviewTitle {
+  margin-bottom: 1rem;
+}
+
+.divider {
+  margin: 1rem 0;
+  border-bottom: 2px solid var(--BORDERCOLOR1);
+}
+
+.writeReview {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.empty {
+  text-align: center;
+  margin: 1rem 0;
+  opacity: 0.7;
+}
+
+.loadMore {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.loginLink {
+  display: block;
+  margin: 1.5rem 0;
+
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+  opacity: 0.8;
+
+  transition: color 0.2s ease;
+}
+
+.loginLink:hover {
+  color: var(--BORDERCOLOR1);
+}

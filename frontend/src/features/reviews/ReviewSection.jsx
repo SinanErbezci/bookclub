@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import ReviewCard from "./ReviewCard";
 import ReviewModal from "./ReviewModal";
 import ReviewFormModal from "./ReviewFormModal";
@@ -9,6 +10,7 @@ import {
 } from "../../api/reviews";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
+import styles from "./ReviewSection.module.css";
 
 export default function ReviewSection({ bookId }) {
   const { user } = useAuth();
@@ -25,43 +27,43 @@ export default function ReviewSection({ bookId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const {addToast} = useToast();
+  const { addToast } = useToast();
 
-const fetchData = useCallback(() => {
-  setLoading(true);
+  const fetchData = useCallback(() => {
+    setLoading(true);
 
-  Promise.all([
-    getReviewsByBook(bookId),
-    user
-      ? getUserReview(bookId)
-      : Promise.resolve(null),
-  ])
-    .then(
-      ([reviewsData, userReviewData]) => {
-        setUserReview(userReviewData);
+    Promise.all([
+      getReviewsByBook(bookId),
+      user
+        ? getUserReview(bookId)
+        : Promise.resolve(null),
+    ])
+      .then(
+        ([reviewsData, userReviewData]) => {
+          setUserReview(userReviewData);
 
-        const filtered =
-          userReviewData
-            ? reviewsData.results.filter(
+          const filtered =
+            userReviewData
+              ? reviewsData.results.filter(
                 (r) =>
                   r.id !== userReviewData.id
               )
-            : reviewsData.results;
+              : reviewsData.results;
 
-        setReviews(filtered);
+          setReviews(filtered);
 
-        setNextUrl(reviewsData.next);
+          setNextUrl(reviewsData.next);
 
-        setError(null);
-      }
-    )
-    .catch((err) =>
-      setError(err.message)
-    )
-    .finally(() =>
-      setLoading(false)
-    );
-}, [bookId, user]);
+          setError(null);
+        }
+      )
+      .catch((err) =>
+        setError(err.message)
+      )
+      .finally(() =>
+        setLoading(false)
+      );
+  }, [bookId, user]);
 
   const loadMore = async () => {
     if (!nextUrl || loadingMore) return;
@@ -91,20 +93,20 @@ const fetchData = useCallback(() => {
   };
 
   const handleDelete = async (reviewId) => {
-  if (!window.confirm("Delete your review?")) return;
+    if (!window.confirm("Delete your review?")) return;
 
-  try {
-    await deleteReview(reviewId);
-    
-    addToast("Review deleted", "success");
-    
-    setUserReview(null);
-  } catch (err) {
-    setError(err.message);
-    addToast("Failed to delete review", "error");
-    fetchData();
-  }
-};
+    try {
+      await deleteReview(reviewId);
+
+      addToast("Review deleted", "success");
+
+      setUserReview(null);
+    } catch (err) {
+      setError(err.message);
+      addToast("Failed to delete review", "error");
+      fetchData();
+    }
+  };
 
   useEffect(() => {
     if (!bookId) return;
@@ -112,11 +114,11 @@ const fetchData = useCallback(() => {
   }, [bookId, fetchData]); // 🔥 refetch when login/logout changes
 
   return (
-    <div className="review-container">
-      <h2>Reviews</h2>
+    <div className={styles.section}>
+      <h2 className={styles.title}>Reviews</h2>
 
       {/* LOADING */}
-      {loading && <p>Loading...</p>}
+      {loading && <p className="text-center">Loading...</p>}
 
       {/* ERROR */}
       {error && <p className="error">{error}</p>}
@@ -127,7 +129,9 @@ const fetchData = useCallback(() => {
           {/* ✅ YOUR REVIEW */}
           {userReview && (
             <>
-              <h3 className="your-review-title">Your Review</h3>
+              <h3 className={styles.yourReviewTitle}>
+                Your Review
+              </h3>
 
               <ReviewCard
                 review={userReview}
@@ -137,13 +141,13 @@ const fetchData = useCallback(() => {
                 onDelete={() => handleDelete(userReview.id)}
               />
 
-              <div className="divider" />
+              <div className={styles.divider} />
             </>
           )}
 
           {/* ✅ WRITE BUTTON (only if logged in & no review) */}
           {!userReview && user && (
-            <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+            <div className={styles.writeReview}>
               <button
                 className="btn btn-primary"
                 onClick={() => setIsFormOpen(true)}
@@ -155,7 +159,9 @@ const fetchData = useCallback(() => {
 
           {/* ✅ LOGGED OUT MESSAGE */}
           {!user && (
-            <p className="empty">Log in to write a review</p>
+            <Link to="/login" className={styles.loginLink}>
+              Log in to write a review
+            </Link>
           )}
 
           {/* ✅ EMPTY STATE */}
@@ -192,7 +198,7 @@ const fetchData = useCallback(() => {
       />
 
       {nextUrl && (
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+        <div className={styles.loadMore}>
           <button
             className="btn btn-ghost"
             onClick={loadMore}

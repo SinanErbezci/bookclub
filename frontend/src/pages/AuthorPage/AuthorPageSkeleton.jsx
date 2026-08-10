@@ -1,5 +1,4 @@
 import Skeleton from "../../components/Skeleton/Skeleton";
-import CarouselSkeleton from "../../components/CarouselSection/CarouselSkeleton";
 import CarouselSection from "../../components/CarouselSection/CarouselSection";
 
 import styles from "./AuthorPage.module.css";

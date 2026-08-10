@@ -19,6 +19,10 @@ export async function getBooksByGenre(genreId) {
   return data.results;
 }
 
+export async function getSeriesById(id) {
+  return apiFetch(`/series/${id}/`);
+}
+
 // 📚 PAGINATED GENRE BOOKS
 export async function getBooksByGenrePaginated(
   genreId,
@@ -46,3 +50,4 @@ export async function getRecommendationExplanation(
     `/books/${sourceId}/recommendations/${recommendedId}/explanation/`
   );
 }
+

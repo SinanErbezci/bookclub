@@ -9,9 +9,6 @@
 }
 
 :root {
-  --FONT: "Libre Baskerville", serif;
-  --FS: clamp(1rem, 2.2vh, 1.5rem);
-
   --BGCOLOR1: #F5EFDC;
   --COLOR-GOLD: #D4AF37;
   --FONTCOLOR: #333;
@@ -63,6 +60,16 @@ img {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
 }
 
 
@@ -265,14 +272,6 @@ a {
   cursor: not-allowed;
 }
 
-
-.load-more-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--BORDERCOLOR1);
-  background: var(--BGCOLOR2);
-  cursor: pointer;
-}
 
 /* Review Section */
 .review-container {

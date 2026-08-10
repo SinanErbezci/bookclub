@@ -63,22 +63,16 @@ function CarouselSection({
   }
 
   return (
-    <section>
+    <section className={styles.section}>
       {titleLink ? (
-        <Link
-          to={titleLink}
-          className={styles.titleLink}
-        >
-          <h2 className="form-title mt-4">
-            {title}
-          </h2>
+        <Link to={titleLink} className={styles.titleLink}>
+          {title}
         </Link>
       ) : (
-        <h2 className="form-title mt-4">
+        <h2 className={styles.title}>
           {title}
         </h2>
       )}
-
       <div className={styles.wrapper}>
         {/* LEFT ARROW (hidden when unnecessary) */}
         {!shouldCenter && (
