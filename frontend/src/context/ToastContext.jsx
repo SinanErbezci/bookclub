@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import styles from "./ToastContext.module.css";
 
 const ToastContext = createContext();
 
@@ -47,19 +48,23 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={{ addToast }}>
       {children}
 
-      <div className="app-toast-container">
+      <div className={styles.container}>
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`app-toast ${toast.type} ${
-              toast.visible ? "enter" : "exit"
-            }`}
+            className={`
+        ${styles.toast}
+        ${styles[toast.type]}
+        ${toast.visible ? styles.enter : styles.exit}
+      `}
           >
             <span>{toast.message}</span>
 
             <button
-              className="app-toast-close"
+              type="button"
+              className={styles.close}
               onClick={() => removeToast(toast.id)}
+              aria-label="Close notification"
             >
               ×
             </button>

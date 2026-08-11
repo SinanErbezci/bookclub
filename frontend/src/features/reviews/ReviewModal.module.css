@@ -29,9 +29,15 @@
 .rating {
   display: flex;
   justify-content: center;
+
+  margin: 1rem 0 1.25rem;
+  padding-bottom: 1rem;
+
+  border-bottom: 1px solid rgba(93, 58, 26, 0.25);
 }
 
 .body p {
+  max-width: 60ch;
   margin: 0;
   line-height: 1.6;
   white-space: pre-wrap;

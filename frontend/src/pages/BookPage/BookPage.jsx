@@ -12,7 +12,7 @@ import BookCard from "../../components/BookCard";
 import placeholder_book from "../../assets/placeholder_book.png";
 import { useAuth } from "../../context/AuthContext";
 import NotFoundPage from "../NotFoundPage";
-import ListDropdown from "../../components/lists/ListDropdown";
+import ListDropdown from "../../components/ListDropdown/ListDropdown";
 import RecommendationModal from "../../components/RecommendationModal/RecommendationModal";
 import styles from "./BookPage.module.css";
 import BookPageSkeleton from "./BookPageSkeleton";

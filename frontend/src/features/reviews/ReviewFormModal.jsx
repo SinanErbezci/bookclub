@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
-import StarRating from "./StarRating";
+import StarRating from "../../components/StarRating/StarRating";
 import {
   createReview,
   updateReview,
@@ -73,8 +73,10 @@ export default function ReviewFormModal({
         </h2>
 
         {/* ⭐ Rating */}
-        <div className="review-form-section">
-          <label className="text-center h4">Rating</label>
+        <div className={styles.ratingSection}>
+          <label className={styles.ratingLabel}>
+            Rating
+          </label>
           <StarRating
             value={hoverRating ?? rating}
             onChange={setRating}

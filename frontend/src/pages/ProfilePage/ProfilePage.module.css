@@ -48,14 +48,15 @@
 }
 
 .info h2 {
-  font-size: 1.6rem;
+  margin: 0;
+  font-size: 1.7rem;
   line-height: 1.2;
 
   color: #2b2118;
 }
 
 .info p {
-  margin-top: 4px;
+   margin: 6px 0 0;
 
   font-size: 0.92rem;
   color: rgba(40, 40, 40, 0.68);
@@ -130,6 +131,9 @@
 
   .listGrid {
     grid-template-columns: 1fr;
+  }
+  .deleteButton {
+    opacity: 0.7;
   }
 }
 
@@ -247,8 +251,8 @@
 }
 
 .bookRow img {
-  width: 40px;
-  height: 60px;
+  width: 44px;
+  height: 66px;
 
   object-fit: cover;
 

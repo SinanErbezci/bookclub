@@ -1,4 +1,5 @@
 import Modal from "../../components/Modal";
+import StarRating from "../../components/StarRating/StarRating";
 import styles from "./ReviewModal.module.css"
 
 export default function ReviewModal({ review, isOpen, onClose }) {
@@ -14,13 +15,12 @@ export default function ReviewModal({ review, isOpen, onClose }) {
 
         <div className={styles.body}>
           <div className={styles.rating}>
-            <div className="star-outer">
-              <div
-                className="star-inner"
-                style={{ width: `${(review.rating / 5) * 100}%` }}
-              />
-            </div>
+            <StarRating
+              value={review.rating}
+              readOnly
+            />
           </div>
+
 
           <p>{review.content}</p>
         </div>

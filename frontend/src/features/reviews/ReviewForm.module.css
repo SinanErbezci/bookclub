@@ -21,6 +21,20 @@
   font-weight: 700;
 }
 
+.ratingSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 1rem;
+}
+
+.ratingLabel {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
 /* SECTION */
 .section {
   display: flex;
@@ -69,3 +83,4 @@
   justify-content: flex-end;
   gap: 0.75rem;
 }
+

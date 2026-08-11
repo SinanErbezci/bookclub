@@ -35,6 +35,7 @@ export async function apiFetch(path, options = {}) {
     const message =
       data?.message ||
       data?.detail ||
+      data?.error ||
       "Something went wrong";
 
     const error = new Error(message);

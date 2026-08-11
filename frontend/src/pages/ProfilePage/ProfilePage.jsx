@@ -1,19 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchUserProfile } from "../api/users";
-import { deleteList, removeBookFromList } from "../api/lists";
-import { deleteReview } from "../api/reviews";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
-import CarouselSection from "../components/CarouselSection/CarouselSection";
-import BookCard from "../components/BookCard";
-import Modal from "../components/Modal";
-import ReviewModal from "../features/reviews/ReviewModal";
-import ReviewFormModal from "../features/reviews/ReviewFormModal";
-import ProfileReviewCard from "../components/profile/ProfileReviewCard";
+import { fetchUserProfile } from "../../api/users";
+import { deleteList, removeBookFromList } from "../../api/lists";
+import { deleteReview } from "../../api/reviews";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import CarouselSection from "../../components/CarouselSection/CarouselSection";
+import BookCard from "../../components/BookCard";
+import Modal from "../../components/Modal";
+import ReviewModal from "../../features/reviews/ReviewModal";
+import ReviewFormModal from "../../features/reviews/ReviewFormModal";
+import ProfileReviewCard from "../../components/ProfileReviewCard/ProfileReviewCard";
 import styles from "./ProfilePage.module.css";
-import NotFoundPage from "./NotFoundPage";
-import LoadingScreen from "../components/LoadingScreen";
+import NotFoundPage from "../NotFoundPage";
+import LoadingScreen from "../../components/LoadingScreen";
 
 function ProfilePage() {
   const { id } = useParams();

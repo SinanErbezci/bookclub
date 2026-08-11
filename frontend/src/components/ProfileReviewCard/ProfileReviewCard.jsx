@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import styles from "./ProfileReviewCard.module.css";
+import StarRating from "../StarRating/StarRating";
 
 function ProfileReviewCard({
   review,
@@ -26,33 +27,26 @@ function ProfileReviewCard({
       </Link>
 
       <div className={styles.content}>
-        <div className={styles.bookSection}>
-          <Link
-            to={`/books/${review.book.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className={styles.title}
-          >
-            {review.book.title}
-          </Link>
+        <div className={styles.bookHeader}>
+          <div className={styles.bookSection}>
+            <Link
+              to={`/books/${review.book.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className={styles.title}
+            >
+              {review.book.title}
+            </Link>
 
-          <p className={styles.author}>
-            {review.book.author_name}
-          </p>
-        </div>
-
-        <div className={styles.ratingRow}>
-          <div className="star-outer">
-            <div
-              className="star-inner"
-              style={{
-                width: `${(review.rating / 5) * 100}%`,
-              }}
-            />
+            <p className={styles.author}>
+              {review.book.author_name}
+            </p>
           </div>
 
-          <span className={styles.ratingValue}>
-            {review.rating.toFixed(1)}
-          </span>
+          <StarRating
+            value={review.rating}
+            readOnly
+            size="small"
+          />
         </div>
 
         <p className={styles.reviewText}>

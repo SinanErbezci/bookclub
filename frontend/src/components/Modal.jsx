@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
+import styles from "./Modal.module.css";
 
-export default function Modal({ isOpen, onClose, children, className= "", }) {
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+  className = "",
+}) {
   const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(isOpen);
 
@@ -16,7 +22,7 @@ export default function Modal({ isOpen, onClose, children, className= "", }) {
 
       const timeout = setTimeout(() => {
         setShouldRender(false);
-      }, 200); // match CSS duration
+      }, 200);
 
       return () => clearTimeout(timeout);
     }
@@ -26,16 +32,20 @@ export default function Modal({ isOpen, onClose, children, className= "", }) {
 
   return (
     <div
-      className={`modal-overlay ${visible ? "open" : ""}`}
+      className={`${styles.overlay} ${visible ? styles.open : ""}`}
       onClick={onClose}
     >
       <div
-        className={`modal-content ${className ?? ""}`}
+        className={`${styles.content} ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={onClose}>
+        <button
+          className={styles.close}
+          onClick={onClose}
+        >
           ×
         </button>
+
         {children}
       </div>
     </div>
