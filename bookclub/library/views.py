@@ -32,6 +32,7 @@ from django.db.models import  Avg
 
 from ai.services.recommendations import RecommendationService
 from ai.services.explanations import ExplanationService
+from ai.services.summary.providers.openai import OpenAISummaryProvider
 
 # ====== API Views ======
 
@@ -209,7 +210,8 @@ class BookRecommendationExplanationAPIView(APIView):
             pk=recommended_id
         )
 
-        service = ExplanationService()
+        provider = OpenAISummaryProvider()
+        service = ExplanationService(provider=provider)
 
         explanation = service.explain_book_recommendation(source_book, recommended_book)
 

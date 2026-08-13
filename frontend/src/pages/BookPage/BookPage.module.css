@@ -115,10 +115,6 @@
     max-height: 500px;
 }
 
-.expanded::after {
-    display: none;
-}
-
 .description::after {
   content: "";
 
@@ -141,15 +137,37 @@
   display: none;
 }
 
-.suggestionSection {
-  max-width: 1100px;
-  margin: 40px auto 0;
-}
-
 .readMoreBtn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.genreTag {
+  display: inline-block;
+
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  background-color: var(--BGCOLOR2);
+  border: 1px solid var(--BORDERCOLOR1);
+
+  font-size: 0.85rem;
+
+  text-decoration: none;
+  color: inherit;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.genreTag:hover {
+  background-color: var(--BGCOLOR3);
+}
+
+.genreTag:active {
+  transform: scale(0.97);
 }
 
 /* Skeleton */
@@ -189,4 +207,9 @@
   width: 100%;
   height: 16px;
   margin-bottom: 10px;
+}
+
+.skeletonSeries {
+  width: 55%;
+  height: 18px;
 }

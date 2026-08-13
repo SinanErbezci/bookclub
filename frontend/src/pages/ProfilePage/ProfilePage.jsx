@@ -21,6 +21,7 @@ function ProfilePage() {
 
   const { user, loading: authLoading } = useAuth();
   const { addToast } = useToast();
+  const [error, setError] = useState(null);
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,24 +36,26 @@ function ProfilePage() {
     user && (!id || user.id === Number(id));
 
   const loadProfile = useCallback(async () => {
-  try {
-    setLoading(true);
-    
-    const targetId = id || user?.id;
+    try {
+      setLoading(true);
+      setError(null);
 
-    if (!targetId) return;
+      const targetId = id || user?.id;
 
-    const data =
-      await fetchUserProfile(targetId);
+      if (!targetId) return;
 
-    setData(data);
-  } catch (err) {
-    console.error(err);
-    setData(null);
-  } finally {
-    setLoading(false);
-  }
-}, [id, user]);
+      const data =
+        await fetchUserProfile(targetId);
+
+      setData(data);
+    } catch (err) {
+      console.error(err);
+      setData(null);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, user]);
 
   // 🔥 Load profile (FINAL FIXED)
   useEffect(() => {
@@ -73,12 +76,12 @@ function ProfilePage() {
       loadProfile();
     }
   }, [
-  id,
-  user,
-  authLoading,
-  navigate,
-  loadProfile,
-]);
+    id,
+    user,
+    authLoading,
+    navigate,
+    loadProfile,
+  ]);
 
   async function handleDeleteReview(review) {
     if (!window.confirm("Delete this review?")) {
@@ -159,13 +162,25 @@ function ProfilePage() {
 
   // 🔥 Loading & error states
   if (loading) {
-  return (
-    <LoadingScreen
-      text="Loading profile..."
-      fullPage
-    />
-  );
-}
+    return (
+      <LoadingScreen
+        text="Loading profile..."
+        fullPage
+      />
+    );
+  }
+
+  if (error?.status === 404) {
+    return <NotFoundPage />;
+  }
+  if (error) {
+    return (
+      <div className={styles.error}>
+        Failed to load profile. Please try again.
+      </div>
+    );
+  }
+
   if (!data || !data.user) return <NotFoundPage />;
 
   return (
@@ -221,6 +236,7 @@ function ProfilePage() {
                           e.stopPropagation();
                           handleDeleteList(list.id);
                         }}
+                        aria-label={`Delete ${list.name} list`}
                       >
                         ✕
                       </button>

@@ -86,11 +86,21 @@
 .title {
   font-weight: 800;
   text-align: center;
+  text-decoration: none;
+  color: var(--FONTCOLOR);
+}
+
+.title:hover{
+  text-decoration: underline;
 }
 
 .author {
   font-size: 0.9rem;
   opacity: 0.8;
+}
+
+.author:hover {
+  text-decoration: underline;
 }
 
 .explainButton {

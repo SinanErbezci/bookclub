@@ -22,12 +22,14 @@ function GenrePage() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [nextPage, setNextPage] = useState(1);
+  const [error, setError] = useState(null);
 
   const loaderRef = useRef(null);
 
   const fetchBooks = useCallback(async (page) => {
     try {
       setLoading(true);
+      setError(null);
 
       const data =
         await getBooksByGenrePaginated(
@@ -52,10 +54,9 @@ function GenrePage() {
         data.next ? page + 1 : null
       );
     } catch (err) {
-      console.error(
-        "Books fetch error:",
-        err
-      );
+      console.error("Books fetch error:", err);
+      setError(err.message);
+
     } finally {
       setLoading(false);
     }
@@ -98,6 +99,7 @@ function GenrePage() {
   useEffect(() => {
     setBooks([]);
     setNextPage(1);
+    setError(null);
     fetchBooks(1);
   }, [id, fetchBooks]);
 
@@ -145,6 +147,12 @@ function GenrePage() {
         <div className={styles.loadingMore}>
           Loading...
         </div>
+      )}
+
+      {error && (
+        <p className={styles.error}>
+          {error}
+        </p>
       )}
 
       <div

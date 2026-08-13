@@ -13,6 +13,7 @@ function SeriesPage() {
 
   const [series, setSeries] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const isValidSeriesId = /^\d+$/.test(id);
@@ -33,6 +34,8 @@ function SeriesPage() {
       } catch (err) {
         console.error("Series fetch error:", err);
         setSeries(null);
+        setError(err);
+
       } finally {
         setLoading(false);
       }
@@ -40,6 +43,18 @@ function SeriesPage() {
 
     fetchSeries();
   }, [id]);
+
+  if (error?.status === 404) {
+    return <NotFoundPage />;
+  }
+
+  if (error) {
+    return (
+      <p className={styles.error}>
+        Failed to load series.
+      </p>
+    );
+  }
 
   if (!series && !loading) {
     return <NotFoundPage />;

@@ -28,7 +28,7 @@ class SemanticSearchService:
         self,
         query: str,
         embedding_type: BookEmbedding.EmbeddingType = (
-            BookEmbedding.EmbeddingType.SUMMARY
+            BookEmbedding.EmbeddingType.SUMMARY_NO_TITLE
         ),
         limit: int = 10,
     ) -> list[Book]:

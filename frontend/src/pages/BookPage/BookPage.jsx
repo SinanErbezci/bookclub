@@ -5,7 +5,6 @@ import {
   getBookRecommendations,
   getRecommendationExplanation,
 } from "../../api/books";
-import { getReviewsByBook } from "../../api/reviews";
 import CarouselSection from "../../components/CarouselSection/CarouselSection";
 import ReviewSection from "../../features/reviews/ReviewSection";
 import BookCard from "../../components/BookCard";
@@ -25,7 +24,6 @@ function BookPage() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 
-  const [reviews, setReviews] = useState([]);
 
   const [similarBooks, setSimilarBooks] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
@@ -151,18 +149,12 @@ function BookPage() {
 
   }, [book]);
 
-  // ✍️ Fetch reviews
   useEffect(() => {
-    async function fetchReviews() {
-      try {
-        const data = await getReviewsByBook(id);
-        setReviews(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    fetchReviews();
+    setExplanations({});
+    setLoadingExplanations({});
+    setRecommendationErrors({});
+    setSelectedRecommendationId(null);
+    setIsModalOpen(false);
   }, [id]);
 
   if (loading) {
@@ -245,7 +237,7 @@ function BookPage() {
               <Link
                 key={genre.id}
                 to={`/genres/${genre.id}`}
-                className="genre-tag"
+                className={styles.genreTag}
               >
                 {genre.name}
               </Link>
@@ -275,8 +267,6 @@ function BookPage() {
       </div>
 
       <ReviewSection
-        reviews={reviews}
-        setReviews={setReviews}
         bookId={id}
       />
 

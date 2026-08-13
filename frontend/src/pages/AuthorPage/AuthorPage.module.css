@@ -37,12 +37,6 @@
     font-size: 0.9rem;
 }
 
-.desc {
-    margin-top: 10px;
-    line-height: 1.5;
-    opacity: 0.8;
-}
-
 /* books section alignment */
 .booksSection {
     max-width: 1100px;
@@ -72,9 +66,4 @@
 .skeletonDesc {
   width: 260px;
   height: 18px;
-}
-
-.skeletonBooksTitle {
-  width: 280px;
-  height: 28px;
 }

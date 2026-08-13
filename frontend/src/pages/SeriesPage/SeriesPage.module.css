@@ -19,3 +19,8 @@
   max-width: 1100px;
   margin: 0 auto;
 }
+
+.error {
+  text-align: center;
+  margin: 2rem 0;
+}

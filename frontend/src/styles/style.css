@@ -62,78 +62,6 @@ a {
   flex: 1;
 }
 
-
-.book-link {
-  text-decoration: none;
-  color: var(--FONTCOLOR);
-}
-
-.book-link:hover {
-  text-decoration: underline;
-}
-
-
-.oneliner {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.twoliner {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-
-.visible {
-  visibility: visible;
-  opacity: 1;
-}
-
-@keyframes searchIndicator {
-  0% {
-    width: 15%;
-  }
-
-  50% {
-    width: 90%;
-  }
-
-  100% {
-    width: 15%;
-  }
-}
-
-.genre-tag {
-  display: inline-block;
-
-  padding: 4px 10px;
-  border-radius: 999px;
-
-  background-color: var(--BGCOLOR2);
-  border: 1px solid var(--BORDERCOLOR1);
-
-  font-size: 0.85rem;
-
-  text-decoration: none;
-  color: inherit;
-
-  cursor: pointer;
-
-  transition: background 0.2s ease, transform 0.1s ease;
-}
-
-.genre-tag:hover {
-  background-color: var(--BGCOLOR3);
-}
-
-.genre-tag:active {
-  transform: scale(0.97);
-}
-
-
 /* BASE */
 .btn {
   border: none;
@@ -160,9 +88,9 @@ a {
   width: 100%;
 }
 
-.btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.4);
+.btn:focus-visible {
+  outline: 2px solid var(--COLOR-GOLD);
+  outline-offset: 2px;
 }
 
 /* PRIMARY (Submit / Confirm) */
@@ -171,8 +99,15 @@ a {
   color: #fff;
 }
 
+.btn-primary:disabled {
+  background: var(--BGCOLOR3);
+  color: rgba(51, 51, 51, 0.45);
+  border-color: rgba(93, 58, 26, 0.2);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
 .btn.btn-primary:hover:not(:disabled),
-.btn.btn-primary:focus:not(:disabled),
 .btn.btn-primary:active:not(:disabled) {
   background-color: var(--COLOR-GOLD);
   filter: brightness(0.92);
@@ -192,12 +127,19 @@ a {
 }
 
 .btn.btn-secondary:hover:not(:disabled),
-.btn.btn-secondary:focus:not(:disabled),
 .btn.btn-secondary:active:not(:disabled) {
   background-color: var(--BGCOLOR3);
   color: var(--FONTCOLOR);
   box-shadow: none;
   outline: none;
+}
+
+.btn-secondary:disabled {
+  background: transparent;
+  color: rgba(51, 51, 51, 0.45);
+  border-color: rgba(93, 58, 26, 0.25);
+  opacity: 1;
+  cursor: not-allowed;
 }
 
 .btn:active:not(:disabled) {
@@ -236,9 +178,8 @@ a {
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
-
-
 
 /* ----- Utility Classes */
 .linkUnderline {
@@ -274,4 +215,17 @@ a {
   text-align: center;
 
   color: rgba(40, 40, 40, 0.62);
+}
+
+.oneliner {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.twoliner {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

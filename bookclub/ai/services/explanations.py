@@ -20,7 +20,9 @@ class ExplanationService:
             recommended_book,
         )
 
-        return self.provider.generate(
+        result = self.provider.generate(
             system_prompt=RECOMMENDATION_SYSTEM_PROMPT,
             user_prompt=prompt,
         )
+
+        return result.summary

@@ -260,10 +260,3 @@ class RecommendationService:
         candidate.score += bonus
         candidate.debug["genre_bonus"] = bonus
         candidate.debug["shared_genres"] = len(shared)
-
-# from library.models import Book
-# from ai.services.recommendations import RecommendationService
-
-# book = Book.objects.get(title="Dune")
-# service = RecommendationService()
-# books = service.recommend(book)

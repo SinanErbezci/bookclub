@@ -4,6 +4,7 @@ import { getRecentBooks } from "../../api/books";
 import { getRandomAuthor } from "../../api/authors";
 import { getRandomGenre } from "../../api/genres";
 
+import SemanticDiscovery from "../../components/SemanticDiscovery/SemanticDiscovery";
 import BookCard from "../../components/BookCard";
 import CarouselSection from "../../components/CarouselSection/CarouselSection";
 
@@ -49,6 +50,7 @@ function Browse() {
   return (
     <div className="container mt-4">
 
+      <SemanticDiscovery />
       <CarouselSection
         title="Recently Added"
         items={recentBooks}

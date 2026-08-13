@@ -41,7 +41,7 @@ function BookCard({
         <div className="twoliner">
           <Link
             to={`/books/${book.id}`}
-            className={`book-link ${styles.title}`}
+            className={styles.title}
           >
             {book.title}
           </Link>
@@ -50,7 +50,7 @@ function BookCard({
         {showAuthor && book.author && (
           <Link
             to={`/authors/${book.author}`}
-            className={`book-link ${styles.author}`}
+            className={styles.author}
           >
             {book.author_name || "Unknown Author"}
           </Link>

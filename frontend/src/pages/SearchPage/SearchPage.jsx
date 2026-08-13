@@ -32,11 +32,10 @@ function SearchPage() {
       genres: [],
     });
 
-  const [semanticBooks, setSemanticBooks] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [semanticBooks, setSemanticBooks] = useState([]);
+  const encodedQuery = encodeURIComponent(query);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const totalPages = Math.ceil(
     results.books_count / 10
@@ -64,7 +63,7 @@ function SearchPage() {
 
       try {
         setLoading(true);
-
+        setError(null);
         const [
           searchResponse,
           semanticResponse,
@@ -84,6 +83,7 @@ function SearchPage() {
             authors: [],
             genres: [],
           });
+          setError(searchResponse.reason);
         }
 
         if (semanticResponse.status === "fulfilled") {
@@ -93,18 +93,6 @@ function SearchPage() {
         } else {
           setSemanticBooks([]);
         }
-
-      } catch {
-        setResults({
-          books: [],
-          books_count: 0,
-          next: null,
-          previous: null,
-          authors: [],
-          genres: [],
-        });
-
-        setSemanticBooks([]);
 
       } finally {
         setLoading(false);
@@ -160,6 +148,16 @@ function SearchPage() {
 
     return [...new Set(pages)];
   }
+
+  if (error) {
+    return (
+      <div className="container mt-5">
+        <p className="error">
+          Failed to load search results.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="container mt-5">
 
@@ -200,8 +198,7 @@ function SearchPage() {
 
                 {results.previous && (
                   <Link
-                    to={`/search?q=${query}&page=${Number(page) - 1
-                      }`}
+                    to={`/search?q=${encodedQuery}&page=${Number(page) - 1}`}
                     className="btn btn-outline-dark"
                   >
                     Previous
@@ -225,7 +222,7 @@ function SearchPage() {
                     return (
                       <Link
                         key={item}
-                        to={`/search?q=${query}&page=${item}`}
+                        to={`/search?q=${encodedQuery}&page=${item}`}
                         className={`btn ${Number(page) === item
                           ? "btn-dark"
                           : "btn-outline-dark"
@@ -239,8 +236,7 @@ function SearchPage() {
 
                 {results.next && (
                   <Link
-                    to={`/search?q=${query}&page=${Number(page) + 1
-                      }`}
+                    to={`/search?q=${encodedQuery}&page=${Number(page) + 1}`}
                     className="btn btn-outline-dark"
                   >
                     Next

@@ -68,7 +68,6 @@ function AuthorPage() {
           <p className={styles.meta}>
             {author.books?.length || 0} books
           </p>
-          <p className={styles.desc}>Information about the author</p>
         </div>
       </div>
 
