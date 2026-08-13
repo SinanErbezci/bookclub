@@ -26,6 +26,7 @@ function BookCard({
 
         {action && (
           <button
+            type="button"
             className={styles.actionIcon}
             onClick={(e) => {
               e.stopPropagation();
@@ -38,7 +39,7 @@ function BookCard({
       </div>
 
       <div className={styles.body}>
-        <div className="twoliner">
+        <div className={styles.titleWrapper}>
           <Link
             to={`/books/${book.id}`}
             className={styles.title}
@@ -58,6 +59,7 @@ function BookCard({
 
         {recommendationSourceId !== null && (
           <button
+            type="button"
             className={styles.explainButton}
             onClick={(e) => {
               e.stopPropagation();

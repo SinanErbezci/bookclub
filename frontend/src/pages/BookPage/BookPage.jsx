@@ -96,9 +96,9 @@ function BookPage() {
 
   // 📘 Fetch book
   useEffect(() => {
-    const isValidAuthorId = /^\d+$/.test(id);
+    const isValidBookId = /^\d+$/.test(id);
 
-    if (!isValidAuthorId) {
+    if (!isValidBookId) {
       setBook(null);
       setLoading(false);
       return;

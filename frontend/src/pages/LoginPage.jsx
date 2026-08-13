@@ -78,13 +78,15 @@ function LoginPage() {
             onChange={handleChange}
           />
 
-          <span
+          <button
+            type="button"
             className={`${styles.passwordToggle} ${showPassword ? styles.active : ""
               }`}
             onClick={() => setShowPassword((s) => !s)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             👁
-          </span>
+          </button>
         </div>
 
         <button disabled={isDisabled}>

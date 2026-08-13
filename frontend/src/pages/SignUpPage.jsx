@@ -102,13 +102,14 @@ function SignupPage() {
             onChange={handleChange}
           />
 
-          <span
+          <button
+            type="button"
             className={`${styles.passwordToggle} ${showPassword ? styles.active : ""
               }`}
             onClick={() => setShowPassword((s) => !s)}
           >
             👁
-          </span>
+          </button>
         </div>
 
         {/* Confirm Password */}
@@ -121,8 +122,8 @@ function SignupPage() {
           className={
             form.confirmPassword
               ? passwordsMatch
-                ? "valid"
-                : "invalid"
+                ? styles.valid
+                : styles.invalid
               : ""
           }
         />

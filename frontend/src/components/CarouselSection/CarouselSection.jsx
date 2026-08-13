@@ -64,19 +64,20 @@ function CarouselSection({
 
   return (
     <section className={styles.section}>
-      {titleLink ? (
-        <Link to={titleLink} className={styles.titleLink}>
-          {title}
-        </Link>
-      ) : (
-        <h2 className={styles.title}>
-          {title}
-        </h2>
-      )}
+      <h2 className={styles.title}>
+        {titleLink ? (
+          <Link to={titleLink} className={styles.titleLink}>
+            {title}
+          </Link>
+        ) : (
+          title
+        )}
+      </h2>
       <div className={styles.wrapper}>
         {/* LEFT ARROW (hidden when unnecessary) */}
         {!shouldCenter && (
           <button
+            type="button"
             onClick={handlePrev}
             disabled={index === 0}
             className={styles.arrow}
@@ -108,6 +109,7 @@ function CarouselSection({
         {/* RIGHT ARROW (hidden when unnecessary) */}
         {!shouldCenter && (
           <button
+            type="button"
             onClick={handleNext}
             disabled={index >= maxIndex}
             className={styles.arrow}

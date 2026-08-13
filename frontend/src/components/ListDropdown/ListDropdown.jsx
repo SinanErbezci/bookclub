@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-
 import {
   getUserLists,
   addBookToList,
@@ -39,6 +38,7 @@ useEffect(() => {
       setLists(data);
     } catch (err) {
       console.error(err);
+      addToast("Failed to load your lists", "error");
     } finally {
       setLoadingLists(false);
       setInitialized(true);
@@ -46,7 +46,7 @@ useEffect(() => {
   }
 
   fetchLists();
-}, [book.id]);
+}, [book.id, addToast]);
 
 useEffect(() => {
   function handleClickOutside(e) {

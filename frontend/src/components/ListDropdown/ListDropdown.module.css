@@ -42,22 +42,13 @@
 
 .listName {
   min-width: 0;
-
   font-size: 0.92rem;
   font-weight: 500;
-
   word-break: break-word;
 }
 
 .listRow button {
   flex-shrink: 0;
-}
-
-.listName {
-  font-size: 0.92rem;
-  font-weight: 500;
-
-  word-break: break-word;
 }
 
 .createSection {

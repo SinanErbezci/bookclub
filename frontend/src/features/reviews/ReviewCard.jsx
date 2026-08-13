@@ -1,5 +1,6 @@
 import { formatTimeAgo } from "../../utils/time"; 
 import styles from "./ReviewCard.module.css";
+import StarRating from "../../components/StarRating/StarRating";
 
 export default function ReviewCard({
   review,
@@ -24,21 +25,20 @@ export default function ReviewCard({
 
           <div className={styles.user}>
             <img className={styles.avatar} src={review.user?.avatar || "/assets/default-avatar.svg"} alt="profile" />
-            <p className="oneliner">
+            <p className={styles.userName}>
               {isOwn ? "You" : review.user?.username}
             </p>
 
           </div>
 
           <div className={styles.contentArea}>
-            <div className="star-outer">
-              <div
-                className="star-inner"
-                style={{ width: `${(review.rating / 5) * 100}%` }}
-              />
-            </div>
+          <StarRating
+            value={review.rating}
+            readOnly
+            size="small"
+          />
 
-            <p className="twoliner">{review.content}</p>
+            <p className={styles.reviewPreview}>{review.content}</p>
 
             <p className={styles.meta}>
               <small>Review on {formattedDate}

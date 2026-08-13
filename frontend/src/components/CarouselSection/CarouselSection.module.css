@@ -11,7 +11,7 @@
   display: block;
   margin: 0 0 20px;
 
-  color: var(--FONTCOLOR);
+  color: inherit;
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
@@ -26,11 +26,11 @@
 
 .title {
   margin: 0 0 20px;
-
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
 }
+
 
 .row {
     display: flex;
