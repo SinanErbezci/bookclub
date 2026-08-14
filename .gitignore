@@ -46,3 +46,6 @@ tfexercises.txt
 
 # OpenAI Batch API files
 bookclub/ai/batch/
+
+# Vite
+dist/

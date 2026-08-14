@@ -1,6 +1,10 @@
 import styles from "./Skeleton.module.css";
 
-function Skeleton({ className = "" }) {
+interface SkeletonProps {
+  className?: string;
+}
+
+function Skeleton({ className = "" }: SkeletonProps) {
   return (
     <div
       className={`${styles.skeleton} ${className}`}
