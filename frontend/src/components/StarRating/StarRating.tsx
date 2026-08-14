@@ -1,5 +1,16 @@
 import styles from "./StarRating.module.css";
 
+type StarRatingSize = "small" | "medium";
+
+interface StarRatingProps {
+  value: number;
+  onChange?: (value: number) => void;
+  onHover?: (value: number) => void;
+  onLeave?: () => void;
+  readOnly?: boolean;
+  size?: StarRatingSize;
+}
+
 export default function StarRating({
   value,
   onChange,
@@ -7,7 +18,7 @@ export default function StarRating({
   onLeave,
   readOnly = false,
   size = "medium",
-}) {
+}: StarRatingProps) {
   return (
     <div className={`${styles.rating} ${styles[size]}`}>
       {[1, 2, 3, 4, 5].map((star) => {

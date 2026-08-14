@@ -1,15 +1,25 @@
 import { Link } from "react-router-dom";
+import type { BookListItem } from "../types/book";
 import placeholder from "../assets/placeholder_book.png";
 import styles from "./BookCard.module.css";
+
+interface BookCardProps {
+  book: BookListItem;
+  showAuthor?: boolean;
+  action?: string | null;
+  onAction?: (book: BookListItem) => void;
+  recommendationSourceId?: number | null;
+  onExplain?: (sourceId: number, bookId: number) => void;
+}
 
 function BookCard({
   book,
   showAuthor = false,
   action = null,
-  onAction = null,
+  onAction,
   recommendationSourceId = null,
-  onExplain = null,
-}) {
+  onExplain,
+}: BookCardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.imgWrapper}>
@@ -19,8 +29,8 @@ function BookCard({
           className={styles.img}
           loading="lazy"
           onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = placeholder;
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = placeholder;
           }}
         />
 

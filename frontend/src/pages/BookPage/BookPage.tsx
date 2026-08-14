@@ -16,33 +16,54 @@ import RecommendationModal from "../../components/RecommendationModal/Recommenda
 import styles from "./BookPage.module.css";
 import BookPageSkeleton from "./BookPageSkeleton";
 
+import type { Book, BookListItem } from "../../types/book";
+import type { RecommendationExplanation } from "../../types/recommendation";
+
 function BookPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
-  const [book, setBook] = useState(null);
+  const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 
-
-  const [similarBooks, setSimilarBooks] = useState([]);
+  const [similarBooks, setSimilarBooks] = useState<BookListItem[]>([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
 
   const description = book?.description || "";
   const isLong = description.length > 300;
 
-  const [explanations, setExplanations] = useState({});
-  const [loadingExplanations, setLoadingExplanations] = useState({});
+  const [explanations, setExplanations] = useState<
+    Record<number, RecommendationExplanation>
+  >({});
+  const [loadingExplanations, setLoadingExplanations] = useState<
+    Record<number, boolean>
+  >({});
+  const [recommendationErrors, setRecommendationErrors] = useState<
+    Record<number, boolean>
+  >({});
 
-  const [selectedRecommendationId, setSelectedRecommendationId] = useState(null);
+  const [selectedRecommendationId, setSelectedRecommendationId] = useState<
+    number | null
+  >(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [recommendationErrors, setRecommendationErrors] = useState({});
 
-  const explanation = explanations[selectedRecommendationId];
-  const isLoading = loadingExplanations[selectedRecommendationId];
-  const hasError = recommendationErrors[selectedRecommendationId];
+  const explanation =
+    selectedRecommendationId !== null
+      ? explanations[selectedRecommendationId]
+      : undefined;
 
-  const handleExplain = async (sourceId, recommendedId) => {
+  const isLoading =
+    selectedRecommendationId !== null
+      ? loadingExplanations[selectedRecommendationId]
+      : false;
+
+  const hasError =
+    selectedRecommendationId !== null
+      ? recommendationErrors[selectedRecommendationId]
+      : false;
+
+  const handleExplain = async (sourceId: number, recommendedId: number) => {
     if (explanations[recommendedId]) {
       return;
     }
@@ -51,39 +72,39 @@ function BookPage() {
     }
 
     try {
-      setRecommendationErrors(prev => ({
+      setRecommendationErrors((prev) => ({
         ...prev,
         [recommendedId]: false,
       }));
-      setLoadingExplanations(prev => ({
+      setLoadingExplanations((prev) => ({
         ...prev,
         [recommendedId]: true,
       }));
 
-      const data = await getRecommendationExplanation(
-        sourceId,
-        recommendedId
-      );
+      const data = await getRecommendationExplanation(sourceId, recommendedId);
 
-      setExplanations(prev => ({
+      setExplanations((prev) => ({
         ...prev,
         [recommendedId]: data,
       }));
     } catch (err) {
       console.error(err);
-      setRecommendationErrors(prev => ({
+      setRecommendationErrors((prev) => ({
         ...prev,
         [recommendedId]: true,
       }));
     } finally {
-      setLoadingExplanations(prev => ({
+      setLoadingExplanations((prev) => ({
         ...prev,
         [recommendedId]: false,
       }));
     }
   };
 
-  const clickRecommendation = (sourceBookId, recommendationId) => {
+  const clickRecommendation = (
+    sourceBookId: number,
+    recommendationId: number,
+  ) => {
     setSelectedRecommendationId(recommendationId);
     setIsModalOpen(true);
 
@@ -96,17 +117,19 @@ function BookPage() {
 
   // 📘 Fetch book
   useEffect(() => {
-    const isValidBookId = /^\d+$/.test(id);
-
-    if (!isValidBookId) {
+    if (!id || !/^\d+$/.test(id)) {
       setBook(null);
       setLoading(false);
       return;
     }
+
+    const bookId = Number(id);
+
     async function fetchBook() {
       setLoading(true);
+
       try {
-        const data = await getBookById(id);
+        const data = await getBookById(bookId);
         setBook(data);
       } catch (err) {
         console.error(err);
@@ -118,25 +141,20 @@ function BookPage() {
     fetchBook();
   }, [id]);
 
-  // 📚 Fetch Recommendation
   useEffect(() => {
     if (!book) {
       return;
     }
 
+    const bookId = book.id;
+
     async function fetchRecommendations() {
       try {
         setLoadingSimilar(true);
 
-        const recommendations =
-          await getBookRecommendations(
-            book.id
-          );
+        const recommendations = await getBookRecommendations(bookId);
 
-        setSimilarBooks(
-          recommendations
-        );
-
+        setSimilarBooks(recommendations);
       } catch (err) {
         console.error(err);
         setSimilarBooks([]);
@@ -146,7 +164,6 @@ function BookPage() {
     }
 
     fetchRecommendations();
-
   }, [book]);
 
   useEffect(() => {
@@ -160,12 +177,11 @@ function BookPage() {
   if (loading) {
     return <BookPageSkeleton />;
   }
-  if (!book) return <NotFoundPage />
+  if (!book) return <NotFoundPage />;
 
   return (
     <div className="container mt-5">
       <div className={styles.layout}>
-
         {/* LEFT */}
         <div className={styles.coverWrapper}>
           <img
@@ -173,8 +189,8 @@ function BookPage() {
             alt={book.title}
             className={styles.coverImage}
             onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = placeholder_book;
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = placeholder_book;
             }}
           />
 
@@ -182,9 +198,7 @@ function BookPage() {
             ⭐ {book.rating} ({book.num_ratings})
           </div>
 
-          {user && (
-            <ListDropdown book={book} />
-          )}
+          {user && <ListDropdown book={book} />}
         </div>
 
         {/* RIGHT */}
@@ -205,24 +219,19 @@ function BookPage() {
               </>
             )}
             {book.pub_date && (
-              <span>
-                Published: {new Date(book.pub_date).getFullYear()}
-              </span>
+              <span>Published: {new Date(book.pub_date).getFullYear()}</span>
             )}
           </p>
 
           {book.series && (
             <div className={styles.series}>
-              <span className={styles.seriesLabel}>
-                Series:
-              </span>{" "}
+              <span className={styles.seriesLabel}>Series:</span>{" "}
               <Link
                 to={`/series/${book.series.id}`}
                 className={styles.seriesLink}
               >
                 {book.series.name}
               </Link>
-
               {book.series_num && (
                 <span className={styles.seriesNumber}>
                   {" "}
@@ -247,8 +256,9 @@ function BookPage() {
           {book.description && (
             <>
               <div
-                className={`${styles.description} ${expanded ? styles.expanded : ""
-                  }`}
+                className={`${styles.description} ${
+                  expanded ? styles.expanded : ""
+                }`}
               >
                 <p>{description}</p>
               </div>
@@ -266,9 +276,7 @@ function BookPage() {
         </div>
       </div>
 
-      <ReviewSection
-        bookId={id}
-      />
+      <ReviewSection bookId={book.id} />
 
       <CarouselSection
         title="You May Also Like"
@@ -279,8 +287,6 @@ function BookPage() {
             key={recommendedBook.id}
             book={recommendedBook}
             recommendationSourceId={book.id}
-            explanation={explanations[recommendedBook.id]}
-            loadingExplanations={loadingExplanations[recommendedBook.id]}
             onExplain={clickRecommendation}
           />
         )}

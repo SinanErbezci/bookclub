@@ -1,16 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import CarouselSkeleton from "./CarouselSkeleton";
-import styles from "./CarouselSection.module.css"
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import CarouselSkeleton from "./CarouselSkeleton";
+import styles from "./CarouselSection.module.css";
 
-function CarouselSection({
+interface CarouselSectionProps<T> {
+  title: string;
+  titleLink?: string;
+  items?: T[];
+  loading?: boolean;
+  renderItem: (item: T) => ReactNode;
+}
+
+function CarouselSection<T>({
   title,
   titleLink,
   items = [],
   loading = false,
   renderItem,
-}) {
-  const containerRef = useRef(null);
+}: CarouselSectionProps<T>) {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [index, setIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(4);
@@ -18,7 +27,7 @@ function CarouselSection({
   const CARD_WIDTH = 180;
   const GAP = 16;
 
-  const safeItems = items || [];
+  const safeItems = items;
   const itemCount = safeItems.length;
 
   // 🔥 calculate visible cards dynamically

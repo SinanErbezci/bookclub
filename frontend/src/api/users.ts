@@ -1,10 +1,8 @@
 import { apiFetch } from "./client";
 
-// 👤 FETCH USER PROFILE
-export async function fetchUserProfile(userId) {
+export async function fetchUserProfile(userId: number | string) {
   const data = await apiFetch(`/users/${userId}/profile/`);
 
-  // 🔥 normalize response ONCE here
   return data?.user
     ? data
     : {
