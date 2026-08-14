@@ -1,13 +1,10 @@
 import { apiFetch } from "./client";
+import type { UserProfile } from "../types/user";
 
-export async function fetchUserProfile(userId: number | string) {
-  const data = await apiFetch(`/users/${userId}/profile/`);
-
-  return data?.user
-    ? data
-    : {
-        user: data,
-        lists: data?.lists || [],
-        reviews: data?.reviews || [],
-      };
+export async function fetchUserProfile(
+  userId: number | string,
+): Promise<UserProfile> {
+  return apiFetch<UserProfile>(
+    `/users/${userId}/profile/`,
+  );
 }
