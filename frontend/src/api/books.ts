@@ -1,6 +1,9 @@
 import { apiFetch } from "./client";
 import { PaginatedResponse } from "../types/api";
 import type {
+  SeriesDetail,
+} from "../types/book";
+import type {
   Book,
   BookListItem,
 } from "../types/book";
@@ -34,15 +37,19 @@ export async function getBooksByGenre(
   return data.results;
 }
 
-export async function getSeriesById(id: number | string) {
-  return apiFetch(`/series/${id}/`);
+export async function getSeriesById(
+  id: number,
+): Promise<SeriesDetail> {
+  return apiFetch<SeriesDetail>(
+    `/series/${id}/`,
+  );
 }
 
 export async function getBooksByGenrePaginated(
   genreId: number,
   page = 1,
-) {
-  return await apiFetch(
+): Promise<PaginatedResponse<BookListItem>> {
+  return apiFetch<PaginatedResponse<BookListItem>>(
     `/books/?genres__id=${genreId}&page=${page}`,
   );
 }

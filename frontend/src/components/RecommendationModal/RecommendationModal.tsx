@@ -1,6 +1,17 @@
+import type { User } from "../../types/user";
+import type { RecommendationExplanation } from "../../types/recommendation";
 import styles from "./RecommendationModal.module.css";
 import Modal from "../Modal";
 import { Link } from "react-router-dom";
+
+interface RecommendationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  explanation: RecommendationExplanation | undefined;
+  isLoading: boolean;
+  hasError: boolean;
+  user: User | null;
+}
 
 export default function RecommendationModal({
   isOpen,
@@ -9,9 +20,13 @@ export default function RecommendationModal({
   isLoading,
   hasError,
   user,
-}) {
+}: RecommendationModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} className={styles.modalContent}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className={styles.modalContent}
+    >
       <div className={styles.container}>
         <h2 className={styles.title}>
           🤖 AI Recommendation
@@ -20,9 +35,12 @@ export default function RecommendationModal({
         {!user ? (
           <div className={styles.loginRequired}>
             <h4>🔒 Sign in required</h4>
+
             <p>
-              AI explanations are available for signed-in users.
+              AI explanations are available for signed-in
+              users.
             </p>
+
             <Link
               to="/login"
               className="btn btn-primary"
@@ -53,7 +71,7 @@ export default function RecommendationModal({
           </div>
         ) : (
           <div className={styles.body}>
-            <p>{explanation?.explanation}</p>
+            <p>{explanation?.summary}</p>
           </div>
         )}
       </div>

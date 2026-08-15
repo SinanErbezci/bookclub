@@ -9,7 +9,7 @@ interface CarouselSectionProps<T> {
   titleLink?: string;
   items?: T[];
   loading?: boolean;
-  renderItem: (item: T) => ReactNode;
+  renderItem?: (item: T) => ReactNode;
 }
 
 function CarouselSection<T>({
@@ -110,7 +110,7 @@ function CarouselSection<T>({
             ) : itemCount === 0 ? (
               <p>No items found.</p>
             ) : (
-              safeItems.map((item) => renderItem(item))
+              safeItems.map((item) => renderItem?.(item))
             )}
           </div>
         </div>

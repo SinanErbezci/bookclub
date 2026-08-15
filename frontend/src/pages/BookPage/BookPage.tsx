@@ -36,6 +36,7 @@ function BookPage() {
   const [explanations, setExplanations] = useState<
     Record<number, RecommendationExplanation>
   >({});
+  
   const [loadingExplanations, setLoadingExplanations] = useState<
     Record<number, boolean>
   >({});

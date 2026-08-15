@@ -4,19 +4,29 @@ import { getRecentBooks } from "../../api/books";
 import { getRandomAuthor } from "../../api/authors";
 import { getRandomGenre } from "../../api/genres";
 
+import type { BookListItem } from "../../types/book";
+import type { Author } from "../../types/author";
+import type { RandomGenre } from "../../types/genre";
+
 import SemanticDiscovery from "../../components/SemanticDiscovery/SemanticDiscovery";
 import BookCard from "../../components/BookCard";
 import CarouselSection from "../../components/CarouselSection/CarouselSection";
 
 function Browse() {
-  const [recentBooks, setRecentBooks] = useState([]);
-  const [author, setAuthor] = useState(null);
-  const [genre, setGenre] = useState(null);
+  const [recentBooks, setRecentBooks] =
+    useState<BookListItem[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [author, setAuthor] =
+    useState<Author | null>(null);
+
+  const [genre, setGenre] =
+    useState<RandomGenre | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    async function fetchBrowseData() {
+    async function fetchBrowseData(): Promise<void> {
       setLoading(true);
 
       const [
@@ -29,15 +39,23 @@ function Browse() {
         getRandomGenre(),
       ]);
 
-      if (recentBooksResponse.status === "fulfilled") {
-        setRecentBooks(recentBooksResponse.value.results);
+      if (
+        recentBooksResponse.status === "fulfilled"
+      ) {
+        setRecentBooks(
+          recentBooksResponse.value,
+        );
       }
 
-      if (authorResponse.status === "fulfilled") {
+      if (
+        authorResponse.status === "fulfilled"
+      ) {
         setAuthor(authorResponse.value);
       }
 
-      if (genreResponse.status === "fulfilled") {
+      if (
+        genreResponse.status === "fulfilled"
+      ) {
         setGenre(genreResponse.value);
       }
 
@@ -49,8 +67,8 @@ function Browse() {
 
   return (
     <div className="container mt-4">
-
       <SemanticDiscovery />
+
       <CarouselSection
         title="Recently Added"
         items={recentBooks}
@@ -73,7 +91,7 @@ function Browse() {
         titleLink={
           author
             ? `/authors/${author.id}`
-            : null
+            : undefined
         }
         items={author?.books}
         loading={loading}
@@ -94,7 +112,7 @@ function Browse() {
         titleLink={
           genre
             ? `/genres/${genre.id}`
-            : null
+            : undefined
         }
         items={genre?.books}
         loading={loading}
@@ -105,7 +123,6 @@ function Browse() {
           />
         )}
       />
-
     </div>
   );
 }

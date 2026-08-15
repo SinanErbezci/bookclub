@@ -8,5 +8,7 @@ export async function getRandomGenre(): Promise<RandomGenre> {
 export async function getGenreById(
   id: number,
 ): Promise<Genre> {
-  return apiFetch<Genre>(`/genres/${id}/`);
+  return apiFetch<Genre>(
+    `/genres/${id}/`,
+  );
 }

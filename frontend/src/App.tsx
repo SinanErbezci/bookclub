@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+
 import Browse from "./pages/Browse/Browse";
 import BookPage from "./pages/BookPage/BookPage";
 import SeriesPage from "./pages/SeriesPage/SeriesPage";
@@ -17,11 +18,15 @@ import Footer from "./components/Footer";
 function App() {
   return (
     <div className="app">
-
       <NavBar />
+
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<Browse />} />
+          <Route
+            path="/"
+            element={<Browse />}
+          />
+
           <Route
             path="/profile"
             element={
@@ -30,12 +35,37 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/profile/:id" element={<ProfilePage />} />
-          <Route path="/books/:id" element={<BookPage />} />
-          <Route path="/authors/:id" element={<AuthorPage />} />
-          <Route path="/genres/:id" element={<GenrePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/series/:id" element={<SeriesPage />} />
+
+          <Route
+            path="/profile/:id"
+            element={<ProfilePage />}
+          />
+
+          <Route
+            path="/books/:id"
+            element={<BookPage />}
+          />
+
+          <Route
+            path="/authors/:id"
+            element={<AuthorPage />}
+          />
+
+          <Route
+            path="/genres/:id"
+            element={<GenrePage />}
+          />
+
+          <Route
+            path="/search"
+            element={<SearchPage />}
+          />
+
+          <Route
+            path="/series/:id"
+            element={<SeriesPage />}
+          />
+
           <Route
             path="/login"
             element={
@@ -44,6 +74,7 @@ function App() {
               </PublicOnlyRoute>
             }
           />
+
           <Route
             path="/signup"
             element={
@@ -53,19 +84,16 @@ function App() {
             }
           />
 
-          <Route path="*" element={<NotFoundPage />} />
+          <Route
+            path="*"
+            element={<NotFoundPage />}
+          />
         </Routes>
       </main>
+
       <Footer />
     </div>
   );
 }
 
 export default App;
-
-// | Concept | Meaning                    |
-// | ------- | -------------------------- |
-// | Router  | enables navigation system  |
-// | Routes  | decides which page to show |
-// | Route   | defines URL → component    |
-// | :id     | dynamic variable from URL  |

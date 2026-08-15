@@ -1,13 +1,21 @@
+import type { BookListItem } from "../../types/book";
 import BookCard from "../BookCard";
 import Skeleton from "../Skeleton/Skeleton";
 import styles from "./BookGrid.module.css";
+
+interface BookGridProps {
+  books?: BookListItem[];
+  loading?: boolean;
+  skeletonCount?: number;
+  showAuthor?: boolean;
+}
 
 function BookGrid({
   books = [],
   loading = false,
   skeletonCount = 8,
   showAuthor = false,
-}) {
+}: BookGridProps) {
   return (
     <div className={styles.grid}>
       {loading

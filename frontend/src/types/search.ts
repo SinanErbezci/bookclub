@@ -27,7 +27,7 @@ export interface SemanticSearchBook {
 
 export interface SearchResponse {
   books: SearchBook[];
-  books_count?: number;
+  books_count: number;
   next?: string | null;
   previous?: string | null;
   authors: SearchAuthor[];

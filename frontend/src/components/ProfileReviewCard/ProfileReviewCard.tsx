@@ -1,6 +1,17 @@
+import type { MouseEvent } from "react";
 import { Link } from "react-router-dom";
+import placeholderBook from "../../assets/placeholder_book.png";
 import styles from "./ProfileReviewCard.module.css";
 import StarRating from "../StarRating/StarRating";
+import type { Review } from "../../types/review";
+
+interface ProfileReviewCardProps {
+  review: Review;
+  isOwnProfile: boolean;
+  onOpen: (review: Review) => void;
+  onEdit: (review: Review) => void;
+  onDelete: (review: Review) => void;
+}
 
 function ProfileReviewCard({
   review,
@@ -8,7 +19,7 @@ function ProfileReviewCard({
   onOpen,
   onEdit,
   onDelete,
-}) {
+}: ProfileReviewCardProps) {
   return (
     <article
       className={styles.reviewCard}
@@ -16,11 +27,13 @@ function ProfileReviewCard({
     >
       <Link
         to={`/books/${review.book.id}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e: MouseEvent<HTMLAnchorElement>) =>
+          e.stopPropagation()
+        }
         className={styles.coverLink}
       >
         <img
-          src={review.book.cover}
+          src={review.book.cover ?? placeholderBook}
           alt={review.book.title}
           className={styles.cover}
         />
@@ -31,7 +44,9 @@ function ProfileReviewCard({
           <div className={styles.bookSection}>
             <Link
               to={`/books/${review.book.id}`}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: MouseEvent<HTMLAnchorElement>) =>
+                e.stopPropagation()
+              }
               className={styles.title}
             >
               {review.book.title}
@@ -55,7 +70,9 @@ function ProfileReviewCard({
 
         <div className={styles.footer}>
           <span className={styles.date}>
-            {new Date(review.created_at).toLocaleDateString()}
+            {new Date(
+              review.created_at,
+            ).toLocaleDateString()}
           </span>
 
           {isOwnProfile && (

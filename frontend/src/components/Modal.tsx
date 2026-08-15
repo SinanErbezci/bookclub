@@ -1,12 +1,23 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import styles from "./Modal.module.css";
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  className?: string;
+}
 
 export default function Modal({
   isOpen,
   onClose,
   children,
   className = "",
-}) {
+}: ModalProps) {
   const [visible, setVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(isOpen);
 

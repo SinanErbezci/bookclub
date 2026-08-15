@@ -1,7 +1,7 @@
+import { useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { useEffect } from "react";
 import SearchBar from "./SearchBar/SearchBar";
 import styles from "./NavBar.module.css";
 
@@ -12,7 +12,7 @@ function NavBar() {
 
   const isAuthenticated = !!user;
 
-  async function handleLogout() {
+  async function handleLogout(): Promise<void> {
     try {
       await logout();
       addToast("Logged out", "success");
@@ -23,7 +23,7 @@ function NavBar() {
   }
 
   useEffect(() => {
-    function handleResize() {
+    function handleResize(): void {
       if (window.innerWidth >= 992) {
         const offcanvasEl =
           document.getElementById("mobileMenu");
@@ -32,7 +32,7 @@ function NavBar() {
 
         const offcanvas =
           window.bootstrap?.Offcanvas.getInstance(
-            offcanvasEl
+            offcanvasEl,
           );
 
         offcanvas?.hide();
@@ -44,12 +44,16 @@ function NavBar() {
     return () => {
       window.removeEventListener(
         "resize",
-        handleResize
+        handleResize,
       );
     };
   }, []);
 
-  const getNavClass = ({ isActive }) =>
+  const getNavClass = ({
+    isActive,
+  }: {
+    isActive: boolean;
+  }): string =>
     `${styles.link} ${isActive ? styles.active : ""}`;
 
   const renderNavLinks = () => {
@@ -108,7 +112,6 @@ function NavBar() {
         <div
           className={`${styles.container} container`}
         >
-          {/* LOGO */}
           <Link
             to="/"
             className={styles.brand}
@@ -116,19 +119,16 @@ function NavBar() {
             Book<span>Club</span>
           </Link>
 
-          {/* SEARCH (DESKTOP) */}
           <div className="d-none d-lg-flex flex-fill justify-content-center px-4">
             <SearchBar />
           </div>
 
-          {/* DESKTOP NAV */}
           <div
             className={`${styles.options} d-none d-lg-flex ms-auto`}
           >
             {renderNavLinks()}
           </div>
 
-          {/* MOBILE TOGGLE */}
           <button
             className="navbar-toggler d-lg-none"
             type="button"
@@ -140,7 +140,6 @@ function NavBar() {
             ></span>
           </button>
 
-          {/* MOBILE MENU */}
           <div
             className="offcanvas offcanvas-end d-lg-none"
             id="mobileMenu"
@@ -157,7 +156,6 @@ function NavBar() {
             </div>
 
             <div className="offcanvas-body">
-              {/* MOBILE SEARCH */}
               <div className="search-bar mb-3">
                 <SearchBar />
               </div>

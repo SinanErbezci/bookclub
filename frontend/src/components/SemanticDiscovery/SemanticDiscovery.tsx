@@ -1,22 +1,39 @@
-import { useState } from "react";
+import {
+  useState,
+  type FormEvent,
+} from "react";
+
 import { semanticSearch } from "../../api/search";
+import type { SemanticSearchBook } from "../../types/search";
+
 import BookCard from "../BookCard";
 import CarouselSection from "../CarouselSection/CarouselSection";
 import styles from "./SemanticDiscovery.module.css";
 
 function SemanticDiscovery() {
   const [query, setQuery] = useState("");
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const handleSearch = async (e) => {
+  const [books, setBooks] = useState<
+    SemanticSearchBook[]
+  >([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const handleSearch = async (
+    e: FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
 
     const trimmedQuery = query.trim();
 
     if (!trimmedQuery) {
-      setError("Describe the kind of book you're looking for.");
+      setError(
+        "Describe the kind of book you're looking for.",
+      );
       return;
     }
 
@@ -26,15 +43,23 @@ function SemanticDiscovery() {
 
       const results = await semanticSearch(
         trimmedQuery,
-        10
+        10,
       );
 
       setBooks(results);
     } catch (err) {
       setBooks([]);
-      setError(
-        err.message || "Unable to find recommendations."
-      );
+
+      if (err instanceof Error) {
+        setError(
+          err.message ||
+            "Unable to find recommendations.",
+        );
+      } else {
+        setError(
+          "Unable to find recommendations.",
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -58,7 +83,9 @@ function SemanticDiscovery() {
         >
           <textarea
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) =>
+              setQuery(e.target.value)
+            }
             className={styles.textarea}
             placeholder="A dark fantasy with political intrigue, morally gray characters, and a slow-burn romance..."
             rows={4}
@@ -74,15 +101,21 @@ function SemanticDiscovery() {
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading || !query.trim()}
+              disabled={
+                loading || !query.trim()
+              }
             >
-              {loading ? "Finding Books..." : "Find Books"}
+              {loading
+                ? "Finding Books..."
+                : "Find Books"}
             </button>
           </div>
         </form>
 
         {error && (
-          <p className={styles.error}>{error}</p>
+          <p className={styles.error}>
+            {error}
+          </p>
         )}
       </div>
 

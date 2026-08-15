@@ -5,21 +5,23 @@ import { getAuthorById } from "../../api/authors";
 import CarouselSection from "../../components/CarouselSection/CarouselSection";
 import BookCard from "../../components/BookCard";
 import AuthorPageSkeleton from "./AuthorPageSkeleton";
-import personPlaceholder from "../../assets/profile.svg"
+import personPlaceholder from "../../assets/profile.svg";
 import NotFoundPage from "../NotFoundPage";
 import styles from "./AuthorPage.module.css";
 
+import type { Author } from "../../types/author";
 
 function AuthorPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
-  const [author, setAuthor] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [author, setAuthor] =
+    useState<Author | null>(null);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    const isValidAuthorId = /^\d+$/.test(id);
-
-    if (!isValidAuthorId) {
+    if (!id || !/^\d+$/.test(id)) {
       setAuthor(null);
       setLoading(false);
       return;
@@ -29,7 +31,9 @@ function AuthorPage() {
       try {
         setLoading(true);
 
-        const data = await getAuthorById(id);
+        const data = await getAuthorById(
+          Number(id),
+        );
 
         setAuthor(data);
       } catch (err) {
@@ -44,7 +48,7 @@ function AuthorPage() {
   }, [id]);
 
   if (loading) {
-    return <AuthorPageSkeleton />
+    return <AuthorPageSkeleton />;
   }
 
   if (!author) {
@@ -53,8 +57,6 @@ function AuthorPage() {
 
   return (
     <div className="container mt-5">
-
-      {/* HEADER */}
       <div className={styles.header}>
         <div className={styles.avatar}>
           <img
@@ -63,26 +65,31 @@ function AuthorPage() {
             className={styles.avatarImg}
           />
         </div>
+
         <div className={styles.info}>
-          <h1 className={styles.name}>{author.name}</h1>
+          <h1 className={styles.name}>
+            {author.name}
+          </h1>
+
           <p className={styles.meta}>
-            {author.books?.length || 0} books
+            {author.books.length} books
           </p>
         </div>
       </div>
 
-      {/* BOOKS */}
       <div className={styles.booksSection}>
         <CarouselSection
           title={`Books by ${author.name}`}
-          items={author.books || []}
+          items={author.books}
           loading={false}
           renderItem={(book) => (
-            <BookCard key={book.id} book={book} />
+            <BookCard
+              key={book.id}
+              book={book}
+            />
           )}
         />
       </div>
-
     </div>
   );
 }

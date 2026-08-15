@@ -2,27 +2,43 @@ import {
   useEffect,
   useRef,
   useState,
+  type KeyboardEvent,
 } from "react";
-
 import {
   Link,
   useNavigate,
 } from "react-router-dom";
 
 import { searchAll } from "../../api/search";
+import type {
+  SearchAuthor,
+  SearchBook,
+  SearchGenre,
+} from "../../types/search";
 
 import bookPlaceholder from "../../assets/placeholder_book.png";
-
 import styles from "./SearchBar.module.css";
+
+type SearchResult =
+  | (SearchBook & { type: "book" })
+  | (SearchAuthor & { type: "author" })
+  | (SearchGenre & { type: "genre" });
+
+interface SearchResults {
+  books: SearchBook[];
+  authors: SearchAuthor[];
+  genres: SearchGenre[];
+}
 
 function SearchBar() {
   const [query, setQuery] = useState("");
 
-  const [results, setResults] = useState({
-    books: [],
-    authors: [],
-    genres: [],
-  });
+  const [results, setResults] =
+    useState<SearchResults>({
+      books: [],
+      authors: [],
+      genres: [],
+    });
 
   const [loading, setLoading] =
     useState(false);
@@ -33,56 +49,60 @@ function SearchBar() {
   const [selectedIndex, setSelectedIndex] =
     useState(-1);
 
-  const wrapperRef = useRef(null);
+  const wrapperRef =
+    useRef<HTMLDivElement>(null);
 
-  const resultRefs = useRef([]);
+  const resultRefs =
+    useRef<(HTMLAnchorElement | null)[]>([]);
 
   const navigate = useNavigate();
 
-  // flatten results for keyboard navigation
-  const flatResults = [
+  const flatResults: SearchResult[] = [
     ...results.books.map((item) => ({
       ...item,
-      type: "book",
+      type: "book" as const,
     })),
 
     ...results.authors.map((item) => ({
       ...item,
-      type: "author",
+      type: "author" as const,
     })),
 
     ...results.genres.map((item) => ({
       ...item,
-      type: "genre",
+      type: "genre" as const,
     })),
   ];
 
   const hasResults =
     flatResults.length > 0;
 
-  function handleSearchSubmit() {
+  function handleSearchSubmit(): void {
     if (!query.trim() || loading) return;
 
     navigate(
-      `/search?q=${encodeURIComponent(
-        query
-      )}`
+      `/search?q=${encodeURIComponent(query)}`,
     );
+
     setResults({
       books: [],
       authors: [],
       genres: [],
     });
+
     setSelectedIndex(-1);
     setOpen(false);
   }
 
-  // close outside click
   useEffect(() => {
-    function handleClickOutside(e) {
+    function handleClickOutside(
+      e: MouseEvent,
+    ): void {
       if (
         wrapperRef.current &&
-        !wrapperRef.current.contains(e.target)
+        !wrapperRef.current.contains(
+          e.target as Node,
+        )
       ) {
         setOpen(false);
       }
@@ -90,18 +110,17 @@ function SearchBar() {
 
     document.addEventListener(
       "mousedown",
-      handleClickOutside
+      handleClickOutside,
     );
 
     return () => {
       document.removeEventListener(
         "mousedown",
-        handleClickOutside
+        handleClickOutside,
       );
     };
   }, []);
 
-  // debounce search
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults({
@@ -116,35 +135,37 @@ function SearchBar() {
       return;
     }
 
-    const timeout = setTimeout(async () => {
-      try {
-        setLoading(true);
+    const timeout = setTimeout(
+      async () => {
+        try {
+          setLoading(true);
 
-        const data =
-          await searchAll(query, 1, "dropdown");
+          const data = await searchAll(
+            query,
+            1,
+            "dropdown",
+          );
 
-        setResults(data);
+          setResults(data);
+          setOpen(true);
+          setSelectedIndex(-1);
+        } catch {
+          setResults({
+            books: [],
+            authors: [],
+            genres: [],
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+      300,
+    );
 
-        setOpen(true);
-
-        setSelectedIndex(-1);
-
-      } catch {
-        setResults({
-          books: [],
-          authors: [],
-          genres: [],
-        });
-      } finally {
-        setLoading(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeout);
-
+    return () =>
+      clearTimeout(timeout);
   }, [query]);
 
-  // auto-scroll selected item
   useEffect(() => {
     if (
       selectedIndex >= 0 &&
@@ -152,13 +173,15 @@ function SearchBar() {
     ) {
       resultRefs.current[
         selectedIndex
-      ].scrollIntoView({
+      ]?.scrollIntoView({
         block: "nearest",
       });
     }
   }, [selectedIndex]);
 
-  function navigateToItem(item) {
+  function navigateToItem(
+    item: SearchResult,
+  ): void {
     if (item.type === "book") {
       navigate(`/books/${item.id}`);
     }
@@ -175,14 +198,16 @@ function SearchBar() {
     setQuery("");
   }
 
-  function handleKeyDown(e) {
+  function handleKeyDown(
+    e: KeyboardEvent<HTMLInputElement>,
+  ): void {
     if (e.key === "Enter") {
       if (
         selectedIndex >= 0 &&
         flatResults[selectedIndex]
       ) {
         navigateToItem(
-          flatResults[selectedIndex]
+          flatResults[selectedIndex],
         );
       } else {
         handleSearchSubmit();
@@ -191,32 +216,27 @@ function SearchBar() {
 
     if (!open) return;
 
-    // DOWN
     if (e.key === "ArrowDown") {
       e.preventDefault();
 
       setSelectedIndex((prev) =>
         prev < flatResults.length - 1
           ? prev + 1
-          : prev
+          : prev,
       );
     }
 
-    // UP
     if (e.key === "ArrowUp") {
       e.preventDefault();
 
       setSelectedIndex((prev) =>
-        prev > 0 ? prev - 1 : 0
+        prev > 0 ? prev - 1 : 0,
       );
     }
 
-    // ESC
     if (e.key === "Escape") {
       setOpen(false);
     }
-
-    // ENTER
   }
 
   let currentIndex = -1;
@@ -288,11 +308,8 @@ function SearchBar() {
 
                         return (
                           <Link
-                            ref={(el) =>
-                            (resultRefs.current[
-                              currentIndex
-                            ] = el)
-                            }
+                            ref={(el) => {
+                            resultRefs.current[currentIndex] = el;}}
                             key={`book-${book.id}`}
                             to={`/books/${book.id}`}
                             className={`${styles.result} ${selectedIndex ===
@@ -363,11 +380,8 @@ function SearchBar() {
 
                         return (
                           <Link
-                            ref={(el) =>
-                            (resultRefs.current[
-                              currentIndex
-                            ] = el)
-                            }
+                            ref={(el) => {
+                            resultRefs.current[currentIndex] = el;}}
                             key={`author-${author.id}`}
                             to={`/authors/${author.id}`}
                             className={`${styles.result} ${selectedIndex ===
@@ -417,11 +431,8 @@ function SearchBar() {
 
                         return (
                           <Link
-                            ref={(el) =>
-                            (resultRefs.current[
-                              currentIndex
-                            ] = el)
-                            }
+                            ref={(el) => {
+                            resultRefs.current[currentIndex] = el;}}
                             key={`genre-${genre.id}`}
                             to={`/genres/${genre.id}`}
                             className={`${styles.result} ${selectedIndex ===

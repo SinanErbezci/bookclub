@@ -1,7 +1,14 @@
 import { Navigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 
-function PublicOnlyRoute({ children }) {
+interface PublicOnlyRouteProps {
+  children: ReactNode;
+}
+
+function PublicOnlyRoute({
+  children,
+}: PublicOnlyRouteProps) {
   const { user, loading } = useAuth();
 
   if (loading) {

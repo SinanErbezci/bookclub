@@ -8,99 +8,110 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import { searchAll, semanticSearch } from "../../api/search";
+import {
+  searchAll,
+  semanticSearch,
+} from "../../api/search";
+
+import type {
+  SearchResponse,
+  SemanticSearchBook,
+} from "../../types/search";
+
 import BookGrid from "../../components/BookGrid/BookGrid";
 import styles from "./SearchPage.module.css";
+
+const EMPTY_RESULTS: SearchResponse = {
+  books: [],
+  books_count: 0,
+  next: null,
+  previous: null,
+  authors: [],
+  genres: [],
+};
 
 function SearchPage() {
   const [searchParams] =
     useSearchParams();
 
   const query =
-    searchParams.get("q") || "";
+    searchParams.get("q") ?? "";
 
   const page =
-    searchParams.get("page") || 1;
+    searchParams.get("page") ?? "1";
 
   const [results, setResults] =
-    useState({
-      books: [],
-      books_count: 0,
-      next: null,
-      previous: null,
-      authors: [],
-      genres: [],
-    });
+    useState<SearchResponse>(
+      EMPTY_RESULTS,
+    );
 
-  const [semanticBooks, setSemanticBooks] = useState([]);
-  const encodedQuery = encodeURIComponent(query);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [semanticBooks, setSemanticBooks] =
+    useState<SemanticSearchBook[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState(false);
 
   const totalPages = Math.ceil(
-    results.books_count / 10
+    results.books_count / 10,
   );
 
-
   useEffect(() => {
-    async function fetchResults() {
+    async function fetchResults(): Promise<void> {
       if (!query.trim()) {
-        setResults({
-          books: [],
-          books_count: 0,
-          next: null,
-          previous: null,
-          authors: [],
-          genres: [],
-        });
-
+        setResults(EMPTY_RESULTS);
         setSemanticBooks([]);
-
         setLoading(false);
-
+        setError(false);
         return;
       }
 
       try {
         setLoading(true);
-        setError(null);
+        setError(false);
+
         const [
           searchResponse,
           semanticResponse,
         ] = await Promise.allSettled([
-          searchAll(query, page, "full"),
+          searchAll(
+            query,
+            Number(page),
+            "full",
+          ),
           semanticSearch(query),
         ]);
 
-        if (searchResponse.status === "fulfilled") {
-          setResults(searchResponse.value);
+        if (
+          searchResponse.status ===
+          "fulfilled"
+        ) {
+          setResults(
+            searchResponse.value,
+          );
         } else {
-          setResults({
-            books: [],
-            books_count: 0,
-            next: null,
-            previous: null,
-            authors: [],
-            genres: [],
-          });
-          setError(searchResponse.reason);
+          setResults(EMPTY_RESULTS);
+          setError(true);
         }
 
-        if (semanticResponse.status === "fulfilled") {
+        if (
+          semanticResponse.status ===
+          "fulfilled"
+        ) {
           setSemanticBooks(
-            semanticResponse.value
+            semanticResponse.value,
           );
         } else {
           setSemanticBooks([]);
         }
-
       } finally {
         setLoading(false);
       }
     }
 
     fetchResults();
-
   }, [query, page]);
 
   const hasResults =
@@ -109,10 +120,14 @@ function SearchPage() {
     results.authors.length > 0 ||
     results.genres.length > 0;
 
-  function getVisiblePages() {
+  function getVisiblePages(): (
+    number | "..."
+  )[] {
     const currentPage = Number(page);
 
-    const pages = [];
+    const pages: (
+      number | "..."
+    )[] = [];
 
     // ALWAYS show first page
     pages.push(1);
@@ -137,7 +152,10 @@ function SearchPage() {
     }
 
     // RIGHT ELLIPSIS
-    if (currentPage < totalPages - 3) {
+    if (
+      currentPage <
+      totalPages - 3
+    ) {
       pages.push("...");
     }
 
@@ -158,47 +176,61 @@ function SearchPage() {
       </div>
     );
   }
+
   return (
     <div className="container mt-5">
-
       <h1 className={styles.title}>
         Search Results
       </h1>
 
       <p className={styles.query}>
-        Results for: <strong>{query}</strong>
+        Results for:{" "}
+        <strong>{query}</strong>
       </p>
+
       {loading ? (
         <BookGrid
-          loading={true}
+          loading
           skeletonCount={10}
         />
-
       ) : !hasResults ? (
         <p>
           No books, authors, or genres
           found.
         </p>
-
       ) : (
         <>
           {/* BOOKS */}
           {results.books.length > 0 && (
-            <section className={styles.section}>
-
-              <h2 className={styles.sectionTitle}>
-                {results.books_count} books found for "{query}"
+            <section
+              className={styles.section}
+            >
+              <h2
+                className={
+                  styles.sectionTitle
+                }
+              >
+                {results.books_count} books
+                found for "{query}"
               </h2>
 
               <BookGrid
                 books={results.books}
                 showAuthor
               />
-              <div className={styles.pagination}>
 
+              <div
+                className={
+                  styles.pagination
+                }
+              >
                 {results.previous && (
                   <Link
-                    to={`/search?q=${encodedQuery}&page=${Number(page) - 1}`}
+                    to={`/search?q=${encodeURIComponent(
+                      query,
+                    )}&page=${
+                      Number(page) - 1
+                    }`}
                     className="btn btn-outline-dark"
                   >
                     Previous
@@ -207,12 +239,15 @@ function SearchPage() {
 
                 {getVisiblePages().map(
                   (item, index) => {
-
-                    if (item === "...") {
+                    if (
+                      item === "..."
+                    ) {
                       return (
                         <span
-                          key={index}
-                          className={styles.ellipsis}
+                          key={`ellipsis-${index}`}
+                          className={
+                            styles.ellipsis
+                          }
                         >
                           ...
                         </span>
@@ -222,36 +257,48 @@ function SearchPage() {
                     return (
                       <Link
                         key={item}
-                        to={`/search?q=${encodedQuery}&page=${item}`}
-                        className={`btn ${Number(page) === item
-                          ? "btn-dark"
-                          : "btn-outline-dark"
-                          }`}
+                        to={`/search?q=${encodeURIComponent(
+                          query,
+                        )}&page=${item}`}
+                        className={`btn ${
+                          Number(page) ===
+                          item
+                            ? "btn-dark"
+                            : "btn-outline-dark"
+                        }`}
                       >
                         {item}
                       </Link>
                     );
-                  }
+                  },
                 )}
 
                 {results.next && (
                   <Link
-                    to={`/search?q=${encodedQuery}&page=${Number(page) + 1}`}
+                    to={`/search?q=${encodeURIComponent(
+                      query,
+                    )}&page=${
+                      Number(page) + 1
+                    }`}
                     className="btn btn-outline-dark"
                   >
                     Next
                   </Link>
                 )}
-
               </div>
-
             </section>
           )}
 
+          {/* AI RECOMMENDATIONS */}
           {semanticBooks.length > 0 && (
-            <section className={styles.section}>
-
-              <h2 className={styles.sectionTitle}>
+            <section
+              className={styles.section}
+            >
+              <h2
+                className={
+                  styles.sectionTitle
+                }
+              >
                 ✨ AI Recommendations
               </h2>
 
@@ -259,69 +306,82 @@ function SearchPage() {
                 books={semanticBooks}
                 showAuthor
               />
-
             </section>
           )}
+
           {/* AUTHORS */}
           {results.authors.length > 0 && (
-            <section className={styles.section}>
-
-              <h2 className={styles.sectionTitle}>
-                Authors
-                {" "}
-                ({results.authors.length})
+            <section
+              className={styles.section}
+            >
+              <h2
+                className={
+                  styles.sectionTitle
+                }
+              >
+                Authors (
+                {results.authors.length})
               </h2>
 
-              <div className={styles.resultList}>
-
+              <div
+                className={
+                  styles.resultList
+                }
+              >
                 {results.authors.map(
                   (author) => (
                     <Link
                       key={author.id}
                       to={`/authors/${author.id}`}
-                      className={styles.resultLink}
+                      className={
+                        styles.resultLink
+                      }
                     >
                       {author.name}
                     </Link>
-                  )
+                  ),
                 )}
-
               </div>
-
             </section>
           )}
 
           {/* GENRES */}
           {results.genres.length > 0 && (
-            <section className={styles.section}>
-
-              <h2 className={styles.sectionTitle}>
-                Genres
-                {" "}
-                ({results.genres.length})
+            <section
+              className={styles.section}
+            >
+              <h2
+                className={
+                  styles.sectionTitle
+                }
+              >
+                Genres (
+                {results.genres.length})
               </h2>
 
-              <div className={styles.resultList}>
-
+              <div
+                className={
+                  styles.resultList
+                }
+              >
                 {results.genres.map(
                   (genre) => (
                     <Link
                       key={genre.id}
                       to={`/genres/${genre.id}`}
-                      className={styles.resultLink}
+                      className={
+                        styles.resultLink
+                      }
                     >
                       {genre.name}
                     </Link>
-                  )
+                  ),
                 )}
-
               </div>
-
             </section>
           )}
         </>
       )}
-
     </div>
   );
 }

@@ -29,7 +29,7 @@ function AuthorPageSkeleton() {
 
             {/* BOOKS */}
             <div className={styles.booksSection}>
-                <CarouselSection loading={true}></CarouselSection>
+                <CarouselSection title="Books" loading={true}></CarouselSection>
             </div>
         </div>
     );

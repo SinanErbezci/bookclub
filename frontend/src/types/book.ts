@@ -8,6 +8,10 @@ export interface Series {
   name: string;
 }
 
+export interface SeriesDetail extends Series {
+  books: BookListItem[];
+}
+
 export interface Book {
   id: number;
   title: string;
@@ -29,7 +33,7 @@ export interface Book {
 export interface BookListItem {
   id: number;
   title: string;
-  rating: number;
+  rating?: number;
   cover: string | null;
   author: number | null;
   author_name: string | null;
