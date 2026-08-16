@@ -22,9 +22,9 @@ function BookPageSkeleton() {
                     <Skeleton className={styles.skeletonAuthor} />
                     </h5>
 
-                    <p className={styles.meta}>
+                    <div className={styles.meta}>
                         <Skeleton className={styles.skeletonMeta} />
-                    </p>
+                    </div>
 
                     <div className={styles.series}>
                         <Skeleton className={styles.skeletonSeries} />
