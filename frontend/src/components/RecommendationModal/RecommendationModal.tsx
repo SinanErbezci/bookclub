@@ -71,7 +71,7 @@ export default function RecommendationModal({
           </div>
         ) : (
           <div className={styles.body}>
-            <p>{explanation?.summary}</p>
+            <p>{explanation}</p>
           </div>
         )}
       </div>

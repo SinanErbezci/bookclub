@@ -1,6 +1,4 @@
-export interface RecommendationExplanation {
-  summary: string;
-}
+export type RecommendationExplanation = string;
 
 export interface RecommendationExplanationResponse {
   explanation: RecommendationExplanation;
