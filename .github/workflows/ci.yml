@@ -136,45 +136,31 @@ jobs:
       # Backend Docker image
       # ----------------------------------------------
 
-      - name: Build backend image
-        working-directory: ./bookclub
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker build \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            .
-
-      - name: Push backend images
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bookclub
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
       # ----------------------------------------------
       # nginx Docker image
       # ----------------------------------------------
 
-      - name: Build nginx image
-        working-directory: ./bookclub
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker build \
-            -f nginx/Dockerfile \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:nginx \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG \
-            .
-
-      - name: Push nginx images
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:nginx
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:nginx-$IMAGE_TAG
-
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bookclub
+          file: ./bookclub/nginx/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:nginx
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:nginx-${{ env.IMAGE_TAG }}
+          cache-from: type=gha,scope=nginx
+          cache-to: type=gha,mode=max,scope=nginx
       # ----------------------------------------------
       # Django static files
       # ----------------------------------------------
@@ -195,6 +181,7 @@ jobs:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_SETTINGS_MODULE: mysite.settings.production
           DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
         run: |
           python manage.py collectstatic --noinput
 
