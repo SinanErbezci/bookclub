@@ -225,7 +225,6 @@ jobs:
               "containerOverrides": [
                 {
                   "name": "web",
-                  "image": "${{ steps.login-ecr.outputs.registry }}/bookclub:'"${IMAGE_TAG}"'",
                   "command": [
                     "python",
                     "manage.py",
