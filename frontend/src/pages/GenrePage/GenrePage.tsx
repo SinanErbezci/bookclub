@@ -16,7 +16,6 @@ import NotFoundPage from "../NotFoundPage";
 
 import type { Genre } from "../../types/genre";
 import type { BookListItem } from "../../types/book";
-import type { ApiError } from "../../types/api";
 
 import styles from "./GenrePage.module.css";
 

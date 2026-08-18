@@ -2,11 +2,9 @@ import { ApiError, type ApiErrorResponse } from "../types/api";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-interface ApiFetchOptions extends RequestInit {}
-
 export async function apiFetch<T>(
   path: string,
-  options: ApiFetchOptions = {},
+  options: RequestInit = {},
 ): Promise<T> {
   const csrfRes = await fetch(`${BASE_URL}/csrf/`, {
     credentials: "include",

@@ -136,7 +136,32 @@ resource "aws_iam_policy" "github_actions" {
 
         Resource = "arn:aws:s3:::sinanbook.club/*"
       },
+      # Django static bucket
 
+      {
+        Sid    = "S3DjangoStaticBucket"
+        Effect = "Allow"
+
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+
+        Resource = aws_s3_bucket.django_static.arn
+      },
+
+      {
+        Sid    = "S3DjangoStaticObjects"
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+
+        Resource = "${aws_s3_bucket.django_static.arn}/*"
+      },
       # Deploy assets bucket
 
       {

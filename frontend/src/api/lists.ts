@@ -1,7 +1,6 @@
 import { apiFetch } from "./client";
 import type {
   AddToListResponse,
-  CreateListData,
   DeleteListResponse,
   List,
   RemoveFromListResponse,

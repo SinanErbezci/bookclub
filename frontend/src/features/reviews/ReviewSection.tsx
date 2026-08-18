@@ -144,18 +144,48 @@ export default function ReviewSection({
     }
   }
 
-  async function handleLoadMore(): Promise<void> {
-    /*
-     * The current getReviewsByBook() API
-     * accepts only bookId.
-     *
-     * The old JS implementation passed
-     * nextUrl as a second argument, so
-     * pagination needs to be addressed at
-     * the API layer before we restore this.
-     */
+async function handleLoadMore(): Promise<void> {
+  if (!nextUrl || loadingMore) {
     return;
   }
+
+  setLoadingMore(true);
+
+  try {
+    const data = await getReviewsByBook(
+      bookId,
+      nextUrl,
+    );
+
+    const filtered = userReview
+      ? data.results.filter(
+          (review) =>
+            review.id !== userReview.id,
+        )
+      : data.results;
+
+    setReviews((current) => [
+      ...current,
+      ...filtered,
+    ]);
+
+    setNextUrl(data.next);
+  } catch (err) {
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Failed to load more reviews.";
+
+    setError(message);
+
+    addToast(
+      "Failed to load more reviews",
+      "error",
+    );
+  } finally {
+    setLoadingMore(false);
+  }
+}
 
   return (
     <div className={styles.section}>
