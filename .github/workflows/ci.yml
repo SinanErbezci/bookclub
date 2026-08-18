@@ -59,6 +59,7 @@ jobs:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           DJANGO_SETTINGS_MODULE: mysite.settings.production
           DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
         run: |
           python manage.py check
 
