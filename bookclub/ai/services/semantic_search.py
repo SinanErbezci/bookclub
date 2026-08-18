@@ -8,7 +8,9 @@ import logging
 
 from pgvector.django import CosineDistance
 
-from .embeddings import EmbeddingService
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .embeddings import EmbeddingService
 from library.models import Book
 from ai.models import BookEmbedding
 
@@ -22,7 +24,12 @@ class SemanticSearchService:
         self,
         embedding_service: EmbeddingService | None = None,
     ) -> None:
-        self.embedding_service = embedding_service or EmbeddingService()
+        if embedding_service is None:
+            from .embeddings import EmbeddingService
+
+            embedding_service = EmbeddingService()
+
+        self.embedding_service = embedding_service
 
     def search(
         self,

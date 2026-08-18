@@ -24,7 +24,6 @@ from .serializers import (
 from .pagination import SearchPagination
 import logging
 
-from ai.services.semantic_search import SemanticSearchService
  
 class SearchBooksAPIView(APIView):
     permission_classes = [AllowAny]
@@ -163,6 +162,8 @@ class SemanticSearchAPIView(APIView):
                 10,
             )
         )
+
+        from ai.services.semantic_search import SemanticSearchService
 
         service = SemanticSearchService()
 
