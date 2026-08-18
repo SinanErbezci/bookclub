@@ -80,7 +80,7 @@ resource "aws_iam_policy" "github_actions" {
           "ecr:InitiateLayerUpload",
           "ecr:UploadLayerPart",
           "ecr:PutImage",
-          "ecr:BatchGetImage"
+          "ecr:BatchGetImage",
         ]
 
         Resource = aws_ecr_repository.bookclub.arn
@@ -98,18 +98,36 @@ resource "aws_iam_policy" "github_actions" {
       },
 
       {
-        Sid    = "SSMAccess"
+        Sid    = "ECSRunTaskPassRole"
         Effect = "Allow"
 
         Action = [
-          "ssm:SendCommand",
-          "ssm:GetCommandInvocation",
-          "ssm:ListCommandInvocations"
+          "iam:PassRole"
+        ]
+
+        Resource = aws_iam_role.ecs_task_execution.arn
+
+        Condition = {
+          StringEquals = {
+            "iam:PassedToService" = "ecs-tasks.amazonaws.com"
+          }
+        }
+      },
+
+      {
+        Sid    = "ECSDeployment"
+        Effect = "Allow"
+
+        Action = [
+          "ecs:DescribeServices",
+          "ecs:DescribeTaskDefinition",
+          "ecs:RunTask",
+          "ecs:DescribeTasks",
+          "ecs:UpdateService",
         ]
 
         Resource = "*"
       },
-
       # Frontend bucket
 
       {
@@ -211,15 +229,6 @@ resource "aws_iam_policy" "github_actions" {
 
         Resource = "*"
       },
-      {
-        Sid    = "EC2InstanceID"
-        Effect = "Allow"
-
-        Action = [
-          "ec2:DescribeInstances"
-        ]
-        Resource = "*"
-      }
     ]
   })
 
