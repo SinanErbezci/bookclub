@@ -26,6 +26,7 @@ env:
   ECS_CLUSTER: bookclub
   ECS_SERVICE: bookclub
   DJANGO_STATIC_BUCKET: sinan-bookclub-static
+  VITE_API_URL: https://api.sinanerbezci.com/api
 
 jobs:
 
@@ -96,8 +97,6 @@ jobs:
         run: npm run typecheck
 
       - name: Build frontend
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
 
   # --------------------------------------------------
@@ -318,8 +317,6 @@ jobs:
 
       - name: Build frontend
         working-directory: ./frontend
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
 
       - name: Configure AWS credentials
