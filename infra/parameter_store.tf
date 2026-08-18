@@ -18,9 +18,4 @@ resource "aws_iam_policy" "parameter_store_read" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "parameter_store_read" {
-  role       = aws_iam_role.ec2.name
-  policy_arn = aws_iam_policy.parameter_store_read.arn
-}
-
 data "aws_caller_identity" "current" {}
