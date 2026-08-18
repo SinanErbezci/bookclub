@@ -38,6 +38,7 @@ etl_rejects*.csv
 .terraform/
 terraform.tfstate
 terraform.tfstate.*
+terraform.tfvars
 *.tfplan
 
 tfexercises.txt
