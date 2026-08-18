@@ -1,0 +1,96 @@
+.modalContent {
+  width: min(650px, 95vw);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.title {
+  width: 100%;
+  margin: 0;
+  padding-bottom: 0.75rem;
+
+  border-bottom: 1px solid var(--bs-border-color);
+
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.body {
+  width: 100%;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.body p {
+  margin: 0;
+
+  line-height: 1.8;
+  font-size: 1rem;
+  color: var(--bs-body-color);
+
+  white-space: pre-wrap;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 1rem;
+
+  min-height: 220px;
+}
+
+.loading p {
+  margin: 0;
+  color: var(--bs-secondary-color);
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 220px;
+
+  text-align: center;
+}
+
+.error p {
+  margin: 0;
+
+  color: var(--bs-danger);
+  font-weight: 500;
+}
+
+.loading :global(.spinner-border) {
+  color: var(--COLOR-GOLD);
+}
+
+.loginRequired {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 1rem;
+
+  min-height: 220px;
+
+  text-align: center;
+}
+
+.loginRequired p {
+  max-width: 320px;
+  margin: 0;
+}
+
+.loginRequired h4 {
+  margin: 0;
+}

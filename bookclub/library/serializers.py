@@ -1,11 +1,21 @@
 from rest_framework import serializers
-from .models import Book, Author, Genre, Review, List
+from .models import Book, Author, Genre, Review, List, Series
 
 
+class SeriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Series
+        fields = (
+            "id",
+            "name",
+        )
+        
 class BookSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.name", read_only=True)
     publisher_name = serializers.CharField(source="publisher.name", read_only=True)
     genres = serializers.SerializerMethodField()
+    series = SeriesSerializer(read_only=True)
+
 
     def get_genres(self, obj):
         return [
@@ -29,6 +39,8 @@ class BookSerializer(serializers.ModelSerializer):
             "publisher",
             "publisher_name",
             "genres",
+            "series",
+            "series_num"
         ]
 
 class BookListSerializer(serializers.ModelSerializer):
@@ -139,4 +151,23 @@ class SearchGenreSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+        ]
+
+class SemanticSearchBookSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(
+        source="author.name",
+        read_only=True,
+    )
+
+    distance = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "title",
+            "cover",
+            "author",
+            "author_name",
+            "distance",
         ]

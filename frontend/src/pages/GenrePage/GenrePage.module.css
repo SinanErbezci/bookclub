@@ -1,0 +1,19 @@
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.infiniteLoader {
+  height: 40px;
+}
+
+.loadingMore {
+  text-align: center;
+  margin-top: 16px;
+  opacity: 0.7;
+}
+
+.error {
+  text-align: center;
+  margin: 2rem 0;
+}

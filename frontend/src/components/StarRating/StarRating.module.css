@@ -1,0 +1,51 @@
+.rating {
+  display: flex;
+  align-items: center;
+}
+
+.medium {
+  gap: 4px;
+}
+
+.small {
+  gap: 2px;
+}
+
+.star {
+  padding: 0;
+  border: none;
+  background: transparent;
+
+  line-height: 1;
+  color: rgba(93, 58, 26, 0.3);
+}
+
+.medium .star {
+  font-size: 2.5rem;
+}
+
+.small .star {
+  font-size: 1.5rem;
+}
+
+.active {
+  color: var(--COLOR-GOLD);
+}
+
+button.star {
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+button.star:hover {
+  transform: scale(1.1);
+}
+
+button.star:focus-visible {
+  outline: 2px solid var(--BORDERCOLOR1);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

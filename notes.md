@@ -464,3 +464,10 @@ aws --version
 
 echo "EC2 bootstrap complete"
 ```
+
+summary = service.generate(
+    title=book.title,
+    author=book.author.name,
+    genres=list(book.genres.values_list("name", flat=True)),
+    description=book.description,
+)

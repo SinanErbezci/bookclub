@@ -38,6 +38,15 @@ etl_rejects*.csv
 .terraform/
 terraform.tfstate
 terraform.tfstate.*
+terraform.tfvars
 *.tfplan
 
 tfexercises.txt
+
+*.dump
+
+# OpenAI Batch API files
+bookclub/ai/batch/
+
+# Vite
+dist/

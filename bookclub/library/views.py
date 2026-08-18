@@ -16,7 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.middleware.csrf import get_token
-from .models import Book, Author, User, Genre, Review, List, ListBook
+from .models import Book, Author, User, Genre, Review, List, ListBook, Series
 # from .documents import BookDocument, AuthorDocument, GenreDocument
 # from elasticsearch_dsl.query import Match
 import json
@@ -30,8 +30,9 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.decorators import action
 from django.db.models import  Avg
 
-
-
+from ai.services.recommendations import RecommendationService
+from ai.services.explanations import ExplanationService
+from ai.services.summary.factory import get_summary_provider
 
 # ====== API Views ======
 
@@ -176,7 +177,48 @@ class BookViewSet(ReadOnlyModelViewSet):
         if self.action == "list":
             return BookListSerializer
         return BookSerializer
-    
+
+# Book AI Views
+class BookRecommendationsAPIVieW(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, book_id):
+        book = get_object_or_404(
+            Book,
+            pk=book_id,
+        )
+
+        service = RecommendationService()
+
+        recommendations = service.recommend(book)
+
+        serializer = BookListSerializer(recommendations, many=True)
+
+        return Response(serializer.data)
+
+class BookRecommendationExplanationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, source_id, recommended_id):
+        source_book = get_object_or_404(
+            Book,
+            pk=source_id
+        )
+
+        recommended_book = get_object_or_404(
+            Book,
+            pk=recommended_id
+        )
+
+        provider = get_summary_provider()
+        service = ExplanationService(provider=provider)
+
+        explanation = service.explain_book_recommendation(source_book, recommended_book)
+
+        return Response({
+            "explanation": explanation
+        })
+
 class AuthorViewSet(ReadOnlyModelViewSet):
     queryset = Author.objects.all()
 
@@ -187,20 +229,70 @@ class GenreViewSet(ReadOnlyModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
+class SeriesDetailAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            series = Series.objects.get(pk=pk)
+        except Series.DoesNotExist:
+            return Response(
+                {"detail": "Series not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        books = series.books.all().order_by("series_num", "id")
+
+        return Response({
+            "id": series.id,
+            "name": series.name,
+            "books": BookListSerializer(
+                books,
+                many=True,
+            ).data,
+        })
+    
 class RandomAuthorAPIView(APIView):
     def get(self, request):
-        author = Author.objects.order_by("?").first()
-        books = author.books.all()[:4]
+        author = (
+            Author.objects
+            .annotate(book_count=Count("books"))
+            .filter(book_count__gte=4)
+            .order_by("?")
+            .first()
+        )
+
+        if not author:
+            return Response(
+                {"detail": "No author with at least 4 books found."},
+                status=404,
+            )
+
+        books = author.books.all()[:5]
 
         return Response({
             "id": author.id,
             "name": author.name,
-            "books": BookListSerializer(books, many=True).data
+            "books": BookListSerializer(
+                books,
+                many=True
+            ).data,
         })
-
+    
 class RandomGenreAPIView(APIView):
     def get(self, request):
-        genre = Genre.objects.order_by("?").first()
+        genre = (
+            Genre.objects
+            .annotate(book_count=Count("books"))
+            .filter(book_count__gte=4)
+            .order_by("?")
+            .first()
+        )
+
+        if not genre:
+            return Response(
+                {"detail": "No genre with at least 4 books found."},
+                status=404,
+            )
+        
         books = genre.books.all()[:4]
 
         return Response({

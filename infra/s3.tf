@@ -96,3 +96,40 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "frontend" {
     }
   }
 }
+
+resource "aws_s3_bucket" "django_static" {
+  bucket = "sinan-bookclub-static"
+
+  tags = merge(local.common_tags, {
+    Name = "bookclub-django-static"
+  })
+}
+
+resource "aws_s3_bucket_public_access_block" "django_static" {
+  bucket = aws_s3_bucket.django_static.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_ownership_controls" "django_static" {
+  bucket = aws_s3_bucket.django_static.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "django_static" {
+  bucket = aws_s3_bucket.django_static.id
+
+  rule {
+    bucket_key_enabled = true
+
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}

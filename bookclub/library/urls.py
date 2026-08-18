@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView, UserProfileAPIView, AddToListAPIView,DeleteListAPIView, RemoveFromListAPIView, UserListAPIView, health_check
-from .search_views import SearchBooksAPIView
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView, UserProfileAPIView, AddToListAPIView,DeleteListAPIView, RemoveFromListAPIView, UserListAPIView, health_check, BookRecommendationsAPIVieW, BookRecommendationExplanationAPIView, SeriesDetailAPIView
+from .search_views import SearchBooksAPIView, SemanticSearchAPIView
 from . import views
 
 router = DefaultRouter()
@@ -16,6 +16,7 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/random/author/", RandomAuthorAPIView.as_view()),
     path("api/random/genre/", RandomGenreAPIView.as_view()),
+    path("api/series/<int:pk>/", SeriesDetailAPIView.as_view(), name="series-detail",),
 
     path("api/login/", LoginAPIView.as_view()),
     path("api/logout/", LogoutAPIView.as_view()),
@@ -30,4 +31,9 @@ urlpatterns = [
 
     # search apis
     path("api/search/", SearchBooksAPIView.as_view()),
+    path("api/search/semantic/", SemanticSearchAPIView.as_view()),
+
+    # recommandations
+    path("api/books/<int:book_id>/recommendations/", BookRecommendationsAPIVieW.as_view()),
+    path("api/books/<int:source_id>/recommendations/<int:recommended_id>/explanation/", BookRecommendationExplanationAPIView.as_view()),
 ]

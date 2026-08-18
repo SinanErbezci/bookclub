@@ -1,5 +1,6 @@
 from .base import *
 import os
+import dj_database_url
 
 DEBUG = False
 
@@ -28,6 +29,12 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://bookclub.sinanerbezci.com",    
 ]
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ["DATABASE_URL"]
+    )
+}
 
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"

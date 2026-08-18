@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'corsheaders',
+    'ai',
 ]
 
 MIDDLEWARE = [
@@ -80,12 +81,6 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL")
-    )
-}
 # DATABASES = {
 # "default": {
 #     "ENGINE": "django.db.backends.postgresql",
@@ -196,3 +191,13 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+# -------------------------------------------------------------------
+# AI
+# -------------------------------------------------------------------
+
+EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+EMBEDDING_DEVICE = "cpu"
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")

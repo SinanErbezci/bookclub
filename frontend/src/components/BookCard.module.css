@@ -86,9 +86,56 @@
 .title {
   font-weight: 800;
   text-align: center;
+  text-decoration: none;
+  color: var(--FONTCOLOR);
+}
+
+.title:hover{
+  text-decoration: underline;
 }
 
 .author {
   font-size: 0.9rem;
+  color: var(--FONTCOLOR);
   opacity: 0.8;
+}
+
+.author:hover {
+  text-decoration: underline;
+}
+
+.explainButton {
+  background: none;
+  border: none;
+
+  cursor: pointer;
+
+  padding: 0.4rem 0;
+
+  font-weight: 600;
+  color: var(--FONTCOLOR);
+
+  transition:
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.explainButton:hover {
+  color: var(--COLOR-GOLD);
+}
+
+.explainButton:active {
+  transform: scale(0.97);
+}
+
+.explainButton:focus-visible {
+  outline: 2px solid var(--COLOR-GOLD);
+  outline-offset: 2px;
+}
+
+.titleWrapper {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
