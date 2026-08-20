@@ -10,7 +10,7 @@ BookClub is a Goodreads-inspired web application for discovering, searching, rev
 
 It combines a Django REST API with a React/TypeScript frontend and includes semantic search, AI-powered recommendations, and LLM-generated explanations.
 
-**Live Demo:** [bookclub.sinanbook.club](https://bookclub.sinanbook.club)
+**Live Demo:** [bookclub.sinanerbezci.com](https://bookclub.sinanerbezci.com)
 
 **API:** [api.sinanerbezci.com](https://api.sinanerbezci.com)
 
