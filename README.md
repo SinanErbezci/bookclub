@@ -14,6 +14,10 @@ It combines a Django REST API with a React/TypeScript frontend and includes sema
 
 **API:** [api.sinanerbezci.com](https://api.sinanerbezci.com)
 
+<p align="center">
+  <img src="docs/images/homepage.jpg" alt="BookClub homepage">
+</p>
+
 ## Overview
 
 BookClub is a full-stack book discovery and review platform inspired by Goodreads, where users can create their own lists, write and read reviews, and use semantic search to find their next reads.
@@ -106,7 +110,7 @@ Users can describe the kind of book they are looking for using a natural-languag
 This allows users to search by concepts, themes, or characteristics rather than having to provide specific book titles or keywords.
 
 <p align="center">
-  <img src="docs/images/semantic-search.gif" alt="BookClub semantic search">
+  <img src="docs/images/semantic.gif" alt="BookClub semantic search">
 </p>
 
 #### Book Recommendations
@@ -115,10 +119,6 @@ The same vector embeddings are used as the foundation for book recommendations. 
 
 To avoid recommendations being dominated by books from the same series or author, the system limits the results to one book per series and one book per author. This produces a more diverse collection of recommendations while still maintaining semantic similarity.
 
-<p align="center">
-  <img src="docs/images/recommendations.gif" alt="BookClub book recommendations">
-</p>
-
 ### 6. LLM Recommendation Explanations
 
 When a user clicks the explanation button for a recommendation, BookClub sends the summaries of the source book and recommended book to `gpt-4.1-mini` together with a system prompt designed to explain why the recommended book may be a good match.
@@ -126,7 +126,7 @@ When a user clicks the explanation button for a recommendation, BookClub sends t
 The OpenAI request is made only when the explanation is requested. Generated explanations are cached, so subsequent requests for the same recommendation can use the stored result without making another API call.
 
 <p align="center">
-  <img src="docs/images/recommendation-explanation.gif" alt="BookClub LLM recommendation explanation">
+  <img src="docs/images/explanation.gif" alt="BookClub LLM recommendation explanation">
 </p>
 
 ## Technology Stack
