@@ -109,6 +109,9 @@ jobs:
       deployment: ${{ steps.filter.outputs.deployment }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Detect changed paths
         id: filter
         uses: dorny/paths-filter@v3
