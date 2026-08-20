@@ -99,6 +99,29 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      deployment: ${{ steps.filter.outputs.deployment }}
+
+    steps:
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'bookclub/**'
+
+            frontend:
+              - 'frontend/**'
+
+            deployment:
+              - '.github/workflows/**'
   # --------------------------------------------------
   # Deploy backend + static files
   # --------------------------------------------------
@@ -110,8 +133,15 @@ jobs:
     needs:
       - backend
       - frontend
+      - changes
 
-    if: github.ref == 'refs/heads/main'
+    if: |
+      github.ref == 'refs/heads/main' &&
+      (
+        needs.changes.outputs.backend == 'true' ||
+        needs.changes.outputs.deployment == 'true' ||
+        github.event_name == 'workflow_dispatch'
+      )
 
     steps:
       - name: Checkout code
@@ -297,8 +327,15 @@ jobs:
 
     needs:
       - frontend
+      - changes
 
-    if: github.ref == 'refs/heads/main'
+    if: |
+      github.ref == 'refs/heads/main' &&
+      (
+        needs.changes.outputs.frontend == 'true' ||
+        needs.changes.outputs.deployment == 'true' ||
+        github.event_name == 'workflow_dispatch'
+      )
 
     steps:
       - name: Checkout code
