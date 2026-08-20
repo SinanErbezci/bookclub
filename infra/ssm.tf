@@ -45,3 +45,15 @@ resource "aws_ssm_parameter" "django_allowed_hosts" {
 
   tags = local.common_tags
 }
+
+resource "aws_ssm_parameter" "openai_api_key" {
+  name  = "/bookclub/production/OPENAI_API_KEY"
+  type  = "SecureString"
+  value = "MANAGED_OUTSIDE_TERRAFORM"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+
+  tags = local.common_tags
+}

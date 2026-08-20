@@ -35,6 +35,10 @@ resource "aws_ecs_task_definition" "bookclub" {
         {
           name      = "DJANGO_ALLOWED_HOSTS"
           valueFrom = "/bookclub/production/DJANGO_ALLOWED_HOSTS"
+        },
+        {
+          name      = "OPENAI_API_KEY"
+          valueFrom = "/bookclub/production/OPENAI_API_KEY"
         }
       ]
       command = [

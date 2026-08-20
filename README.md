@@ -212,5 +212,3 @@ Production resources removed
 - Experiment with additional embedding models and retrieval strategies
 - Improve observability and monitoring across the production infrastructure
 - Continue exploring AWS services and container orchestration
-
-blabla
