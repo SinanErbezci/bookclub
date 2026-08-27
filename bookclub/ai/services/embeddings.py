@@ -1,5 +1,5 @@
 """
-Utilities for generating text embeddings.
+Utilities for generating text embeddings. local document-embedding implementation
 """
 
 from __future__ import annotations

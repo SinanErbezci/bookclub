@@ -9,6 +9,8 @@ __pycache__/
 # --- Virtual envs ---
 venv/
 .venv/
+venv-ai/
+.venv-ai/
 bookclub_venv/
 env/
 ENV/

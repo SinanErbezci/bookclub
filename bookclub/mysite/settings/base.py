@@ -199,5 +199,10 @@ LOGGING = {
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 EMBEDDING_DEVICE = "cpu"
 
+AI_SERVICE_URL = os.getenv(
+    "AI_SERVICE_URL",
+    "http://localhost:8001",
+)
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
