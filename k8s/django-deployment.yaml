@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookclub-django
+  namespace: bookclub
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: bookclub-django
+
+  template:
+    metadata:
+      labels:
+        app: bookclub-django
+
+    spec:
+      containers:
+      - name: django
+        image: bookclub-django:v1.6-slim
+        imagePullPolicy: IfNotPresent
+
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+            httpHeaders:
+              - name: Host
+                value: localhost
+          periodSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+            httpHeaders:
+              - name: Host
+                value: localhost
+          periodSeconds: 5
+          failureThreshold: 3
+
+        ports:
+        - containerPort: 8000
+
+        envFrom:
+          - configMapRef:
+              name: bookclub-django-config
+          - secretRef:
+              name: bookclub-django-secret
+
+        resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
