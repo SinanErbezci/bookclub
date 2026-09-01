@@ -16,6 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
+from django.core.cache import cache
 from django.middleware.csrf import get_token
 from .models import Book, Author, User, Genre, Review, List, ListBook, Series
 # from .documents import BookDocument, AuthorDocument, GenreDocument
@@ -224,11 +225,43 @@ class BookRecommendationsAPIVieW(APIView):
             pk=book_id,
         )
 
-        service = RecommendationService()
+        cache_key = f"recommendations:book:v1:{book_id}"
 
-        recommendations = service.recommend(book)
+        cached_ids = cache.get(cache_key)
 
-        serializer = BookListSerializer(recommendations, many=True)
+        if cached_ids is not None:
+            print(f"CACHE HIT: {cache_key}")
+
+            books_by_id = Book.objects.in_bulk(cached_ids)
+
+            recommendations = [
+                books_by_id[book_id]
+                for book_id in cached_ids
+                if book_id in books_by_id
+            ]
+
+        else:
+            print(f"CACHE MISS: {cache_key}")
+
+            service = RecommendationService()
+
+            recommendations = service.recommend(book)
+
+            recommendation_ids = [
+                recommendation.id
+                for recommendation in recommendations
+            ]
+
+            cache.set(
+                cache_key,
+                recommendation_ids,
+                timeout=60 * 60,
+            )
+
+        serializer = BookListSerializer(
+            recommendations,
+            many=True,
+        )
 
         return Response(serializer.data)
 
@@ -238,23 +271,40 @@ class BookRecommendationExplanationAPIView(APIView):
     def get(self, request, source_id, recommended_id):
         source_book = get_object_or_404(
             Book,
-            pk=source_id
+            pk=source_id,
         )
 
         recommended_book = get_object_or_404(
             Book,
-            pk=recommended_id
+            pk=recommended_id,
         )
 
-        provider = get_summary_provider()
-        service = ExplanationService(provider=provider)
+        cache_key = (
+            f"recommendation-explanation:v1:"
+            f"{source_id}:{recommended_id}"
+        )
 
-        explanation = service.explain_book_recommendation(source_book, recommended_book)
+        explanation = cache.get(cache_key)
+
+        if explanation is None:
+            print(f"CACHE MISS: {cache_key}")
+            provider = get_summary_provider()
+            service = ExplanationService(provider=provider)
+
+            explanation = service.explain_book_recommendation(
+                source_book,
+                recommended_book,
+            )
+
+            cache.set(
+                cache_key,
+                explanation,
+                timeout=60 * 60 * 24,
+            )
 
         return Response({
-            "explanation": explanation
+            "explanation": explanation,
         })
-
 class AuthorViewSet(ReadOnlyModelViewSet):
     queryset = Author.objects.all()
 
