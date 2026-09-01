@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
-from django.db import connection
+from django.db import connection, transaction
 from django.contrib import messages
 from django.contrib.auth import authenticate,login, logout, get_user_model
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
@@ -15,6 +15,7 @@ from .pagination import BookPagination, ReviewPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from django.middleware.csrf import get_token
 from .models import Book, Author, User, Genre, Review, List, ListBook, Series
 # from .documents import BookDocument, AuthorDocument, GenreDocument
@@ -33,6 +34,9 @@ from django.db.models import  Avg
 from ai.services.recommendations import RecommendationService
 from ai.services.explanations import ExplanationService
 from ai.services.summary.factory import get_summary_provider
+from .tasks import send_welcome_email
+
+from .redis_client import redis_client
 
 # ====== API Views ======
 
@@ -110,40 +114,72 @@ class SignupAPIView(APIView):
 
     def post(self, request):
         username = request.data.get("username")
+        email = request.data.get("email")
         password = request.data.get("password")
 
-        if not username or not password:
-            return Response({"error": "Username and password required"}, status=400)
+        if not username or not email or not password:
+            return Response(
+                {"error": "Username, email, and password required"},
+                status=400,
+            )
 
         if User.objects.filter(username=username).exists():
-            return Response({"error": "Username already taken"}, status=400)
-        
+            return Response(
+                {"error": "Username already taken"},
+                status=400,
+            )
+
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {"error": "Email already registered"},
+                status=400,
+            )
+
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response(
+                {"error": "Enter a valid email address"},
+                status=400,
+            )
+
         try:
             validate_password(password)
         except DjangoValidationError as e:
-            return Response({"error": e.messages[0]}, status=400)
-        
-        user = User.objects.create_user(username=username, password=password)
-
-        List.objects.bulk_create([
-            List(
-                user=user,
-                name="Favourites",
-                is_system=True
-            ),
-            List(
-                user=user,
-                name="Want to Read",
-                is_system=True
+            return Response(
+                {"error": e.messages[0]},
+                status=400,
             )
-        ])
 
-        # auto login after signup
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+            )
+
+            List.objects.bulk_create([
+                List(
+                    user=user,
+                    name="Favourites",
+                    is_system=True,
+                ),
+                List(
+                    user=user,
+                    name="Want to Read",
+                    is_system=True,
+                ),
+            ])
+
+            transaction.on_commit(lambda: send_welcome_email.delay(user.id))
+            # auto login after signup
+
         login(request, user)
 
         return Response({
             "id": user.id,
-            "username": user.username
+            "username": user.username,
+            "email": user.email,
         })
     
 class BookViewSet(ReadOnlyModelViewSet):
@@ -252,13 +288,22 @@ class SeriesDetailAPIView(APIView):
     
 class RandomAuthorAPIView(APIView):
     def get(self, request):
-        author = (
-            Author.objects
-            .annotate(book_count=Count("books"))
-            .filter(book_count__gte=4)
-            .order_by("?")
-            .first()
-        )
+        author_id = redis_client.get("homepage:random:author")
+
+        if author_id:
+            author = (
+                Author.objects
+                .filter(id=author_id)
+                .first()
+            )
+        else:
+            author = (
+                Author.objects
+                .annotate(book_count=Count("books"))
+                .filter(book_count__gte=4)
+                .order_by("?")
+                .first()
+            )
 
         if not author:
             return Response(
@@ -273,34 +318,45 @@ class RandomAuthorAPIView(APIView):
             "name": author.name,
             "books": BookListSerializer(
                 books,
-                many=True
+                many=True,
             ).data,
         })
     
 class RandomGenreAPIView(APIView):
     def get(self, request):
-        genre = (
-            Genre.objects
-            .annotate(book_count=Count("books"))
-            .filter(book_count__gte=4)
-            .order_by("?")
-            .first()
-        )
+        genre_id = redis_client.get("homepage:random:genre")
+
+        if genre_id:
+            genre = (
+                Genre.objects
+                .filter(id=genre_id)
+                .first()
+            )
+        else:
+            genre = (
+                Genre.objects
+                .annotate(book_count=Count("books"))
+                .filter(book_count__gte=4)
+                .order_by("?")
+                .first()
+            )
 
         if not genre:
             return Response(
                 {"detail": "No genre with at least 4 books found."},
                 status=404,
             )
-        
+
         books = genre.books.all()[:4]
 
         return Response({
             "id": genre.id,
             "name": genre.name,
-            "books": BookListSerializer(books, many=True).data
+            "books": BookListSerializer(
+                books,
+                many=True,
+            ).data,
         })
-
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer

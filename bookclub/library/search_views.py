@@ -178,3 +178,4 @@ class SemanticSearchAPIView(APIView):
         )
 
         return Response(serializer.data)
+    

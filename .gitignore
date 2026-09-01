@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.pyc
 *.sqlite3
 *.log
 
@@ -53,3 +54,5 @@ bookclub/ai/batch/
 
 # Vite
 dist/
+
+celerybeat-schedule

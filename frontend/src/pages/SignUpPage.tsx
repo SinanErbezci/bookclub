@@ -2,7 +2,7 @@ import {
   useEffect,
   useState,
   type ChangeEvent,
-  type FormEvent,
+  type SyntheticEvent,
 } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signupUser } from "../api/auth";
@@ -11,6 +11,7 @@ import styles from "./Auth.module.css";
 
 interface SignupForm {
   username: string;
+  email: string;
   password: string;
   confirmPassword: string;
 }
@@ -19,18 +20,16 @@ function SignupPage() {
   const { user, loading, refreshUser } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] =
-    useState<SignupForm>({
-      username: "",
-      password: "",
-      confirmPassword: "",
-    });
+  const [form, setForm] = useState<SignupForm>({
+    username: "",
+    password: "",
+    email: "",
+    confirmPassword: "",
+  });
 
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -38,9 +37,7 @@ function SignupPage() {
     }
   }, [user, loading, navigate]);
 
-  function handleChange(
-    e: ChangeEvent<HTMLInputElement>,
-  ): void {
+  function handleChange(e: ChangeEvent<HTMLInputElement>): void {
     setForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -48,19 +45,17 @@ function SignupPage() {
   }
 
   const passwordsMatch =
-    form.password &&
-    form.confirmPassword
-      ? form.password ===
-        form.confirmPassword
+    form.password && form.confirmPassword
+      ? form.password === form.confirmPassword
       : true;
 
   async function handleSubmit(
-    e: FormEvent<HTMLFormElement>,
+    e: SyntheticEvent<HTMLFormElement>,
   ): Promise<void> {
     e.preventDefault();
     setError("");
 
-    if (!form.username || !form.password) {
+    if (!form.username || !form.password || !form.email) {
       setError("All fields are required");
       return;
     }
@@ -76,14 +71,13 @@ function SignupPage() {
       await signupUser({
         username: form.username,
         password: form.password,
+        email: form.email,
       });
 
       await refreshUser();
     } catch (err) {
       if (err instanceof Error) {
-        setError(
-          err.message || "Signup failed",
-        );
+        setError(err.message || "Signup failed");
       } else {
         setError("Signup failed");
       }
@@ -94,6 +88,7 @@ function SignupPage() {
 
   const isDisabled =
     !form.username ||
+    !form.email ||
     !form.password ||
     !form.confirmPassword ||
     !passwordsMatch ||
@@ -101,21 +96,12 @@ function SignupPage() {
 
   return (
     <div className={styles.authPage}>
-      <form
-        className={styles.form}
-        onSubmit={handleSubmit}
-      >
+      <form className={styles.form} onSubmit={handleSubmit}>
         <h2>Sign Up</h2>
 
-        <p className={styles.subtitle}>
-          Create your account 🚀
-        </p>
+        <p className={styles.subtitle}>Create your account 🚀</p>
 
-        {error && (
-          <p className={styles.error}>
-            {error}
-          </p>
-        )}
+        {error && <p className={styles.error}>{error}</p>}
 
         <input
           name="username"
@@ -125,14 +111,18 @@ function SignupPage() {
           autoFocus
         />
 
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+
         <div className={styles.passwordField}>
           <input
             name="password"
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
@@ -141,13 +131,9 @@ function SignupPage() {
           <button
             type="button"
             className={`${styles.passwordToggle} ${
-              showPassword
-                ? styles.active
-                : ""
+              showPassword ? styles.active : ""
             }`}
-            onClick={() =>
-              setShowPassword((s) => !s)
-            }
+            onClick={() => setShowPassword((s) => !s)}
           >
             👁
           </button>
@@ -155,11 +141,7 @@ function SignupPage() {
 
         <input
           name="confirmPassword"
-          type={
-            showPassword
-              ? "text"
-              : "password"
-          }
+          type={showPassword ? "text" : "password"}
           placeholder="Confirm Password"
           value={form.confirmPassword}
           onChange={handleChange}
@@ -172,28 +154,16 @@ function SignupPage() {
           }
         />
 
-        {form.confirmPassword &&
-          !passwordsMatch && (
-            <p
-              className={
-                styles.inputError
-              }
-            >
-              Passwords do not match
-            </p>
-          )}
+        {form.confirmPassword && !passwordsMatch && (
+          <p className={styles.inputError}>Passwords do not match</p>
+        )}
 
         <button disabled={isDisabled}>
-          {isSubmitting
-            ? "Creating..."
-            : "Sign Up"}
+          {isSubmitting ? "Creating..." : "Sign Up"}
         </button>
 
         <p className={styles.authSwitch}>
-          Already have an account?{" "}
-          <Link to="/login">
-            Login
-          </Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </form>
     </div>

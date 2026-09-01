@@ -1,5 +1,6 @@
 from .base import *
 import dj_database_url
+from datetime import timedelta
 
 DEBUG = True
 
@@ -34,4 +35,25 @@ CSRF_COOKIE_SECURE = False
 REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
     "anon": "10000/day",
     "user": "100000/day",
+}
+
+REDIS_URL = "redis://localhost:6379/0"
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+
+CELERY_BEAT_SCHEDULE = {
+    "refresh-random-homepage": {
+        "task": "library.tasks.refresh_random_homepage",
+        "schedule": timedelta(minutes=5),
+    },
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+    },
 }
