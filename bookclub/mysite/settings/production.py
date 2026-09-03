@@ -13,11 +13,6 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-private_ip = os.getenv("EC2_PRIVATE_IP")
-
-if private_ip:
-    ALLOWED_HOSTS.append(private_ip)
-
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOW_CREDENTIALS = True

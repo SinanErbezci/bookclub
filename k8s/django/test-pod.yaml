@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: django-identity-test
+  namespace: default
+spec:
+  serviceAccountName: django
+  restartPolicy: Never
+  containers:
+    - name: aws-cli
+      image: amazon/aws-cli:2.27.55
+      command:
+        - sh
+        - -c
+        - |
+            aws ssm get-parameter \
+              --name /bookclub/production/DJANGO_SECRET_KEY \
+              --with-decryption \
+              --region eu-west-3 \
+              --query 'Parameter.Name' \
+              --output text
