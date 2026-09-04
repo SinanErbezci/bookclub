@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django
+  namespace: default
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: django
+
+  template:
+    metadata:
+      labels:
+        app: django
+
+    spec:
+      serviceAccountName: django
+
+      containers:
+        - name: django
+          image: 796973519136.dkr.ecr.eu-west-3.amazonaws.com/bookclub:eks-django
+
+          ports:
+            - containerPort: 8000
+
+          volumeMounts:
+            - name: django-secrets
+              mountPath: /mnt/secrets
+              readOnly: true
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          envFrom:
+          - secretRef:
+              name: django-secrets
+
+      volumes:
+        - name: django-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: django-secrets

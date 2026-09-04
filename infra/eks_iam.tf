@@ -60,10 +60,10 @@ resource "aws_iam_role_policy_attachment" "eks_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_iam_role" "eks_django_ssm" {
+resource "aws_iam_role" "external_secrets" {
   count = var.production_enabled ? 1 : 0
 
-  name = "${var.project_name}-eks-django-ssm"
+  name = "${var.project_name}-external-secrets"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -85,11 +85,11 @@ resource "aws_iam_role" "eks_django_ssm" {
   tags = local.common_tags
 }
 
-resource "aws_iam_role_policy" "eks_django_ssm" {
+resource "aws_iam_role_policy" "external_secrets" {
   count = var.production_enabled ? 1 : 0
 
-  name = "${var.project_name}-eks-django-ssm"
-  role = aws_iam_role.eks_django_ssm[0].id
+  name = "${var.project_name}-external-secrets"
+  role = aws_iam_role.external_secrets[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -99,7 +99,7 @@ resource "aws_iam_role_policy" "eks_django_ssm" {
 
       Action = [
         "ssm:GetParameters",
-        "ssm:GetParameter",
+        "ssm:GetParameter"
       ]
 
       Resource = [
@@ -109,14 +109,5 @@ resource "aws_iam_role_policy" "eks_django_ssm" {
       ]
     }]
   })
-}
-
-resource "aws_eks_pod_identity_association" "django" {
-  count = var.production_enabled ? 1 : 0
-
-  cluster_name    = aws_eks_cluster.bookclub[0].name
-  namespace       = "default"
-  service_account = "django"
-  role_arn        = aws_iam_role.eks_django_ssm[0].arn
 }
 

@@ -3,7 +3,11 @@ resource "aws_eks_cluster" "bookclub" {
 
   name     = "${var.project_name}-eks"
   role_arn = aws_iam_role.eks_cluster[0].arn
-  version  = "1.33"
+  version  = "1.36"
+
+  upgrade_policy {
+    support_type = "STANDARD"
+  }
 
   vpc_config {
     subnet_ids = [
@@ -49,4 +53,15 @@ resource "aws_eks_node_group" "bookclub" {
   tags = merge(local.common_tags, {
     Name = "${var.project_name}-eks-node"
   })
+}
+
+resource "aws_eks_addon" "pod_identity_agent" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name = aws_eks_cluster.bookclub[0].name
+  addon_name   = "eks-pod-identity-agent"
+
+  depends_on = [
+    aws_eks_node_group.bookclub
+  ]
 }
