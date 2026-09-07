@@ -11,12 +11,15 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-      - name: migrate
-        image: bookclub-django
-        command: ["python",  "manage.py", "migrate"]
-        envFrom:
-          - configMapRef:
-              name: django-config
-          - secretRef:
-              name: django-secrets
+        - name: migrate
+          image: bookclub-django
+          command: ["python", "manage.py", "migrate"]
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: mysite.settings.production
+          envFrom:
+            - configMapRef:
+                name: django-config
+            - secretRef:
+                name: django-secrets
 

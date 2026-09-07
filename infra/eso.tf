@@ -20,6 +20,19 @@ resource "helm_release" "external_secrets" {
   ]
 }
 
+resource "helm_release" "argocd" {
+  name             = "argocd"
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argo-cd"
+  version          = "10.8.2"
+  namespace        = "argocd"
+  create_namespace = true
+
+  depends_on = [
+    aws_eks_node_group.bookclub
+  ]
+}
+
 resource "aws_eks_pod_identity_association" "external_secrets" {
   cluster_name    = aws_eks_cluster.bookclub[0].name
   namespace       = "external-secrets"
