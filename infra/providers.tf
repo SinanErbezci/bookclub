@@ -13,14 +13,17 @@ provider "cloudflare" {
 
 provider "helm" {
   kubernetes = {
-    host = aws_eks_cluster.bookclub[0].endpoint
-    cluster_ca_certificate = base64decode(
-      aws_eks_cluster.bookclub[0].certificate_authority[0].data
-    )
+    host = var.production_enabled ? aws_eks_cluster.bookclub[0].endpoint : "https://127.0.0.1"
 
-    exec = {
+    cluster_ca_certificate = var.production_enabled ? base64decode(
+      aws_eks_cluster.bookclub[0].certificate_authority[0].data
+    ) : ""
+
+    exec = var.production_enabled ? {
       api_version = "client.authentication.k8s.io/v1beta1"
-      command     = "aws"
+
+      command = "aws"
+
       args = [
         "eks",
         "get-token",
@@ -29,6 +32,6 @@ provider "helm" {
         "--region",
         var.aws_region
       ]
-    }
+    } : null
   }
 }

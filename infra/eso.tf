@@ -1,4 +1,5 @@
 resource "helm_release" "external_secrets" {
+  count = var.production_enabled ? 1 : 0
   name             = "external-secrets"
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
@@ -16,11 +17,13 @@ resource "helm_release" "external_secrets" {
   ]
 
   depends_on = [
-    aws_eks_pod_identity_association.external_secrets
+    aws_eks_pod_identity_association.external_secrets[0]
   ]
 }
 
 resource "helm_release" "argocd" {
+   count = var.production_enabled ? 1 : 0
+
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
@@ -34,6 +37,7 @@ resource "helm_release" "argocd" {
 }
 
 resource "aws_eks_pod_identity_association" "external_secrets" {
+  count           = var.production_enabled ? 1 : 0
   cluster_name    = aws_eks_cluster.bookclub[0].name
   namespace       = "external-secrets"
   service_account = "external-secrets"
