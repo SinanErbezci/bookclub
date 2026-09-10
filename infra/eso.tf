@@ -1,5 +1,5 @@
 resource "helm_release" "external_secrets" {
-  count = var.production_enabled ? 1 : 0
+  count            = var.production_enabled ? 1 : 0
   name             = "external-secrets"
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
@@ -22,7 +22,7 @@ resource "helm_release" "external_secrets" {
 }
 
 resource "helm_release" "argocd" {
-   count = var.production_enabled ? 1 : 0
+  count = var.production_enabled ? 1 : 0
 
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
@@ -46,5 +46,19 @@ resource "aws_eks_pod_identity_association" "external_secrets" {
   depends_on = [
     aws_eks_addon.pod_identity_agent,
     aws_iam_role_policy.external_secrets
+  ]
+}
+
+resource "helm_release" "metrics_server" {
+  count = var.production_enabled ? 1 : 0
+
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  version    = "3.13.1"
+  namespace  = "kube-system"
+
+  depends_on = [
+    aws_eks_node_group.bookclub
   ]
 }
