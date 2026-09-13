@@ -37,7 +37,7 @@ resource "aws_eks_node_group" "bookclub" {
   capacity_type  = "ON_DEMAND"
 
   scaling_config {
-    desired_size = 1
+    desired_size = 2
     min_size     = 1
     max_size     = 2
   }
@@ -65,3 +65,19 @@ resource "aws_eks_addon" "pod_identity_agent" {
     aws_eks_node_group.bookclub
   ]
 }
+
+resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name    = aws_eks_cluster.bookclub[0].name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+
+  role_arn = aws_iam_role.aws_load_balancer_controller[0].arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    aws_iam_role_policy_attachment.aws_load_balancer_controller
+  ]
+}
+

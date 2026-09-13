@@ -111,3 +111,45 @@ resource "aws_iam_role_policy" "external_secrets" {
   })
 }
 
+
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  count = var.production_enabled ? 1 : 0
+
+  name   = "${var.project_name}-aws-load-balancer-controller"
+  policy = file("${path.module}/aws-load-balancer-controller-policy.json")
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role" "aws_load_balancer_controller" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-aws-load-balancer-controller"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [{
+      Effect = "Allow"
+
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
+      }
+
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
+  count = var.production_enabled ? 1 : 0
+
+  role       = aws_iam_role.aws_load_balancer_controller[0].name
+  policy_arn = aws_iam_policy.aws_load_balancer_controller[0].arn
+}
+

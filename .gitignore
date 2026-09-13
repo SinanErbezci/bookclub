@@ -56,3 +56,4 @@ bookclub/ai/batch/
 dist/
 
 celerybeat-schedule
+infra/gateway-api/standard-install.yaml

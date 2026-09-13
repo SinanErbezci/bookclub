@@ -62,3 +62,36 @@ resource "helm_release" "metrics_server" {
     aws_eks_node_group.bookclub
   ]
 }
+
+resource "helm_release" "aws_load_balancer_controller" {
+  count = var.production_enabled ? 1 : 0
+
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  version    = "1.14.0"
+
+  namespace = "kube-system"
+
+  set = [
+    {
+      name  = "clusterName"
+      value = aws_eks_cluster.bookclub[0].name
+    },
+    {
+      name  = "vpcId"
+      value = aws_vpc.main.id
+    },
+    {
+      name  = "serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "serviceAccount.name"
+      value = "aws-load-balancer-controller"
+    },
+  ]
+  depends_on = [
+    aws_eks_pod_identity_association.aws_load_balancer_controller
+  ]
+}
