@@ -105,7 +105,8 @@ resource "aws_iam_role_policy" "external_secrets" {
       Resource = [
         "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/DATABASE_URL",
         "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/DJANGO_SECRET_KEY",
-        "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/OPENAI_API_KEY"
+        "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/OPENAI_API_KEY",
+        "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/CLOUDFLARE_API_TOKEN",
       ]
     }]
   })

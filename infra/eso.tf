@@ -95,3 +95,62 @@ resource "helm_release" "aws_load_balancer_controller" {
     aws_eks_pod_identity_association.aws_load_balancer_controller
   ]
 }
+
+resource "helm_release" "external_dns" {
+  count = var.production_enabled ? 1 : 0
+
+  name             = "external-dns"
+  repository       = "https://kubernetes-sigs.github.io/external-dns/"
+  chart            = "external-dns"
+  version          = "1.21.1"
+  namespace        = "external-dns"
+  create_namespace = true
+
+  values = [
+    yamlencode({
+      provider = {
+        name = "cloudflare"
+      }
+
+      sources = [
+        "ingress"
+      ]
+
+      domainFilters = [
+        "sinanerbezci.com"
+      ]
+
+      zoneIdFilters = [
+        "6d3bef7f6b9fbfe47a05b64fe5e210c6"
+      ]
+
+      policy = "upsert-only"
+
+      registry = "txt"
+
+      txtOwnerId = "bookclub-eks"
+
+      serviceAccount = {
+        create = true
+        name   = "external-dns"
+      }
+
+      env = [
+        {
+          name = "CF_API_TOKEN"
+          valueFrom = {
+            secretKeyRef = {
+              name = "external-dns-cloudflare"
+              key  = "api-token"
+            }
+          }
+        }
+      ]
+    })
+  ]
+
+  depends_on = [
+    aws_eks_node_group.bookclub,
+    helm_release.external_secrets
+  ]
+}

@@ -3,6 +3,7 @@ resources:
   - migrate-job.yaml
   - secret-store.yaml
   - external-secret.yaml
+  - external-dns-secret.yaml
   - ingress.yaml
   
 replicas:
