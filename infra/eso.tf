@@ -17,7 +17,8 @@ resource "helm_release" "external_secrets" {
   ]
 
   depends_on = [
-    aws_eks_pod_identity_association.external_secrets[0]
+    aws_eks_pod_identity_association.external_secrets[0],
+    helm_release.aws_load_balancer_controller
   ]
 }
 
@@ -32,7 +33,7 @@ resource "helm_release" "argocd" {
   create_namespace = true
 
   depends_on = [
-    aws_eks_node_group.bookclub
+    helm_release.external_secrets
   ]
 }
 
@@ -72,6 +73,8 @@ resource "helm_release" "aws_load_balancer_controller" {
   version    = "1.14.0"
 
   namespace = "kube-system"
+  wait = true
+  timeout = 300
 
   set = [
     {
@@ -152,7 +155,6 @@ resource "helm_release" "external_dns" {
   ]
 
   depends_on = [
-    aws_eks_node_group.bookclub,
-    helm_release.external_secrets
+    helm_release.argocd
   ]
 }
