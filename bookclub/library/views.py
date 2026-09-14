@@ -54,15 +54,15 @@ def update_book_rating(book):
 
 User = get_user_model()
 
-def health_check(request):
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-        return JsonResponse({"status": "healthy"})
-    except Exception:
-        return JsonResponse(
-            {"status": "unhealthy"},
-            status=503,)
+# def health_check(request):
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute("SELECT 1")
+#         return JsonResponse({"status": "healthy"})
+#     except Exception:
+#         return JsonResponse(
+#             {"status": "unhealthy"},
+#             status=503,)
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CSRFAPIView(APIView):

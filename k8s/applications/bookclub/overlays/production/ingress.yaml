@@ -9,7 +9,6 @@ metadata:
     alb.ingress.kubernetes.io/ssl-redirect: "443"
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-3:796973519136:certificate/cc8ab479-7abe-4830-97fb-15b82e67b790
     alb.ingress.kubernetes.io/healthcheck-path: /health/
-    alb.ingress.kubernetes.io/healthcheck-host: api.sinanerbezci.com
 spec:
   ingressClassName: alb
   rules:

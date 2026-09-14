@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView, UserProfileAPIView, AddToListAPIView,DeleteListAPIView, RemoveFromListAPIView, UserListAPIView, health_check, BookRecommendationsAPIVieW, BookRecommendationExplanationAPIView, SeriesDetailAPIView
+from .views import BookViewSet, RandomAuthorAPIView, RandomGenreAPIView, AuthorViewSet, GenreViewSet, ReviewViewSet, LoginAPIView, LogoutAPIView, MeAPIView, SignupAPIView, CSRFAPIView, UserProfileAPIView, AddToListAPIView,DeleteListAPIView, RemoveFromListAPIView, UserListAPIView, BookRecommendationsAPIVieW, BookRecommendationExplanationAPIView, SeriesDetailAPIView
 from .search_views import SearchBooksAPIView, SemanticSearchAPIView
 from . import views
 
@@ -11,7 +11,7 @@ router.register(r"genres", GenreViewSet)
 router.register(r"reviews", ReviewViewSet, basename="reviews")
 
 urlpatterns = [
-    path("health/",health_check),
+    # path("health/",health_check),
     # API urls
     path("api/", include(router.urls)),
     path("api/random/author/", RandomAuthorAPIView.as_view()),
