@@ -17,7 +17,7 @@ concurrency:
 
 permissions:
   id-token: write
-  contents: write
+  contents: read
 
 env:
   IMAGE_TAG: ${{ github.sha }}
@@ -100,7 +100,7 @@ jobs:
 
 
   # --------------------------------------------------
-  # Detect changes
+  # Detect changed parts of the application
   # --------------------------------------------------
 
   changes:
@@ -110,7 +110,6 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
-      deployment: ${{ steps.filter.outputs.deployment }}
 
     steps:
       - name: Checkout code
@@ -127,13 +126,9 @@ jobs:
             frontend:
               - 'frontend/**'
 
-            deployment:
-              - '.github/workflows/**'
-              - 'k8s/**'
-
 
   # --------------------------------------------------
-  # Deploy backend through GitOps
+  # Build and push Django image + create deployment PR
   # --------------------------------------------------
 
   deploy-backend:
@@ -142,23 +137,21 @@ jobs:
 
     needs:
       - backend
-      - frontend
       - changes
 
     if: |
       github.ref == 'refs/heads/main' &&
       (
         needs.changes.outputs.backend == 'true' ||
-        needs.changes.outputs.deployment == 'true' ||
         github.event_name == 'workflow_dispatch'
       )
 
     steps:
-      - name: Checkout code
+      - name: Checkout application repository
         uses: actions/checkout@v4
 
       # ----------------------------------------------
-      # AWS
+      # AWS authentication
       # ----------------------------------------------
 
       - name: Configure AWS credentials
@@ -167,16 +160,20 @@ jobs:
           role-to-assume: arn:aws:iam::796973519136:role/github-actions-bookclub
           aws-region: ${{ env.AWS_REGION }}
 
+      # ----------------------------------------------
+      # ECR
+      # ----------------------------------------------
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # ----------------------------------------------
-      # Docker
-      # ----------------------------------------------
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      # ----------------------------------------------
+      # Build Django image
+      # ----------------------------------------------
 
       - name: Build and push Django image
         uses: docker/build-push-action@v6
@@ -186,36 +183,159 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-          cache-from: type=gha,scope=django
-          cache-to: type=gha,mode=max,scope=django
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
       # ----------------------------------------------
-      # GitOps
+      # Django static files
       # ----------------------------------------------
 
-      - name: Install yq
-        uses: mikefarah/yq@v4.47.1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Update Kubernetes image tag
+      - name: Install CI dependencies
+        working-directory: ./bookclub
+        run: |
+          pip install -r requirements-ci.txt
+
+      - name: Collect Django static files
+        working-directory: ./bookclub
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_SETTINGS_MODULE: mysite.settings.production
+          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+        run: |
+          python manage.py collectstatic --noinput
+
+      - name: Upload Django static files
+        run: |
+          aws s3 sync \
+            bookclub/staticfiles/ \
+            s3://${{ env.DJANGO_STATIC_BUCKET }}/ \
+            --delete
+
+      # ----------------------------------------------
+      # GitHub App authentication
+      # ----------------------------------------------
+
+      - name: Create deployment repository token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.BOOKCLUB_DEPLOYMENT_APP_ID }}
+          private-key: ${{ secrets.BOOKCLUB_DEPLOYMENT_PRIVATE_KEY }}
+          owner: SinanErbezci
+          repositories: bookclub-deployment
+
+      # ----------------------------------------------
+      # Checkout GitOps repository
+      # ----------------------------------------------
+
+      - name: Checkout deployment repository
+        uses: actions/checkout@v4
+        with:
+          repository: SinanErbezci/bookclub-deployment
+          token: ${{ steps.app-token.outputs.token }}
+          path: deployment
+
+      # ----------------------------------------------
+      # Update Kubernetes image tag
+      # ----------------------------------------------
+
+      - name: Update Django image tag
+        working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          yq -i '
-            (.images[] | select(.name == "bookclub-django").newTag)
-            = env(IMAGE_TAG)
-          ' k8s/applications/bookclub/overlays/production/kustomization.yaml
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
 
-      - name: Commit GitOps image update
+          path = Path(
+              "k8s/applications/bookclub/overlays/production/kustomization.yaml"
+          )
+
+          text = path.read_text()
+
+          pattern = (
+              r"(images:\s*"
+              r"- name: bookclub-django\s*"
+              r"newName: [^\n]+\s*"
+              r"newTag: )([^\n]+)"
+          )
+
+          updated, count = re.subn(
+              pattern,
+              rf"\g<1>{os.environ['IMAGE_TAG']}",
+              text,
+              count=1,
+          )
+
+          if count != 1:
+              raise SystemExit(
+                  "Could not find the bookclub-django image entry."
+              )
+
+          path.write_text(updated)
+          PY
+
+          echo "Updated image tag:"
+          grep -A3 "name: bookclub-django" \
+            k8s/applications/bookclub/overlays/production/kustomization.yaml
+
+      # ----------------------------------------------
+      # Create deployment branch
+      # ----------------------------------------------
+
+      - name: Create deployment branch
+        working-directory: ./deployment
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "BookClub Deployment Bot"
+          git config user.email "bookclub-deployment-bot@users.noreply.github.com"
+
+          BRANCH="deploy/django-${IMAGE_TAG}"
+
+          git checkout -b "$BRANCH"
 
           git add k8s/applications/bookclub/overlays/production/kustomization.yaml
 
-          git diff --cached --quiet && exit 0
+          git commit \
+            -m "Deploy Django ${IMAGE_TAG}"
 
-          git commit -m "chore: deploy django ${IMAGE_TAG}"
-          git push
+          git push origin "$BRANCH"
+
+      # ----------------------------------------------
+      # Create deployment PR
+      # ----------------------------------------------
+
+      - name: Create deployment PR
+        working-directory: ./deployment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          BRANCH="deploy/django-${IMAGE_TAG}"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Deploy Django ${IMAGE_TAG}" \
+            --body "## Deployment
+
+          Update the Django image to:
+
+          \`${IMAGE_TAG}\`
+
+          The image has already been built and pushed to Amazon ECR.
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
 
 
   # --------------------------------------------------
@@ -234,7 +354,6 @@ jobs:
       github.ref == 'refs/heads/main' &&
       (
         needs.changes.outputs.frontend == 'true' ||
-        needs.changes.outputs.deployment == 'true' ||
         github.event_name == 'workflow_dispatch'
       )
 
