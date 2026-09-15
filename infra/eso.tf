@@ -17,8 +17,7 @@ resource "helm_release" "external_secrets" {
   ]
 
   depends_on = [
-    aws_eks_pod_identity_association.external_secrets[0],
-    helm_release.aws_load_balancer_controller
+    aws_eks_pod_identity_association.external_secrets
   ]
 }
 
@@ -73,8 +72,8 @@ resource "helm_release" "aws_load_balancer_controller" {
   version    = "1.14.0"
 
   namespace = "kube-system"
-  wait = true
-  timeout = 300
+  wait      = true
+  timeout   = 300
 
   set = [
     {
@@ -110,7 +109,7 @@ resource "helm_release" "external_dns" {
   create_namespace = true
 
   wait = false
-  
+
   values = [
     yamlencode({
       provider = {

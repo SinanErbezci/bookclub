@@ -1,31 +1,3 @@
-resource "aws_iam_policy" "deploy_assets_read" {
-  name = "bookclub-deploy-assets-read"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Effect = "Allow"
-
-        Action = [
-          "s3:ListBucket"
-        ]
-
-        Resource = aws_s3_bucket.deploy_assets.arn
-      },
-      {
-        Effect = "Allow"
-
-        Action = [
-          "s3:GetObject"
-        ]
-
-        Resource = "${aws_s3_bucket.deploy_assets.arn}/*"
-      }
-    ]
-  })
-}
 
 # github-action-role
 resource "aws_iam_role" "github_actions" {
@@ -148,33 +120,6 @@ resource "aws_iam_policy" "github_actions" {
 
         Resource = "${aws_s3_bucket.django_static.arn}/*"
       },
-      # Deploy assets bucket
-
-      {
-        Sid    = "S3DeployAssetsBucket"
-        Effect = "Allow"
-
-        Action = [
-          "s3:ListBucket",
-          "s3:GetBucketLocation"
-        ]
-
-        Resource = aws_s3_bucket.deploy_assets.arn
-      },
-
-      {
-        Sid    = "S3DeployAssetsObjects"
-        Effect = "Allow"
-
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
-        ]
-
-        Resource = "${aws_s3_bucket.deploy_assets.arn}/*"
-      },
-
       {
         Sid    = "CloudFrontInvalidation"
         Effect = "Allow"
@@ -182,17 +127,6 @@ resource "aws_iam_policy" "github_actions" {
         Action = [
           "cloudfront:CreateInvalidation",
           "cloudfront:GetDistribution"
-        ]
-
-        Resource = "*"
-      },
-
-      {
-        Sid    = "STSIdentity"
-        Effect = "Allow"
-
-        Action = [
-          "sts:GetCallerIdentity"
         ]
 
         Resource = "*"
