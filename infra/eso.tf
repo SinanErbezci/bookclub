@@ -17,7 +17,8 @@ resource "helm_release" "external_secrets" {
   ]
 
   depends_on = [
-    aws_eks_pod_identity_association.external_secrets
+    aws_eks_pod_identity_association.external_secrets,
+    helm_release.aws_load_balancer_controller
   ]
 }
 

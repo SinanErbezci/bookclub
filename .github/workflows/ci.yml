@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/v1.6-eks-migration
 
   pull_request:
     branches:
@@ -140,7 +141,10 @@ jobs:
       - changes
 
     if: |
-      github.ref == 'refs/heads/main' &&
+      (
+        github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/feature/v1.6-eks-migration'
+      ) &&
       (
         needs.changes.outputs.backend == 'true' ||
         github.event_name == 'workflow_dispatch'
@@ -351,7 +355,10 @@ jobs:
       - changes
 
     if: |
-      github.ref == 'refs/heads/main' &&
+      (
+        github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/feature/v1.6-eks-migration'
+      ) &&
       (
         needs.changes.outputs.frontend == 'true' ||
         github.event_name == 'workflow_dispatch'
