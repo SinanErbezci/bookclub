@@ -202,7 +202,7 @@ jobs:
       - name: Install CI dependencies
         working-directory: ./bookclub
         run: |
-          pip install -r requirements-ci.txt
+          pip install -r requirements/django.txt
 
       - name: Collect Django static files
         working-directory: ./bookclub
