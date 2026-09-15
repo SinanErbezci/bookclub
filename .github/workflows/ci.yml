@@ -17,14 +17,12 @@ concurrency:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 env:
   IMAGE_TAG: ${{ github.sha }}
   AWS_REGION: eu-west-3
   ECR_REPOSITORY: bookclub
-  ECS_CLUSTER: bookclub
-  ECS_SERVICE: bookclub
   DJANGO_STATIC_BUCKET: sinan-bookclub-static
   VITE_API_URL: https://api.sinanerbezci.com/api
 
@@ -64,6 +62,7 @@ jobs:
         run: |
           python manage.py check
 
+
   # --------------------------------------------------
   # Frontend checks
   # --------------------------------------------------
@@ -99,6 +98,11 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+
+  # --------------------------------------------------
+  # Detect changes
+  # --------------------------------------------------
+
   changes:
     name: Detect Changes
     runs-on: ubuntu-latest
@@ -125,12 +129,15 @@ jobs:
 
             deployment:
               - '.github/workflows/**'
+              - 'k8s/**'
+
+
   # --------------------------------------------------
-  # Deploy backend + static files
+  # Deploy backend through GitOps
   # --------------------------------------------------
 
-  deploy:
-    name: Deploy Backend
+  deploy-backend:
+    name: Build & Deploy Backend
     runs-on: ubuntu-latest
 
     needs:
@@ -163,162 +170,53 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      
-        
+
+      # ----------------------------------------------
+      # Docker
+      # ----------------------------------------------
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      # ----------------------------------------------
-      # Backend Docker image
-      # ----------------------------------------------
 
-      - name: Build and push backend image
+      - name: Build and push Django image
         uses: docker/build-push-action@v6
         with:
           context: ./bookclub
           push: true
+          platforms: linux/amd64
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
-      # ----------------------------------------------
-      # nginx Docker image
-      # ----------------------------------------------
+          cache-from: type=gha,scope=django
+          cache-to: type=gha,mode=max,scope=django
 
-      - name: Build and push nginx image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./bookclub
-          file: ./bookclub/nginx/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:nginx
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:nginx-${{ env.IMAGE_TAG }}
-          cache-from: type=gha,scope=nginx
-          cache-to: type=gha,mode=max,scope=nginx
       # ----------------------------------------------
-      # Django static files
+      # GitOps
       # ----------------------------------------------
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Install yq
+        uses: mikefarah/yq@v4.47.1
 
-      - name: Install CI dependencies
-        working-directory: ./bookclub
-        run: |
-          pip install -r requirements-ci.txt
-
-      - name: Collect Django static files
-        working-directory: ./bookclub
+      - name: Update Kubernetes image tag
         env:
-          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          DJANGO_SETTINGS_MODULE: mysite.settings.production
-          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          python manage.py collectstatic --noinput
+          yq -i '
+            (.images[] | select(.name == "bookclub-django").newTag)
+            = env(IMAGE_TAG)
+          ' k8s/applications/bookclub/overlays/production/kustomization.yaml
 
-      - name: Upload Django static files
+      - name: Commit GitOps image update
         run: |
-          aws s3 sync \
-            bookclub/staticfiles/ \
-            s3://${{ env.DJANGO_STATIC_BUCKET }}/ \
-            --delete
-      # ----------------------------------------------
-      # Django database migrations
-      # ----------------------------------------------
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Run Django migrations
-        run: |
-          set -e
+          git add k8s/applications/bookclub/overlays/production/kustomization.yaml
 
-          echo "Getting network configuration from ECS service..."
+          git diff --cached --quiet && exit 0
 
-          NETWORK_CONFIG=$(aws ecs describe-services \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --services "${{ env.ECS_SERVICE }}" \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'services[0].networkConfiguration' \
-            --output json)
+          git commit -m "chore: deploy django ${IMAGE_TAG}"
+          git push
 
-          echo "$NETWORK_CONFIG"
-
-          echo "Starting migration task..."
-
-          TASK_ARN=$(aws ecs run-task \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --task-definition bookclub \
-            --launch-type FARGATE \
-            --platform-version LATEST \
-            --network-configuration "$NETWORK_CONFIG" \
-            --overrides '{
-              "containerOverrides": [
-                {
-                  "name": "web",
-                  "command": [
-                    "python",
-                    "manage.py",
-                    "migrate",
-                    "--noinput"
-                  ]
-                }
-              ]
-            }' \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'tasks[0].taskArn' \
-            --output text)
-
-          echo "Migration task: $TASK_ARN"
-
-          aws ecs wait tasks-stopped \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --tasks "$TASK_ARN" \
-            --region "${{ env.AWS_REGION }}"
-
-          EXIT_CODE=$(aws ecs describe-tasks \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --tasks "$TASK_ARN" \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'tasks[0].containers[?name==`web`].exitCode | [0]' \
-            --output text)
-
-          echo "Migration exit code: $EXIT_CODE"
-
-          if [ "$EXIT_CODE" != "0" ]; then
-            echo "Database migration failed."
-            exit 1
-          fi
-
-          echo "Database migration completed successfully."
-
-      # ----------------------------------------------
-      # ECS deployment
-      # ----------------------------------------------
-
-      - name: Force ECS deployment
-        run: |
-          aws ecs update-service \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --service "${{ env.ECS_SERVICE }}" \
-            --force-new-deployment \
-            --region "${{ env.AWS_REGION }}"
-
-      - name: Wait for ECS deployment
-        run: |
-          aws ecs wait services-stable \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --services "${{ env.ECS_SERVICE }}" \
-            --region "${{ env.AWS_REGION }}"
-
-      - name: Check ECS service
-        run: |
-          aws ecs describe-services \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --services "${{ env.ECS_SERVICE }}" \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'services[0].{Status:status,Desired:desiredCount,Running:runningCount,Pending:pendingCount}'
 
   # --------------------------------------------------
   # Frontend deployment

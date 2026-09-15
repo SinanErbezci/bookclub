@@ -7,16 +7,19 @@ class HealthCheckMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path == "/health/":
+        if request.path == "/health/live/":
+            return JsonResponse({"status": "ok"})
+
+        if request.path == "/health/ready/":
             try:
                 with connection.cursor() as cursor:
                     cursor.execute("SELECT 1")
 
-                return JsonResponse({"status": "healthy"})
+                return JsonResponse({"status": "ready"})
 
             except Exception:
                 return JsonResponse(
-                    {"status": "unhealthy"},
+                    {"status": "not ready"},
                     status=503,
                 )
 

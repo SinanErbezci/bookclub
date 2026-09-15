@@ -1,12 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
-from django.db import connection, transaction
-from django.contrib import messages
+from django.db import  transaction
 from django.contrib.auth import authenticate,login, logout, get_user_model
-from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django.utils.decorators import method_decorator
-from django.views import generic
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -19,9 +16,6 @@ from django.core.validators import validate_email
 from django.core.cache import cache
 from django.middleware.csrf import get_token
 from .models import Book, Author, User, Genre, Review, List, ListBook, Series
-# from .documents import BookDocument, AuthorDocument, GenreDocument
-# from elasticsearch_dsl.query import Match
-import json
 from .serializers import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer, ListSerializer
 from rest_framework import  status
 from rest_framework.response import Response
@@ -53,16 +47,6 @@ def update_book_rating(book):
     book.save()
 
 User = get_user_model()
-
-# def health_check(request):
-#     try:
-#         with connection.cursor() as cursor:
-#             cursor.execute("SELECT 1")
-#         return JsonResponse({"status": "healthy"})
-#     except Exception:
-#         return JsonResponse(
-#             {"status": "unhealthy"},
-#             status=503,)
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CSRFAPIView(APIView):

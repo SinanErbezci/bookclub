@@ -11,7 +11,6 @@ router.register(r"genres", GenreViewSet)
 router.register(r"reviews", ReviewViewSet, basename="reviews")
 
 urlpatterns = [
-    # path("health/",health_check),
     # API urls
     path("api/", include(router.urls)),
     path("api/random/author/", RandomAuthorAPIView.as_view()),
