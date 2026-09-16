@@ -23,7 +23,8 @@ resource "aws_iam_role" "github_actions" {
 
           StringLike = {
             "token.actions.githubusercontent.com:sub" = [
-              "repo:SinanErbezci/bookclub:ref:refs/heads/main"
+              "repo:SinanErbezci/bookclub:ref:refs/heads/main",
+              "repo:SinanErbezci/bookclub:ref:refs/heads/feature/v1.6-eks-migration"
             ]
           }
         }
@@ -55,7 +56,7 @@ resource "aws_iam_policy" "github_actions" {
           "ecr:BatchGetImage",
         ]
 
-        Resource = aws_ecr_repository.bookclub.arn
+        Resource = [aws_ecr_repository.bookclub.arn, aws_ecr_repository.bookclub_ai.arn]
       },
 
       {
