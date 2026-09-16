@@ -24,15 +24,11 @@ env:
   IMAGE_TAG: ${{ github.sha }}
   AWS_REGION: eu-west-3
   ECR_REPOSITORY: bookclub
+  ECR_AI_REPOSITORY: bookclub-ai
   DJANGO_STATIC_BUCKET: sinan-bookclub-static
   VITE_API_URL: https://api.sinanerbezci.com/api
 
 jobs:
-
-  # --------------------------------------------------
-  # Backend checks
-  # --------------------------------------------------
-
   backend:
     name: Backend
     runs-on: ubuntu-latest
@@ -62,11 +58,6 @@ jobs:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
         run: |
           python manage.py check
-
-
-  # --------------------------------------------------
-  # Frontend checks
-  # --------------------------------------------------
 
   frontend:
     name: Frontend
@@ -99,11 +90,6 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-
-  # --------------------------------------------------
-  # Detect changed parts of the application
-  # --------------------------------------------------
-
   changes:
     name: Detect Changes
     runs-on: ubuntu-latest
@@ -111,6 +97,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      ai: ${{ steps.filter.outputs.ai }}
 
     steps:
       - name: Checkout code
@@ -122,23 +109,27 @@ jobs:
         with:
           filters: |
             backend:
-              - 'bookclub/**'
+            - 'bookclub/**'
+            - '!bookclub/ai_service/**'
+            - '!bookclub/requirements/ai.txt'
+            - '!bookclub/Dockerfile.ai'
+
+            ai:
+              - 'bookclub/ai_service/**'
+              - 'bookclub/requirements/ai.txt'
+              - 'bookclub/Dockerfile.ai'
 
             frontend:
               - 'frontend/**'
 
-
-  # --------------------------------------------------
-  # Build and push Django image + create deployment PR
-  # --------------------------------------------------
-
-  deploy-backend:
-    name: Build & Deploy Backend
+  build-backend:
+    name: Build Backend
     runs-on: ubuntu-latest
 
     needs:
       - backend
       - changes
+
 
     if: |
       (
@@ -154,19 +145,11 @@ jobs:
       - name: Checkout application repository
         uses: actions/checkout@v4
 
-      # ----------------------------------------------
-      # AWS authentication
-      # ----------------------------------------------
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::796973519136:role/github-actions-bookclub
           aws-region: ${{ env.AWS_REGION }}
-
-      # ----------------------------------------------
-      # ECR
-      # ----------------------------------------------
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -174,10 +157,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      # ----------------------------------------------
-      # Build Django image
-      # ----------------------------------------------
 
       - name: Build and push Django image
         uses: docker/build-push-action@v6
@@ -190,9 +169,6 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
 
-      # ----------------------------------------------
-      # Django static files
-      # ----------------------------------------------
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -221,10 +197,79 @@ jobs:
             s3://${{ env.DJANGO_STATIC_BUCKET }}/ \
             --delete
 
-      # ----------------------------------------------
-      # GitHub App authentication
-      # ----------------------------------------------
+  build-ai:
+    name: Build AI workload
+    runs-on: ubuntu-latest
 
+    needs:
+      - changes
+
+    if: |
+      (
+        github.ref == 'refs/heads/main' ||
+        github.ref == 'refs/heads/feature/v1.6-eks-migration'
+      ) &&
+      (
+        needs.changes.outputs.ai == 'true' ||
+        github.event_name == 'workflow_dispatch'
+      )
+
+    steps:
+    - name: Checkout application repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::796973519136:role/github-actions-bookclub
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+
+    - name: Build and push ai-service image
+      uses: docker/build-push-action@v6
+      with:
+        context: ./bookclub
+        file: ./bookclub/Dockerfile.ai
+        push: true
+        platforms: linux/amd64
+        tags: |
+          ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_AI_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        cache-from: type=gha,scope=ai
+        cache-to: type=gha,mode=max,scope=ai
+
+  create-deployment-pr:
+    name: Create Deployment PR
+    runs-on: ubuntu-latest
+
+    needs:
+      - changes
+      - build-backend
+      - build-ai
+
+    if: |
+      always() &&
+      (
+        needs.changes.outputs.backend == 'true' ||
+        needs.changes.outputs.ai == 'true' ||
+        github.event_name == 'workflow_dispatch'
+      ) &&
+      (
+        needs.build-backend.result == 'success' ||
+        needs.build-backend.result == 'skipped'
+      ) &&
+      (
+        needs.build-ai.result == 'success' ||
+        needs.build-ai.result == 'skipped'
+      )
+
+    steps:
       - name: Create deployment repository token
         id: app-token
         uses: actions/create-github-app-token@v2
@@ -234,10 +279,6 @@ jobs:
           owner: SinanErbezci
           repositories: bookclub-deployment
 
-      # ----------------------------------------------
-      # Checkout GitOps repository
-      # ----------------------------------------------
-
       - name: Checkout deployment repository
         uses: actions/checkout@v4
         with:
@@ -245,14 +286,12 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: deployment
 
-      # ----------------------------------------------
-      # Update Kubernetes image tag
-      # ----------------------------------------------
-
-      - name: Update Django image tag
+      - name: Update image tags
         working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          AI_CHANGED: ${{ needs.changes.outputs.ai }}
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -265,35 +304,52 @@ jobs:
 
           text = path.read_text()
 
-          pattern = (
-              r"(images:\s*"
-              r"- name: bookclub-django\s*"
-              r"newName: [^\n]+\s*"
-              r"newTag: )([^\n]+)"
-          )
-
-          updated, count = re.subn(
-              pattern,
-              rf"\g<1>{os.environ['IMAGE_TAG']}",
-              text,
-              count=1,
-          )
-
-          if count != 1:
-              raise SystemExit(
-                  "Could not find the bookclub-django image entry."
+          if os.environ["BACKEND_CHANGED"] == "true":
+              pattern = (
+                  r"(- name: bookclub-django\s*"
+                  r"newName: [^\n]+\s*"
+                  r"newTag: )([^\n]+)"
               )
 
-          path.write_text(updated)
+              text, count = re.subn(
+                  pattern,
+                  rf"\g<1>{os.environ['IMAGE_TAG']}",
+                  text,
+                  count=1,
+              )
+
+              if count != 1:
+                  raise SystemExit(
+                      "Could not find the bookclub-django image entry."
+                  )
+
+          if os.environ["AI_CHANGED"] == "true":
+              pattern = (
+                  r"(- name: bookclub-ai-service\s*"
+                  r"newName: [^\n]+\s*"
+                  r"newTag: )([^\n]+)"
+              )
+
+              text, count = re.subn(
+                  pattern,
+                  rf"\g<1>{os.environ['IMAGE_TAG']}",
+                  text,
+                  count=1,
+              )
+
+              if count != 1:
+                  raise SystemExit(
+                      "Could not find the bookclub-ai-service image entry."
+                  )
+
+          path.write_text(text)
           PY
 
-          echo "Updated image tag:"
+          echo "Resulting image configuration:"
           grep -A3 "name: bookclub-django" \
             k8s/applications/bookclub/overlays/production/kustomization.yaml
-
-      # ----------------------------------------------
-      # Create deployment branch
-      # ----------------------------------------------
+          grep -A3 "name: bookclub-ai-service" \
+            k8s/applications/bookclub/overlays/production/kustomization.yaml
 
       - name: Create deployment branch
         working-directory: ./deployment
@@ -303,34 +359,42 @@ jobs:
           git config user.name "BookClub Deployment Bot"
           git config user.email "bookclub-deployment-bot@users.noreply.github.com"
 
-          BRANCH="deploy/django-${IMAGE_TAG}"
+          BRANCH="deploy/${IMAGE_TAG}"
 
           git checkout -b "$BRANCH"
 
           git add k8s/applications/bookclub/overlays/production/kustomization.yaml
 
           git commit \
-            -m "Deploy Django ${IMAGE_TAG}"
+            -m "Deploy BookClub ${IMAGE_TAG}"
 
           git push origin "$BRANCH"
-
-      # ----------------------------------------------
-      # Create deployment PR
-      # ----------------------------------------------
-
+      
       - name: Create deployment PR
         working-directory: ./deployment
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          AI_CHANGED: ${{ needs.changes.outputs.ai }}
         run: |
-          BRANCH="deploy/django-${IMAGE_TAG}"
+          BRANCH="deploy/${IMAGE_TAG}"
 
-          gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "Deploy Django ${IMAGE_TAG}" \
-            --body "## Deployment
+          if [ "$BACKEND_CHANGED" = "true" ] && [ "$AI_CHANGED" = "true" ]; then
+            TITLE="Deploy Django + AI ${IMAGE_TAG}"
+            BODY="## Deployment
+
+          Update Django and AI service images to:
+
+          \`${IMAGE_TAG}\`
+
+          Both images have already been built and pushed to Amazon ECR.
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          elif [ "$BACKEND_CHANGED" = "true" ]; then
+            TITLE="Deploy Django ${IMAGE_TAG}"
+            BODY="## Deployment
 
           Update the Django image to:
 
@@ -340,11 +404,35 @@ jobs:
 
           After this PR is merged, Argo CD will reconcile the production environment.
           "
+          elif [ "$AI_CHANGED" = "true" ]; then
+            TITLE="Deploy AI service ${IMAGE_TAG}"
+            BODY="## Deployment
 
+          Update the AI service image to:
 
-  # --------------------------------------------------
-  # Frontend deployment
-  # --------------------------------------------------
+          \`${IMAGE_TAG}\`
+
+          The image has already been built and pushed to Amazon ECR.
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          else
+            TITLE="Deploy BookClub ${IMAGE_TAG}"
+            BODY="## Deployment
+
+          Update the BookClub application images to:
+
+          \`${IMAGE_TAG}\`
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          fi
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "$TITLE" \
+            --body "$BODY"
 
   frontend-deploy:
     name: Deploy Frontend

@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
@@ -5,20 +7,28 @@ from sentence_transformers import SentenceTransformer
 
 app = FastAPI()
 
-model = SentenceTransformer(
+MODEL_PATH = os.getenv(
+    "MODEL_PATH",
     "BAAI/bge-small-en-v1.5",
-    device="cpu",
 )
 
+model = SentenceTransformer(
+    MODEL_PATH,
+    device="cpu",
+)
 
 class EmbedRequest(BaseModel):
     text: str
 
 
-@app.get("/health")
-def health():
-    return {"status": "healthy"}
+@app.get("/health/live/")
+def health_live():
+    return {"status": "ok"}
 
+
+@app.get("/health/ready/")
+def health_ready():
+    return {"status": "ready"}
 
 @app.post("/embed")
 def embed(request: EmbedRequest):
