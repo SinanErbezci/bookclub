@@ -156,3 +156,136 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
   policy_arn = aws_iam_policy.aws_load_balancer_controller[0].arn
 }
 
+resource "aws_iam_role" "django" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-django"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+      }
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy" "django_sqs" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-django-sqs"
+  role = aws_iam_role.django[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "sqs:SendMessage"
+        ]
+
+        Resource = aws_sqs_queue.celery[0].arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "celery_worker" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-celery-worker"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+      }
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy" "celery_worker_sqs" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-celery-worker-sqs"
+  role = aws_iam_role.celery_worker[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:ChangeMessageVisibility",
+          "sqs:GetQueueAttributes",
+          "sqs:GetQueueUrl"
+        ]
+
+        Resource = aws_sqs_queue.celery[0].arn
+      }
+    ]
+  })
+}
+
+resource "aws_eks_pod_identity_association" "django" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name    = aws_eks_cluster.bookclub[0].name
+  namespace       = "default"
+  service_account = "django"
+
+  role_arn = aws_iam_role.django[0].arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    aws_iam_role_policy.django_sqs
+  ]
+}
+
+resource "aws_eks_pod_identity_association" "celery_worker" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name    = aws_eks_cluster.bookclub[0].name
+  namespace       = "default"
+  service_account = "celery-worker"
+
+  role_arn = aws_iam_role.celery_worker[0].arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    aws_iam_role_policy.celery_worker_sqs
+  ]
+}

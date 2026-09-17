@@ -1,11 +1,10 @@
-import json
 from celery import shared_task
+from django.core.cache import cache
 from django.db.models import Count
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
-from .models import Author, Genre, Book
-from .redis_client import redis_client
+from .models import Author, Genre
 
 User = get_user_model()
 
@@ -27,10 +26,18 @@ def refresh_random_homepage():
     )
 
     if author:
-        redis_client.set("homepage:random:author", author.id)
+        cache.set(
+            "homepage:random:author",
+            author.id,
+            timeout=60 * 60,
+        )
 
     if genre:
-        redis_client.set("homepage:random:genre", genre.id)
+        cache.set(
+            "homepage:random:genre",
+            genre.id,
+            timeout=60 * 60,
+        )
 
     return {
         "author_id": author.id if author else None,

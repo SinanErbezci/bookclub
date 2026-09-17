@@ -40,6 +40,16 @@ CACHES = {
     }
 }
 
+CELERY_BROKER_URL = "sqs://"
+
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "region": os.environ["AWS_REGION"],
+    "visibility_timeout": 3600,
+    "polling_interval": 1,
+}
+
+CELERY_TASK_DEFAULT_QUEUE = "bookclub-celery"
+
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
