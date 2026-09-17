@@ -45,3 +45,13 @@ resource "aws_ssm_parameter" "redis_url" {
 
   tags = local.common_tags
 }
+
+resource "aws_ssm_parameter" "celery_queue_url" {
+  count = var.production_enabled ? 1 : 0
+
+  name  = "/bookclub/production/CELERY_QUEUE_URL"
+  type  = "String"
+  value = aws_sqs_queue.celery[0].url
+
+  tags = local.common_tags
+}

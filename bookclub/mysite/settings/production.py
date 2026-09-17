@@ -46,6 +46,11 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     "region": os.environ["AWS_REGION"],
     "visibility_timeout": 3600,
     "polling_interval": 1,
+    "predefined_queues": {
+        "bookclub-celery": {
+            "url": os.environ["CELERY_QUEUE_URL"],
+        }
+    },
 }
 
 CELERY_TASK_DEFAULT_QUEUE = "bookclub-celery"
