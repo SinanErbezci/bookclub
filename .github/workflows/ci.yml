@@ -30,7 +30,7 @@ env:
 
 jobs:
   backend:
-    name: Backend
+    name: Backend Checks
     runs-on: ubuntu-latest
 
     defaults:
@@ -56,11 +56,12 @@ jobs:
           DJANGO_SETTINGS_MODULE: mysite.settings.production
           DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          REDIS_URL: redis://localhost:6379/0
         run: |
           python manage.py check
 
   frontend:
-    name: Frontend
+    name: Frontend Checks
     runs-on: ubuntu-latest
 
     defaults:
