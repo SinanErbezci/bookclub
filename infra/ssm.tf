@@ -34,3 +34,14 @@ resource "aws_ssm_parameter" "openai_api_key" {
 
   tags = local.common_tags
 }
+
+resource "aws_ssm_parameter" "redis_url" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "/bookclub/production/REDIS_URL"
+  type = "SecureString"
+
+  value = "rediss://${aws_elasticache_replication_group.redis[0].primary_endpoint_address}:6379/0"
+
+  tags = local.common_tags
+}

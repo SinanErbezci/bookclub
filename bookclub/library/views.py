@@ -33,6 +33,9 @@ from .tasks import send_welcome_email
 
 from .redis_client import redis_client
 
+import logging
+
+logger = logging.getLogger(__name__)
 # ====== API Views ======
 
 # Helper Functions
@@ -214,7 +217,7 @@ class BookRecommendationsAPIVieW(APIView):
         cached_ids = cache.get(cache_key)
 
         if cached_ids is not None:
-            print(f"CACHE HIT: {cache_key}")
+            logger.info("Cache hit: %s", cache_key)
 
             books_by_id = Book.objects.in_bulk(cached_ids)
 
@@ -225,7 +228,7 @@ class BookRecommendationsAPIVieW(APIView):
             ]
 
         else:
-            print(f"CACHE MISS: {cache_key}")
+            logger.info("Cache miss: %s", cache_key)
 
             service = RecommendationService()
 
@@ -271,7 +274,7 @@ class BookRecommendationExplanationAPIView(APIView):
         explanation = cache.get(cache_key)
 
         if explanation is None:
-            print(f"CACHE MISS: {cache_key}")
+            logger.info("Cache miss: %s", cache_key)
             provider = get_summary_provider()
             service = ExplanationService(provider=provider)
 
@@ -285,10 +288,13 @@ class BookRecommendationExplanationAPIView(APIView):
                 explanation,
                 timeout=60 * 60 * 24,
             )
+        else:
+            logger.info("Cache hit: %s", cache_key)
 
         return Response({
             "explanation": explanation,
         })
+    
 class AuthorViewSet(ReadOnlyModelViewSet):
     queryset = Author.objects.all()
 

@@ -57,3 +57,5 @@ dist/
 
 celerybeat-schedule
 infra/gateway-api/standard-install.yaml
+
+*.pem

@@ -22,7 +22,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://bookclub.sinanerbezci.com",    
+    "https://bookclub.sinanerbezci.com",
 ]
 
 DATABASES = {
@@ -31,10 +31,14 @@ DATABASES = {
     )
 }
 
-REDIS_URL = os.getenv(
-    "REDIS_URL",
-    "redis://localhost:6379/0",
-)
+REDIS_URL = os.environ["REDIS_URL"]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+    }
+}
 
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
@@ -54,4 +58,3 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_REDIRECT_EXEMPT = [r"^health/$"]

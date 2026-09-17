@@ -21,6 +21,7 @@ resource "aws_eks_cluster" "bookclub" {
   ]
 }
 
+
 resource "aws_eks_node_group" "bookclub" {
   count = var.production_enabled ? 1 : 0
 
@@ -42,7 +43,6 @@ resource "aws_eks_node_group" "bookclub" {
     max_size     = 2
   }
 
-  disk_size = 20
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node,
