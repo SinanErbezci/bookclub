@@ -14,3 +14,4 @@ PyYAML==6.0.3
 httpx
 celery[sqs]==5.6.3
 redis==6.4.0
+django-anymail[amazon-ses]==15.2

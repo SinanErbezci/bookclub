@@ -108,7 +108,6 @@ resource "aws_iam_role_policy" "external_secrets" {
         "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/OPENAI_API_KEY",
         "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/CLOUDFLARE_API_TOKEN",
         "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/REDIS_URL",
-        "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/CELERY_QUEUE_URL",
 
       ]
     }]
@@ -198,7 +197,8 @@ resource "aws_iam_role_policy" "django_sqs" {
         Effect = "Allow"
 
         Action = [
-          "sqs:SendMessage"
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes"
         ]
 
         Resource = aws_sqs_queue.celery[0].arn
@@ -261,10 +261,10 @@ resource "aws_iam_role_policy" "celery_worker_sqs" {
         Effect = "Allow"
 
         Action = [
-          "sqs:ListQueues"
+          "ses:SendEmail"
         ]
 
-        Resource = "*"
+        Resource = "arn:aws:ses:eu-west-3:796973519136:identity/sinanerbezci.com"
       }
     ]
   })

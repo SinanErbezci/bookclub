@@ -1,8 +1,9 @@
 from celery import shared_task
 from django.core.cache import cache
 from django.db.models import Count
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth import get_user_model
+from django.template.loader import render_to_string
 
 from .models import Author, Genre
 
@@ -55,13 +56,32 @@ def send_welcome_email(self, user_id):
     if not user.email:
         return f"User {user_id} has no email address"
 
+    subject = "Welcome to the Bookclub"
+
+    context = {
+        "username": user.username,
+    }
+
+    text_content = render_to_string(
+        "emails/welcome.txt",
+        context,
+    )
+
+    html_content = render_to_string(
+        "emails/welcome.html",
+        context
+    )
+
     try:
-        send_mail(
-            subject="Welcome to Bookclub",
-            message=f"Welcome, {user.username}!",
-            from_email="noreply@bookclub.local",
-            recipient_list=[user.email],
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email="noreply@sinanerbezci.com",
+            to=[user.email],
         )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
     except Exception as exc:
         raise self.retry(
             exc=exc,
