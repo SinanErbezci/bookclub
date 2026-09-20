@@ -1,6 +1,8 @@
 from .base import *
 import os
 import dj_database_url
+from datetime import timedelta
+
 
 DEBUG = False
 
@@ -54,6 +56,13 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 }
 
 CELERY_TASK_DEFAULT_QUEUE = "bookclub-celery"
+
+CELERY_BEAT_SCHEDULE = {
+    "refresh-random-homepage": {
+        "task": "library.tasks.refresh_random_homepage",
+        "schedule": timedelta(hours=1),
+    },
+}
 
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"

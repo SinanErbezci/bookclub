@@ -272,6 +272,56 @@ resource "aws_iam_role_policy" "celery_worker_sqs" {
   })
 }
 
+resource "aws_iam_role" "celery_beat" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-celery-beat"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+      }
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy" "celery_beat_sqs" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-celery-beat-sqs"
+  role = aws_iam_role.celery_beat[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "sqs:SendMessage"
+        ]
+
+        Resource = aws_sqs_queue.celery[0].arn
+      }
+    ]
+  })
+}
+
 resource "aws_eks_pod_identity_association" "django" {
   count = var.production_enabled ? 1 : 0
 
@@ -299,5 +349,21 @@ resource "aws_eks_pod_identity_association" "celery_worker" {
   depends_on = [
     aws_eks_addon.pod_identity_agent,
     aws_iam_role_policy.celery_worker_sqs
+  ]
+}
+
+resource "aws_eks_pod_identity_association" "celery_beat" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name = aws_eks_cluster.bookclub[0].name
+
+  namespace       = "default"
+  service_account = "celery-beat"
+
+  role_arn = aws_iam_role.celery_beat[0].arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    aws_iam_role_policy.celery_beat_sqs
   ]
 }
