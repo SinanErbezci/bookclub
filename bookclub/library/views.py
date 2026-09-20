@@ -31,8 +31,6 @@ from ai.services.explanations import ExplanationService
 from ai.services.summary.factory import get_summary_provider
 from .tasks import send_welcome_email
 
-from .redis_client import redis_client
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -328,7 +326,7 @@ class SeriesDetailAPIView(APIView):
     
 class RandomAuthorAPIView(APIView):
     def get(self, request):
-        author_id = redis_client.get("homepage:random:author")
+        author_id = cache.get("homepage:random:author")
 
         if author_id:
             author = (
@@ -364,7 +362,7 @@ class RandomAuthorAPIView(APIView):
     
 class RandomGenreAPIView(APIView):
     def get(self, request):
-        genre_id = redis_client.get("homepage:random:genre")
+        genre_id = cache.get("homepage:random:genre")
 
         if genre_id:
             genre = (

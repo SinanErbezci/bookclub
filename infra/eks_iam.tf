@@ -313,7 +313,8 @@ resource "aws_iam_role_policy" "celery_beat_sqs" {
         Effect = "Allow"
 
         Action = [
-          "sqs:SendMessage"
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes"
         ]
 
         Resource = aws_sqs_queue.celery[0].arn
