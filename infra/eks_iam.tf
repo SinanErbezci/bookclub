@@ -112,15 +112,6 @@ resource "aws_iam_role_policy" "external_secrets" {
           "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/CELERY_QUEUE_URL",
         ]
       },
-      {
-        Effect = "Allow"
-
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-
-        Resource = aws_db_instance.bookclub[0].master_user_secret[0].secret_arn
-      }
     ]
   })
 }

@@ -104,14 +104,3 @@ resource "aws_route_table_association" "private_b" {
   subnet_id      = aws_subnet.private_b.id
   route_table_id = aws_route_table.private.id
 }
-
-resource "aws_db_subnet_group" "bookclub" {
-  name = "${var.project_name}-db"
-
-  subnet_ids = [
-    aws_subnet.private_a.id,
-    aws_subnet.private_b.id,
-  ]
-
-  tags = local.common_tags
-}
