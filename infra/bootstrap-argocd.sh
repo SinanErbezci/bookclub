@@ -70,7 +70,7 @@ kubectl apply -f - <<EOF
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bookclub-production
+  name: argocd-applications
   namespace: argocd
 spec:
   project: default
@@ -78,11 +78,13 @@ spec:
   source:
     repoURL: https://github.com/SinanErbezci/bookclub-deployment.git
     targetRevision: main
-    path: k8s/applications/bookclub/overlays/production
+    path: k8s/argocd
+    directory:
+      recurse: true
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: argocd
 
   syncPolicy:
     automated:
