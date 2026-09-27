@@ -8,9 +8,6 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
 
-  depends_on = [
-    helm_release.external_secrets
-  ]
 }
 
 resource "aws_eks_pod_identity_association" "external_secrets" {
