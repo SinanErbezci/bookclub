@@ -10,6 +10,21 @@ resource "helm_release" "argocd" {
 
 }
 
+resource "helm_release" "external_secrets" {
+  count = var.production_enabled ? 1 : 0
+
+  name             = "external-secrets"
+  repository       = "https://charts.external-secrets.io"
+  chart            = "external-secrets"
+  version          = "2.10.0"
+  namespace        = "external-secrets"
+  create_namespace = true
+
+  depends_on = [
+    aws_eks_pod_identity_association.external_secrets
+  ]
+}
+
 resource "aws_eks_pod_identity_association" "external_secrets" {
   count           = var.production_enabled ? 1 : 0
   cluster_name    = aws_eks_cluster.bookclub[0].name
