@@ -35,4 +35,7 @@ urlpatterns = [
     # recommandations
     path("api/books/<int:book_id>/recommendations/", BookRecommendationsAPIVieW.as_view()),
     path("api/books/<int:source_id>/recommendations/<int:recommended_id>/explanation/", BookRecommendationExplanationAPIView.as_view()),
+
+    # metrics for prometheus
+    path("", include("django_prometheus.urls")),
 ]

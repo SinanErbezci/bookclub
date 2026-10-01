@@ -42,9 +42,11 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'ai',
+    'django_prometheus',
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "mysite.middleware.HealthCheckMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = 'mysite.urls'

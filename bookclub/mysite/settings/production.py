@@ -72,6 +72,12 @@ CSRF_COOKIE_SECURE = True
 
 SECURE_SSL_REDIRECT = True
 
+SECURE_REDIRECT_EXEMPT = [
+    r"^metrics$",
+    r"^health/live/$",
+    r"^health/ready/$",
+]
+
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
