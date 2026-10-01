@@ -3,10 +3,11 @@ import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
-
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
 
+Instrumentator().instrument(app).expose(app)
 MODEL_PATH = os.getenv(
     "MODEL_PATH",
     "BAAI/bge-small-en-v1.5",
