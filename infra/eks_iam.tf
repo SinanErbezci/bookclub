@@ -370,3 +370,35 @@ resource "aws_eks_pod_identity_association" "celery_beat" {
     aws_iam_role_policy.celery_beat_sqs
   ]
 }
+
+resource "aws_iam_role" "ebs_csi_driver" {
+  count = var.production_enabled ? 1 : 0
+
+  name = "${var.project_name}-ebs-csi-driver"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [{
+      Effect = "Allow"
+
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
+      }
+
+      Action = [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
+  count = var.production_enabled ? 1 : 0
+
+  role       = aws_iam_role.ebs_csi_driver[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicyV2"
+}
