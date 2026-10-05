@@ -5,6 +5,8 @@ resource "aws_eks_cluster" "bookclub" {
   role_arn = aws_iam_role.eks_cluster[0].arn
   version  = "1.36"
 
+  bootstrap_self_managed_addons = false
+
   upgrade_policy {
     support_type = "STANDARD"
   }
@@ -43,16 +45,58 @@ resource "aws_eks_node_group" "bookclub" {
     max_size     = 2
   }
 
-
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node,
     aws_iam_role_policy_attachment.eks_cni,
-    aws_iam_role_policy_attachment.eks_ecr
+    aws_iam_role_policy_attachment.eks_ecr,
+    aws_eks_addon.vpc_cni,
   ]
-
   tags = merge(local.common_tags, {
     Name = "${var.project_name}-eks-node"
   })
+}
+
+resource "aws_eks_addon" "vpc_cni" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name  = aws_eks_cluster.bookclub[0].name
+  addon_name    = "vpc-cni"
+  addon_version = "v1.22.4-eksbuild.3"
+
+  configuration_values = jsonencode({
+    env = {
+      ENABLE_PREFIX_DELEGATION = "true"
+      WARM_PREFIX_TARGET       = "1"
+    }
+  })
+
+  depends_on = [
+    aws_eks_cluster.bookclub
+  ]
+}
+
+resource "aws_eks_addon" "coredns" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name  = aws_eks_cluster.bookclub[0].name
+  addon_name    = "coredns"
+  addon_version = "v1.14.6-eksbuild.4"
+
+  depends_on = [
+    aws_eks_cluster.bookclub
+  ]
+}
+
+resource "aws_eks_addon" "kube_proxy" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name  = aws_eks_cluster.bookclub[0].name
+  addon_name    = "kube-proxy"
+  addon_version = "v1.36.0-eksbuild.25"
+
+  depends_on = [
+    aws_eks_cluster.bookclub
+  ]
 }
 
 resource "aws_eks_addon" "pod_identity_agent" {
