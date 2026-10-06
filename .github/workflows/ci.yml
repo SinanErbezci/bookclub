@@ -109,12 +109,14 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v3
         with:
+          base: ${{ github.event_name == 'pull_request' && github.base_ref || github.event.before }}
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
           filters: |
             backend:
-            - 'bookclub/**'
-            - '!bookclub/ai_service/**'
-            - '!bookclub/requirements/ai.txt'
-            - '!bookclub/Dockerfile.ai'
+              - 'bookclub/**'
+              - '!bookclub/ai_service/**'
+              - '!bookclub/requirements/ai.txt'
+              - '!bookclub/Dockerfile.ai'
 
             ai:
               - 'bookclub/ai_service/**'
