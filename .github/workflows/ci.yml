@@ -100,6 +100,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       ai: ${{ steps.filter.outputs.ai }}
+      workflow: ${{ steps.filter.outputs.workflow }}
 
     steps:
       - name: Checkout code
@@ -120,8 +121,8 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          base: ${{ github.event_name == 'pull_request' && github.base_ref || github.event.before }}
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+          base: ${{ github.event_name == 'push' && github.event.before || github.base_ref }}
+          ref: ${{ github.event_name == 'push' && github.sha || github.head_ref }}
           filters: |
             backend:
               - 'bookclub/**'
