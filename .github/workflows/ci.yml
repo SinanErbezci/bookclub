@@ -104,9 +104,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Show changed files
         run: |
+          echo "Before: ${{ github.event.before }}"
+          echo "After:  ${{ github.sha }}"
+          echo
           git diff --name-status \
             "${{ github.event.before }}" \
             "${{ github.sha }}"
