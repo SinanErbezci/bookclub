@@ -8,6 +8,9 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
 
+  depends_on = [
+    aws_eks_node_group.bookclub,
+  ]
 }
 
 resource "helm_release" "external_secrets" {
