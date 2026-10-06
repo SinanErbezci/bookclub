@@ -100,7 +100,6 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       ai: ${{ steps.filter.outputs.ai }}
-      workflow: ${{ steps.filter.outputs.workflow }}
 
     steps:
       - name: Checkout code
@@ -125,10 +124,12 @@ jobs:
           ref: ${{ github.event_name == 'push' && github.sha || github.head_ref }}
           filters: |
             backend:
-              - 'bookclub/**'
-              - '!bookclub/ai_service/**'
-              - '!bookclub/requirements/ai.txt'
-              - '!bookclub/Dockerfile.ai'
+              - 'bookclub/ai/**'
+              - 'bookclub/library/**'
+              - 'bookclub/mysite/**'
+              - 'bookclub/manage.py'
+              - 'bookclub/Dockerfile'
+              - 'bookclub/requirements/django.txt'
 
             ai:
               - 'bookclub/ai_service/**'
