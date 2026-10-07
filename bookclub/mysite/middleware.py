@@ -1,8 +1,9 @@
 from django.db import connection
 from django.http import JsonResponse
+from django_prometheus.exports import ExportToDjangoView
 
 
-class HealthCheckMiddleware:
+class OperationalEndpointMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -22,5 +23,8 @@ class HealthCheckMiddleware:
                     {"status": "not ready"},
                     status=503,
                 )
+
+        if request.path == "/metrics":
+            return ExportToDjangoView(request)
 
         return self.get_response(request)
