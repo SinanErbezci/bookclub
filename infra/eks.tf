@@ -1,3 +1,8 @@
+data "aws_ssm_parameter" "eks_al2023_ami" {
+  count = var.production_enabled ? 1 : 0
+  name = "/aws/service/eks/optimized-ami/${aws_eks_cluster.bookclub[0].version}/amazon-linux-2023/x86_64/standard/recommended/image_id"
+}
+
 resource "aws_eks_cluster" "bookclub" {
   count = var.production_enabled ? 1 : 0
 
@@ -23,6 +28,47 @@ resource "aws_eks_cluster" "bookclub" {
   ]
 }
 
+resource "aws_launch_template" "eks_nodes" {
+  count = var.production_enabled ? 1 : 0
+
+  name_prefix = "${var.project_name}-eks-node-"
+
+  image_id = data.aws_ssm_parameter.eks_al2023_ami[0].value
+
+  user_data = base64encode(<<-EOT
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="//"
+
+--//
+Content-Type: application/node.eks.aws
+
+---
+apiVersion: node.eks.aws/v1alpha1
+kind: NodeConfig
+spec:
+  cluster:
+    name: ${aws_eks_cluster.bookclub[0].name}
+    apiServerEndpoint: ${aws_eks_cluster.bookclub[0].endpoint}
+    certificateAuthority: ${aws_eks_cluster.bookclub[0].certificate_authority[0].data}
+    cidr: ${aws_eks_cluster.bookclub[0].kubernetes_network_config[0].service_ipv4_cidr}
+  kubelet:
+    config:
+      maxPods: 110
+
+--//--
+EOT
+  )
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = merge(local.common_tags, {
+      Name = "${var.project_name}-eks-node"
+    })
+  }
+
+  tags = local.common_tags
+}
 
 resource "aws_eks_node_group" "bookclub" {
   count = var.production_enabled ? 1 : 0
@@ -39,6 +85,11 @@ resource "aws_eks_node_group" "bookclub" {
   instance_types = ["t3.medium"]
   capacity_type  = "ON_DEMAND"
 
+  launch_template {
+    id      = aws_launch_template.eks_nodes[0].id
+    version = aws_launch_template.eks_nodes[0].latest_version
+  }
+
   scaling_config {
     desired_size = 2
     min_size     = 1
@@ -49,8 +100,8 @@ resource "aws_eks_node_group" "bookclub" {
     aws_iam_role_policy_attachment.eks_worker_node,
     aws_iam_role_policy_attachment.eks_cni,
     aws_iam_role_policy_attachment.eks_ecr,
-    aws_eks_addon.vpc_cni,
   ]
+
   tags = merge(local.common_tags, {
     Name = "${var.project_name}-eks-node"
   })

@@ -110,6 +110,7 @@ resource "aws_iam_role_policy" "external_secrets" {
           "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/CLOUDFLARE_API_TOKEN",
           "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/REDIS_URL",
           "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/CELERY_QUEUE_URL",
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/bookclub/production/GRAFANA_ADMIN_PASSWORD",
         ]
       },
     ]
