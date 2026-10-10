@@ -1,6 +1,6 @@
 data "aws_ssm_parameter" "eks_al2023_ami" {
   count = var.production_enabled ? 1 : 0
-  name = "/aws/service/eks/optimized-ami/${aws_eks_cluster.bookclub[0].version}/amazon-linux-2023/x86_64/standard/recommended/image_id"
+  name  = "/aws/service/eks/optimized-ami/${aws_eks_cluster.bookclub[0].version}/amazon-linux-2023/x86_64/standard/recommended/image_id"
 }
 
 resource "aws_eks_cluster" "bookclub" {
@@ -16,6 +16,11 @@ resource "aws_eks_cluster" "bookclub" {
     support_type = "STANDARD"
   }
 
+  access_config {
+    authentication_mode                         = "API"
+    bootstrap_cluster_creator_admin_permissions = false
+  }
+
   vpc_config {
     subnet_ids = [
       aws_subnet.private_a.id,
@@ -26,6 +31,27 @@ resource "aws_eks_cluster" "bookclub" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy
   ]
+}
+
+resource "aws_eks_access_entry" "bookclub_user" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name  = aws_eks_cluster.bookclub[0].name
+  principal_arn = "arn:aws:iam::796973519136:user/bookclub-user"
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "bookclub_user_admin" {
+  count = var.production_enabled ? 1 : 0
+
+  cluster_name  = aws_eks_cluster.bookclub[0].name
+  principal_arn = aws_eks_access_entry.bookclub_user[0].principal_arn
+
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
 }
 
 resource "aws_launch_template" "eks_nodes" {
