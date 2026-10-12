@@ -16,8 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.conf import settings
+from .observability_views import test_500
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("library.urls"))
 ]
+
+if settings.OBSERVABILITY_TEST_ENDPOINTS:
+    urlpatterns += [
+        path(
+            "internal/test/500/",
+            test_500,
+            name="observability-test-500",
+        ),
+    ]

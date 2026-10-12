@@ -191,3 +191,7 @@ AI_SERVICE_URL = os.getenv(
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+
+OBSERVABILITY_TEST_ENDPOINTS = (
+    os.getenv("OBSERVABILITY_TEST_ENDPOINTS", "false").lower() == "true"
+)
