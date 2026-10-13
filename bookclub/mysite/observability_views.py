@@ -10,7 +10,7 @@ def test_500(request):
     )
 
 def test_slow(request):
-    time.sleep(2)
+    time.sleep(3)
 
     return HttpResponse(
         "Intentional slow response for observability testing.",
