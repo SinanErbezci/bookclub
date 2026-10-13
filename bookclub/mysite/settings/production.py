@@ -33,6 +33,10 @@ DATABASES = {
     )
 }
 
+DATABASES["default"]["ENGINE"] = (
+    "django_prometheus.db.backends.postgresql"
+)
+
 REDIS_URL = os.environ["REDIS_URL"]
 
 CACHES = {
