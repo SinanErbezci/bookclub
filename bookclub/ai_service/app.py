@@ -70,5 +70,5 @@ if OBSERVABILITY_TEST_ENDPOINTS:
         await asyncio.sleep(3)
 
         return {
-            "detail": "Intentional slow response for observability testing."
+            "detail": "Intentional slow response for observability testing. testing"
         }
