@@ -1,5 +1,5 @@
 from django.db import models
-from pgvector.django import VectorField
+from pgvector.django import VectorField, HnswIndex
 
 
 class BookSummary(models.Model):
@@ -103,4 +103,14 @@ class BookEmbedding(models.Model):
                 fields=["book", "embedding_type"],
                 name="uniq_book_embedding_type",
             )
+        ]
+
+        indexes = [
+            HnswIndex(
+                name="book_embedding_hnsw_cosine",
+                fields=["embedding"],
+                m=16,
+                ef_construction=64,
+                opclasses=["vector_cosine_ops"],
+            ),
         ]
