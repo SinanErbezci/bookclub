@@ -326,15 +326,13 @@ class SeriesDetailAPIView(APIView):
     
 class RandomAuthorAPIView(APIView):
     def get(self, request):
+        author = None
         author_id = cache.get("homepage:random:author")
 
-        if author_id:
-            author = (
-                Author.objects
-                .filter(id=author_id)
-                .first()
-            )
-        else:
+        if author_id is not None:
+            author = Author.objects.filter(id=author_id).first()
+
+        if author is None:
             author = (
                 Author.objects
                 .annotate(book_count=Count("books"))
@@ -342,6 +340,13 @@ class RandomAuthorAPIView(APIView):
                 .order_by("?")
                 .first()
             )
+
+            if author is not None:
+                cache.set(
+                    "homepage:random:author",
+                    author.id,
+                    timeout=60 * 60,
+                )
 
         if not author:
             return Response(
@@ -362,15 +367,13 @@ class RandomAuthorAPIView(APIView):
     
 class RandomGenreAPIView(APIView):
     def get(self, request):
+        genre = None
         genre_id = cache.get("homepage:random:genre")
 
-        if genre_id:
-            genre = (
-                Genre.objects
-                .filter(id=genre_id)
-                .first()
-            )
-        else:
+        if genre_id is not None:
+            genre = Genre.objects.filter(id=genre_id).first()
+
+        if genre is None:
             genre = (
                 Genre.objects
                 .annotate(book_count=Count("books"))
@@ -378,6 +381,13 @@ class RandomGenreAPIView(APIView):
                 .order_by("?")
                 .first()
             )
+
+            if genre is not None:
+                cache.set(
+                    "homepage:random:genre",
+                    genre.id,
+                    timeout=60 * 60,
+                )
 
         if not genre:
             return Response(
