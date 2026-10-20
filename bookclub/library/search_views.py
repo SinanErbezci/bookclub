@@ -27,6 +27,7 @@ import logging
  
 class SearchBooksAPIView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "search"
 
     def get(self, request):
         query = request.query_params.get("q", "").strip()
@@ -139,6 +140,7 @@ class SearchBooksAPIView(APIView):
 
 class SemanticSearchAPIView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "semantic_search"
 
     def get(self, request):
         query = request.query_params.get(

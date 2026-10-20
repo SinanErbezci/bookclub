@@ -254,6 +254,7 @@ class BookRecommendationsAPIVieW(APIView):
 
 class BookRecommendationExplanationAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "ai_explanation"
 
     def get(self, request, source_id, recommended_id):
         source_book = get_object_or_404(

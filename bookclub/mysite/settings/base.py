@@ -123,8 +123,13 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "300/hour",
         "user": "1000/hour",
+
         "login": "10/minute",
         "signup": "5/hour",
+
+        "search": "60/minute",
+        "semantic_search": "20/minute",
+        "ai_explanation": "10/hour",
     },
 }
 
