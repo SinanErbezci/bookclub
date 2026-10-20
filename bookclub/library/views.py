@@ -59,7 +59,7 @@ class CSRFAPIView(APIView):
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = "login"
+    throttle_scope = "login"
 
     def post(self, request):
         username = request.data.get("username")
@@ -98,7 +98,7 @@ class MeAPIView(APIView):
 
 class SignupAPIView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = "signup"
+    throttle_scope = "signup"
 
     def post(self, request):
         username = request.data.get("username")
