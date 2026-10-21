@@ -19,7 +19,8 @@ RUN pip install --upgrade pip && \
 # Download and bake the embedding model
 RUN python -c "\
 from sentence_transformers import SentenceTransformer; \
-SentenceTransformer('BAAI/bge-small-en-v1.5', device='cpu').save('/model')"
+SentenceTransformer('BAAI/bge-small-en-v1.5', device='cpu').save('/model')" \
+    && chmod -R a+rX /model
 
 COPY ai_service/ .
 
