@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - feature/v1.6-eks-migration
 
   pull_request:
     branches:
@@ -17,7 +16,6 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  id-token: write
   contents: read
 
 env:
@@ -56,7 +54,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: mysite.settings.production
           DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          REDIS_URL: redis://localhost:6379/0,
+          REDIS_URL: redis://localhost:6379/0
           CELERY_QUEUE_URL: dummy
         run: |
           python manage.py check
@@ -96,10 +94,14 @@ jobs:
     name: Detect Changes
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: read
+
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-      ai: ${{ steps.filter.outputs.ai }}
+      backend: ${{ steps.filter.outputs.backend == 'true' || github.event_name == 'workflow_dispatch' }}
+      frontend: ${{ steps.filter.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' }}
+      ai: ${{ steps.filter.outputs.ai == 'true' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout code
@@ -108,20 +110,21 @@ jobs:
           fetch-depth: 0
 
       - name: Show changed files
+        if: github.event_name == 'push'
         run: |
           echo "Before: ${{ github.event.before }}"
           echo "After:  ${{ github.sha }}"
           echo
+
           git diff --name-status \
             "${{ github.event.before }}" \
             "${{ github.sha }}"
 
       - name: Detect changed paths
+        if: github.event_name != 'workflow_dispatch'
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          base: ${{ github.event_name == 'push' && github.event.before || github.base_ref }}
-          ref: ${{ github.event_name == 'push' && github.sha || github.head_ref }}
           filters: |
             backend:
               - 'bookclub/ai/**'
@@ -130,11 +133,15 @@ jobs:
               - 'bookclub/manage.py'
               - 'bookclub/Dockerfile'
               - 'bookclub/requirements/django.txt'
+              - 'bookclub/.dockerignore'
+              - '.github/workflows/ci.yml'
 
             ai:
               - 'bookclub/ai_service/**'
               - 'bookclub/requirements/ai.txt'
               - 'bookclub/Dockerfile.ai'
+              - 'bookclub/.dockerignore'
+              - '.github/workflows/ci.yml'
 
             frontend:
               - 'frontend/**'
@@ -143,6 +150,10 @@ jobs:
     name: Build Backend
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write
+
     needs:
       - backend
       - changes
@@ -150,13 +161,13 @@ jobs:
 
     if: |
       (
-        github.ref == 'refs/heads/main' ||
-        github.ref == 'refs/heads/feature/v1.6-eks-migration'
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
       ) &&
       (
-        needs.changes.outputs.backend == 'true' ||
-        github.event_name == 'workflow_dispatch'
-      )
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.outputs.backend == 'true'
 
     steps:
       - name: Checkout application repository
@@ -175,16 +186,36 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Django image
+      - name: Build Django image
         uses: docker/build-push-action@v6
         with:
           context: ./bookclub
-          push: true
+          push: false
+          load: true
           platforms: linux/amd64
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          tags: bookclub:ci-backend
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
+
+      - name: Scan Django image with Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: image
+          image-ref: bookclub:ci-backend
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Tag and push Django image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag bookclub:ci-backend \
+            "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+          docker push \
+            "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
 
       - name: Set up Python
@@ -220,18 +251,21 @@ jobs:
     name: Build AI workload
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - changes
 
     if: |
       (
-        github.ref == 'refs/heads/main' ||
-        github.ref == 'refs/heads/feature/v1.6-eks-migration'
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
       ) &&
       (
-        needs.changes.outputs.ai == 'true' ||
-        github.event_name == 'workflow_dispatch'
-      )
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.outputs.ai == 'true'
 
     steps:
     - name: Checkout application repository
@@ -251,17 +285,37 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
 
-    - name: Build and push ai-service image
+    - name: Build AI image
       uses: docker/build-push-action@v6
       with:
         context: ./bookclub
         file: ./bookclub/Dockerfile.ai
-        push: true
+        push: false
+        load: true
         platforms: linux/amd64
-        tags: |
-          ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_AI_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        tags: bookclub:ci-ai
         cache-from: type=gha,scope=ai
         cache-to: type=gha,mode=max,scope=ai
+
+    - name: Scan AI image with Trivy
+      uses: aquasecurity/trivy-action@0.33.1
+      with:
+        scan-type: image
+        image-ref: bookclub:ci-ai
+        format: table
+        severity: HIGH,CRITICAL
+        ignore-unfixed: true
+        exit-code: '1'
+
+    - name: Tag and push AI image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        docker tag bookclub:ci-ai \
+          "$ECR_REGISTRY/$ECR_AI_REPOSITORY:$IMAGE_TAG"
+
+        docker push \
+          "$ECR_REGISTRY/$ECR_AI_REPOSITORY:$IMAGE_TAG"
 
   create-deployment-pr:
     name: Create Deployment PR
@@ -275,17 +329,24 @@ jobs:
     if: |
       always() &&
       (
-        needs.changes.outputs.backend == 'true' ||
-        needs.changes.outputs.ai == 'true' ||
+        github.event_name == 'push' ||
         github.event_name == 'workflow_dispatch'
       ) &&
       (
-        needs.build-backend.result == 'success' ||
-        needs.build-backend.result == 'skipped'
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.result == 'success' &&
+      (
+        needs.changes.outputs.backend == 'true' ||
+        needs.changes.outputs.ai == 'true'
       ) &&
       (
-        needs.build-ai.result == 'success' ||
-        needs.build-ai.result == 'skipped'
+        needs.changes.outputs.backend != 'true' ||
+        needs.build-backend.result == 'success'
+      ) &&
+      (
+        needs.changes.outputs.ai != 'true' ||
+        needs.build-ai.result == 'success'
       )
 
     steps:
@@ -457,19 +518,23 @@ jobs:
     name: Deploy Frontend
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write
+
     needs:
       - frontend
       - changes
 
     if: |
       (
-        github.ref == 'refs/heads/main' ||
-        github.ref == 'refs/heads/feature/v1.6-eks-migration'
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
       ) &&
       (
-        needs.changes.outputs.frontend == 'true' ||
-        github.event_name == 'workflow_dispatch'
-      )
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.outputs.frontend == 'true'
 
     steps:
       - name: Checkout code

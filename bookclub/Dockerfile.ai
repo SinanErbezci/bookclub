@@ -1,37 +1,49 @@
+# Stage 1: Builder
 FROM python:3.12-slim AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+RUN python -m venv /opt/venv
 
 COPY requirements/ai.txt .
 
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir \
-        -r ai.txt \
-        --extra-index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir \
+    -r ai.txt \
+    --extra-index-url https://download.pytorch.org/whl/cpu
 
-# Download and bake the embedding model
 RUN python -c "\
 from sentence_transformers import SentenceTransformer; \
 SentenceTransformer('BAAI/bge-small-en-v1.5', device='cpu').save('/model')" \
     && chmod -R a+rX /model
 
-COPY ai_service/ .
 
+# Stage 2: Runtime
+FROM python:3.12-slim AS runtime
 
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV MODEL_PATH=/model
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    MODEL_PATH=/model
 
 WORKDIR /app
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /model /model
+COPY ai_service/ .
+
+RUN rm -rf \
+    /opt/venv/lib/python3.12/site-packages/pip \
+    /opt/venv/lib/python3.12/site-packages/pip-* \
+    /opt/venv/lib/python3.12/site-packages/setuptools \
+    /opt/venv/lib/python3.12/site-packages/setuptools-*
 
 RUN groupadd --gid 10001 app && \
     useradd \
@@ -40,10 +52,6 @@ RUN groupadd --gid 10001 app && \
         --no-create-home \
         --shell /usr/sbin/nologin \
         app
-
-COPY --from=builder /usr/local /usr/local
-COPY --from=builder /model /model
-COPY --from=builder /app/ .
 
 USER 10001:10001
 
