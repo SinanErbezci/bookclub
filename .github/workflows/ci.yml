@@ -182,10 +182,11 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Scan Django image with Trivy
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: bookclub:pr-backend
+          version: v0.74.0
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
@@ -243,10 +244,11 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Scan Django image with Trivy
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
-          image-ref: bookclub:ci-backend
+          image-ref: bookclub:pr-backend
+          version: v0.74.0
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
@@ -343,10 +345,11 @@ jobs:
         cache-to: type=gha,mode=max,scope=ai
 
     - name: Scan AI image with Trivy
-      uses: aquasecurity/trivy-action@v0.33.1
+      uses: aquasecurity/trivy-action@v0.36.0
       with:
         scan-type: image
-        image-ref: bookclub:ci-ai
+        image-ref: bookclub:pr-backend
+        version: v0.74.0
         format: table
         severity: HIGH,CRITICAL
         ignore-unfixed: true
