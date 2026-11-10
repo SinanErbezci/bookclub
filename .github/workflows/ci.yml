@@ -192,6 +192,51 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
+
+  validate-ai-image:
+    name: Validate AI Image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    needs:
+      - changes
+
+    if: |
+      github.event_name == 'pull_request' &&
+      needs.changes.outputs.ai == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build AI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bookclub
+          file: ./bookclub/Dockerfile.ai
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: bookclub:pr-ai
+          cache-from: type=gha,scope=ai
+          cache-to: type=gha,mode=max,scope=ai
+
+      - name: Scan AI image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: bookclub:pr-ai
+          version: v0.74.0
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
   build-backend:
     name: Build Backend
     runs-on: ubuntu-latest
