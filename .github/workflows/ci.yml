@@ -431,24 +431,38 @@ jobs:
           grep -A3 "name: bookclub-ai-service" \
             k8s/applications/bookclub/overlays/production/kustomization.yaml
 
+
       - name: Create deployment branch
         working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
+          set -euo pipefail
+
           git config user.name "BookClub Deployment Bot"
           git config user.email "bookclub-deployment-bot@users.noreply.github.com"
 
           BRANCH="deploy/${IMAGE_TAG}"
+          FILE="k8s/applications/bookclub/overlays/production/kustomization.yaml"
 
-          git checkout -b "$BRANCH"
+          # Reuse the remote branch if this workflow is rerun.
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "Deployment branch already exists: $BRANCH"
+            git fetch origin "$BRANCH"
+            git switch -c "$BRANCH" --track "origin/$BRANCH"
+          else
+            git switch -c "$BRANCH"
+          fi
 
-          git add k8s/applications/bookclub/overlays/production/kustomization.yaml
+          git add "$FILE"
 
-          git commit \
-            -m "Deploy BookClub ${IMAGE_TAG}"
+          if git diff --cached --quiet; then
+            echo "No new image-tag changes to commit."
+          else
+            git commit -m "Deploy BookClub ${IMAGE_TAG}"
+            git push origin "$BRANCH"
+          fi
 
-          git push origin "$BRANCH"
       
       - name: Create deployment PR
         working-directory: ./deployment
@@ -508,11 +522,25 @@ jobs:
           "
           fi
 
-          gh pr create \
-            --base main \
+
+          EXISTING_PR=$(gh pr list \
+            --repo SinanErbezci/bookclub-deployment \
             --head "$BRANCH" \
-            --title "$TITLE" \
-            --body "$BODY"
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Deployment PR #${EXISTING_PR} already exists."
+          else
+            gh pr create \
+              --repo SinanErbezci/bookclub-deployment \
+              --base main \
+              --head "$BRANCH" \
+              --title "$TITLE" \
+              --body "$BODY"
+          fi
+
 
   frontend-deploy:
     name: Deploy Frontend
