@@ -182,7 +182,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Scan Django image with Trivy
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: image
           image-ref: bookclub:pr-backend
@@ -343,7 +343,7 @@ jobs:
         cache-to: type=gha,mode=max,scope=ai
 
     - name: Scan AI image with Trivy
-      uses: aquasecurity/trivy-action@0.33.1
+      uses: aquasecurity/trivy-action@v0.33.1
       with:
         scan-type: image
         image-ref: bookclub:ci-ai
@@ -411,6 +411,29 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: deployment
 
+
+      - name: Prepare deployment branch
+        working-directory: ./deployment
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          set -euo pipefail
+
+          BRANCH="deploy/${IMAGE_TAG}"
+
+          git config user.name "BookClub Deployment Bot"
+          git config user.email "bookclub-deployment-bot@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "Existing deployment branch found: $BRANCH"
+
+            git fetch origin "$BRANCH"
+            git switch -c "$BRANCH" --track "origin/$BRANCH"
+          else
+            echo "Creating new deployment branch: $BRANCH"
+            git switch -c "$BRANCH"
+          fi
+
       - name: Update image tags
         working-directory: ./deployment
         env:
@@ -477,36 +500,26 @@ jobs:
             k8s/applications/bookclub/overlays/production/kustomization.yaml
 
 
-      - name: Create deployment branch
+
+      - name: Commit and push deployment changes
         working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
           set -euo pipefail
 
-          git config user.name "BookClub Deployment Bot"
-          git config user.email "bookclub-deployment-bot@users.noreply.github.com"
-
           BRANCH="deploy/${IMAGE_TAG}"
           FILE="k8s/applications/bookclub/overlays/production/kustomization.yaml"
-
-          # Reuse the remote branch if this workflow is rerun.
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
-            echo "Deployment branch already exists: $BRANCH"
-            git fetch origin "$BRANCH"
-            git switch -c "$BRANCH" --track "origin/$BRANCH"
-          else
-            git switch -c "$BRANCH"
-          fi
 
           git add "$FILE"
 
           if git diff --cached --quiet; then
-            echo "No new image-tag changes to commit."
+            echo "No image-tag changes detected."
           else
             git commit -m "Deploy BookClub ${IMAGE_TAG}"
             git push origin "$BRANCH"
           fi
+
 
       
       - name: Create deployment PR
@@ -571,7 +584,7 @@ jobs:
           EXISTING_PR=$(gh pr list \
             --repo SinanErbezci/bookclub-deployment \
             --head "$BRANCH" \
-            --state open \
+            --state all \
             --json number \
             --jq '.[0].number // empty')
 
