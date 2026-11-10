@@ -1,0 +1,13 @@
+Welcome, {{ username }}!
+
+Your BookClub account is ready.
+
+Discover books, explore authors and genres, create reading lists,
+and share your reviews with the BookClub community.
+
+Explore BookClub:
+https://bookclub.sinanerbezci.com
+
+Happy reading!
+
+The BookClub team

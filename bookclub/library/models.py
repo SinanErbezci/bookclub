@@ -6,6 +6,8 @@ from decimal import Decimal
 # Create your models here.
 
 class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    
     MALE = "M"
     FEMALE = "F"
     OTHER = "O"

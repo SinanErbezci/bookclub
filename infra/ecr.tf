@@ -1,12 +1,21 @@
 resource "aws_ecr_repository" "bookclub" {
   name = "bookclub"
 
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = "IMMUTABLE"
 
   image_scanning_configuration {
     scan_on_push = false
   }
 
+}
+
+resource "aws_ecr_repository" "bookclub_ai" {
+  name                 = "bookclub-ai"
+  image_tag_mutability = "IMMUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
 }
 
 resource "aws_ecr_lifecycle_policy" "bookclub" {
@@ -22,6 +31,29 @@ resource "aws_ecr_lifecycle_policy" "bookclub" {
           tagStatus   = "any"
           countType   = "imageCountMoreThan"
           countNumber = 30
+        }
+
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_ecr_lifecycle_policy" "bookclub_ai" {
+  repository = aws_ecr_repository.bookclub_ai.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep last 10 images"
+
+        selection = {
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 10
         }
 
         action = {

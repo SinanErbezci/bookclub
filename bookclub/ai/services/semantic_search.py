@@ -10,7 +10,8 @@ from pgvector.django import CosineDistance
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .embeddings import EmbeddingService
+    from .ai_client import AIClient
+
 from library.models import Book
 from ai.models import BookEmbedding
 
@@ -22,12 +23,12 @@ class SemanticSearchService:
 
     def __init__(
         self,
-        embedding_service: EmbeddingService | None = None,
+        embedding_service: AIClient | None = None,
     ) -> None:
         if embedding_service is None:
-            from .embeddings import EmbeddingService
+            from .ai_client import AIClient
 
-            embedding_service = EmbeddingService()
+            embedding_service = AIClient()
 
         self.embedding_service = embedding_service
 

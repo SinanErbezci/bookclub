@@ -1,6 +1,8 @@
 from .base import *
 import os
 import dj_database_url
+from datetime import timedelta
+
 
 DEBUG = False
 
@@ -13,11 +15,6 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-private_ip = os.getenv("EC2_PRIVATE_IP")
-
-if private_ip:
-    ALLOWED_HOSTS.append(private_ip)
-
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOW_CREDENTIALS = True
@@ -27,13 +24,48 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://bookclub.sinanerbezci.com",    
+    "https://bookclub.sinanerbezci.com",
 ]
 
 DATABASES = {
     "default": dj_database_url.config(
         default=os.environ["DATABASE_URL"]
     )
+}
+
+DATABASES["default"]["ENGINE"] = (
+    "django_prometheus.db.backends.postgresql"
+)
+
+REDIS_URL = os.environ["REDIS_URL"]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": REDIS_URL,
+    }
+}
+
+CELERY_BROKER_URL = "sqs://"
+
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "region": os.environ["AWS_REGION"],
+    "visibility_timeout": 3600,
+    "polling_interval": 1,
+    "predefined_queues": {
+        "bookclub-celery": {
+            "url": os.environ["CELERY_QUEUE_URL"],
+        }
+    },
+}
+
+CELERY_TASK_DEFAULT_QUEUE = "bookclub-celery"
+
+CELERY_BEAT_SCHEDULE = {
+    "refresh-random-homepage": {
+        "task": "library.tasks.refresh_random_homepage",
+        "schedule": timedelta(hours=1),
+    },
 }
 
 SESSION_COOKIE_SAMESITE = "None"
@@ -43,6 +75,12 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 SECURE_SSL_REDIRECT = True
+
+SECURE_REDIRECT_EXEMPT = [
+    r"^metrics$",
+    r"^health/live/$",
+    r"^health/ready/$",
+]
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -54,4 +92,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_REDIRECT_EXEMPT = [r"^health/$"]
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "noreply@sinanerbezci.com"

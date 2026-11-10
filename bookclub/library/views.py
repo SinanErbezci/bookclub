@@ -1,12 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
-from django.db import connection
-from django.contrib import messages
+from django.db import  transaction
 from django.contrib.auth import authenticate,login, logout, get_user_model
-from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django.utils.decorators import method_decorator
-from django.views import generic
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -15,11 +12,10 @@ from .pagination import BookPagination, ReviewPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
+from django.core.cache import cache
 from django.middleware.csrf import get_token
 from .models import Book, Author, User, Genre, Review, List, ListBook, Series
-# from .documents import BookDocument, AuthorDocument, GenreDocument
-# from elasticsearch_dsl.query import Match
-import json
 from .serializers import BookSerializer, AuthorSerializer, BookListSerializer, GenreSerializer, ReviewSerializer, ListSerializer
 from rest_framework import  status
 from rest_framework.response import Response
@@ -33,7 +29,11 @@ from django.db.models import  Avg
 from ai.services.recommendations import RecommendationService
 from ai.services.explanations import ExplanationService
 from ai.services.summary.factory import get_summary_provider
+from .tasks import send_welcome_email
 
+import logging
+
+logger = logging.getLogger(__name__)
 # ====== API Views ======
 
 # Helper Functions
@@ -49,16 +49,6 @@ def update_book_rating(book):
 
 User = get_user_model()
 
-def health_check(request):
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-        return JsonResponse({"status": "healthy"})
-    except Exception:
-        return JsonResponse(
-            {"status": "unhealthy"},
-            status=503,)
-
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CSRFAPIView(APIView):
     permission_classes = []  # AllowAny
@@ -69,6 +59,7 @@ class CSRFAPIView(APIView):
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "login"
 
     def post(self, request):
         username = request.data.get("username")
@@ -107,43 +98,76 @@ class MeAPIView(APIView):
 
 class SignupAPIView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = "signup"
 
     def post(self, request):
         username = request.data.get("username")
+        email = request.data.get("email")
         password = request.data.get("password")
 
-        if not username or not password:
-            return Response({"error": "Username and password required"}, status=400)
+        if not username or not email or not password:
+            return Response(
+                {"error": "Username, email, and password required"},
+                status=400,
+            )
 
         if User.objects.filter(username=username).exists():
-            return Response({"error": "Username already taken"}, status=400)
-        
+            return Response(
+                {"error": "Username already taken"},
+                status=400,
+            )
+
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {"error": "Email already registered"},
+                status=400,
+            )
+
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response(
+                {"error": "Enter a valid email address"},
+                status=400,
+            )
+
         try:
             validate_password(password)
         except DjangoValidationError as e:
-            return Response({"error": e.messages[0]}, status=400)
-        
-        user = User.objects.create_user(username=username, password=password)
-
-        List.objects.bulk_create([
-            List(
-                user=user,
-                name="Favourites",
-                is_system=True
-            ),
-            List(
-                user=user,
-                name="Want to Read",
-                is_system=True
+            return Response(
+                {"error": e.messages[0]},
+                status=400,
             )
-        ])
 
-        # auto login after signup
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+            )
+
+            List.objects.bulk_create([
+                List(
+                    user=user,
+                    name="Favourites",
+                    is_system=True,
+                ),
+                List(
+                    user=user,
+                    name="Want to Read",
+                    is_system=True,
+                ),
+            ])
+
+            transaction.on_commit(lambda: send_welcome_email.delay(user.id))
+            # auto login after signup
+
         login(request, user)
 
         return Response({
             "id": user.id,
-            "username": user.username
+            "username": user.username,
+            "email": user.email,
         })
     
 class BookViewSet(ReadOnlyModelViewSet):
@@ -188,37 +212,90 @@ class BookRecommendationsAPIVieW(APIView):
             pk=book_id,
         )
 
-        service = RecommendationService()
+        cache_key = f"recommendations:book:v1:{book_id}"
 
-        recommendations = service.recommend(book)
+        cached_ids = cache.get(cache_key)
 
-        serializer = BookListSerializer(recommendations, many=True)
+        if cached_ids is not None:
+            logger.info("Cache hit: %s", cache_key)
+
+            books_by_id = Book.objects.in_bulk(cached_ids)
+
+            recommendations = [
+                books_by_id[book_id]
+                for book_id in cached_ids
+                if book_id in books_by_id
+            ]
+
+        else:
+            logger.info("Cache miss: %s", cache_key)
+
+            service = RecommendationService()
+
+            recommendations = service.recommend(book)
+
+            recommendation_ids = [
+                recommendation.id
+                for recommendation in recommendations
+            ]
+
+            cache.set(
+                cache_key,
+                recommendation_ids,
+                timeout=60 * 60,
+            )
+
+        serializer = BookListSerializer(
+            recommendations,
+            many=True,
+        )
 
         return Response(serializer.data)
 
 class BookRecommendationExplanationAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = "ai_explanation"
 
     def get(self, request, source_id, recommended_id):
         source_book = get_object_or_404(
             Book,
-            pk=source_id
+            pk=source_id,
         )
 
         recommended_book = get_object_or_404(
             Book,
-            pk=recommended_id
+            pk=recommended_id,
         )
 
-        provider = get_summary_provider()
-        service = ExplanationService(provider=provider)
+        cache_key = (
+            f"recommendation-explanation:v1:"
+            f"{source_id}:{recommended_id}"
+        )
 
-        explanation = service.explain_book_recommendation(source_book, recommended_book)
+        explanation = cache.get(cache_key)
+
+        if explanation is None:
+            logger.info("Cache miss: %s", cache_key)
+            provider = get_summary_provider()
+            service = ExplanationService(provider=provider)
+
+            explanation = service.explain_book_recommendation(
+                source_book,
+                recommended_book,
+            )
+
+            cache.set(
+                cache_key,
+                explanation,
+                timeout=60 * 60 * 24,
+            )
+        else:
+            logger.info("Cache hit: %s", cache_key)
 
         return Response({
-            "explanation": explanation
+            "explanation": explanation,
         })
-
+    
 class AuthorViewSet(ReadOnlyModelViewSet):
     queryset = Author.objects.all()
 
@@ -252,13 +329,27 @@ class SeriesDetailAPIView(APIView):
     
 class RandomAuthorAPIView(APIView):
     def get(self, request):
-        author = (
-            Author.objects
-            .annotate(book_count=Count("books"))
-            .filter(book_count__gte=4)
-            .order_by("?")
-            .first()
-        )
+        author = None
+        author_id = cache.get("homepage:random:author")
+
+        if author_id is not None:
+            author = Author.objects.filter(id=author_id).first()
+
+        if author is None:
+            author = (
+                Author.objects
+                .annotate(book_count=Count("books"))
+                .filter(book_count__gte=4)
+                .order_by("?")
+                .first()
+            )
+
+            if author is not None:
+                cache.set(
+                    "homepage:random:author",
+                    author.id,
+                    timeout=60 * 60,
+                )
 
         if not author:
             return Response(
@@ -273,34 +364,50 @@ class RandomAuthorAPIView(APIView):
             "name": author.name,
             "books": BookListSerializer(
                 books,
-                many=True
+                many=True,
             ).data,
         })
     
 class RandomGenreAPIView(APIView):
     def get(self, request):
-        genre = (
-            Genre.objects
-            .annotate(book_count=Count("books"))
-            .filter(book_count__gte=4)
-            .order_by("?")
-            .first()
-        )
+        genre = None
+        genre_id = cache.get("homepage:random:genre")
+
+        if genre_id is not None:
+            genre = Genre.objects.filter(id=genre_id).first()
+
+        if genre is None:
+            genre = (
+                Genre.objects
+                .annotate(book_count=Count("books"))
+                .filter(book_count__gte=4)
+                .order_by("?")
+                .first()
+            )
+
+            if genre is not None:
+                cache.set(
+                    "homepage:random:genre",
+                    genre.id,
+                    timeout=60 * 60,
+                )
 
         if not genre:
             return Response(
                 {"detail": "No genre with at least 4 books found."},
                 status=404,
             )
-        
+
         books = genre.books.all()[:4]
 
         return Response({
             "id": genre.id,
             "name": genre.name,
-            "books": BookListSerializer(books, many=True).data
+            "books": BookListSerializer(
+                books,
+                many=True,
+            ).data,
         })
-
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer

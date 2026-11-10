@@ -38,13 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'rest_framework',
     'django_filters',
     'corsheaders',
     'ai',
+    'django_prometheus',
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "mysite.middleware.OperationalEndpointMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     
     'django.middleware.security.SecurityMiddleware',
@@ -56,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -76,25 +81,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-# DATABASES = {
-# "default": {
-#     "ENGINE": "django.db.backends.postgresql",
-#     "NAME": os.environ.get("DB_NAME", "bookclub"),
-#     "USER": os.environ.get("DB_USER", "bookclub"),
-#     "PASSWORD": os.environ.get("DB_PASSWORD", "bookclubpass"),
-#     "HOST": os.environ.get("DB_HOST", "localhost"),
-#     "PORT": os.environ.get("DB_PORT", "5432"),
-# }
-# }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_USER_MODEL = "library.User"
 
@@ -117,22 +103,34 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
+
     "DEFAULT_FILTER_BACKENDS": [
-    "django_filters.rest_framework.DjangoFilterBackend"
+        "django_filters.rest_framework.DjangoFilterBackend"
     ],
+
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
 
+    "NUM_PROXIES": 1,
+
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
     ],
 
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/day",
-        "user": "1000/day",
-    }
+        "anon": "300/hour",
+        "user": "1000/hour",
+
+        "login": "10/minute",
+        "signup": "5/hour",
+
+        "search": "60/minute",
+        "semantic_search": "20/minute",
+        "ai_explanation": "10/hour",
+    },
 }
 
 CORS_ALLOW_CREDENTIALS = True
@@ -199,5 +197,14 @@ LOGGING = {
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 EMBEDDING_DEVICE = "cpu"
 
+AI_SERVICE_URL = os.getenv(
+    "AI_SERVICE_URL",
+    "http://localhost:8001",
+)
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+
+OBSERVABILITY_TEST_ENDPOINTS = (
+    os.getenv("OBSERVABILITY_TEST_ENDPOINTS", "false").lower() == "true"
+)

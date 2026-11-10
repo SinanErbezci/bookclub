@@ -1,31 +1,3 @@
-resource "aws_iam_policy" "deploy_assets_read" {
-  name = "bookclub-deploy-assets-read"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Effect = "Allow"
-
-        Action = [
-          "s3:ListBucket"
-        ]
-
-        Resource = aws_s3_bucket.deploy_assets.arn
-      },
-      {
-        Effect = "Allow"
-
-        Action = [
-          "s3:GetObject"
-        ]
-
-        Resource = "${aws_s3_bucket.deploy_assets.arn}/*"
-      }
-    ]
-  })
-}
 
 # github-action-role
 resource "aws_iam_role" "github_actions" {
@@ -51,7 +23,8 @@ resource "aws_iam_role" "github_actions" {
 
           StringLike = {
             "token.actions.githubusercontent.com:sub" = [
-              "repo:SinanErbezci/bookclub:ref:refs/heads/main"
+              "repo:SinanErbezci/bookclub:ref:refs/heads/main",
+              "repo:SinanErbezci/bookclub:ref:refs/heads/feature/v1.6-eks-migration"
             ]
           }
         }
@@ -83,7 +56,7 @@ resource "aws_iam_policy" "github_actions" {
           "ecr:BatchGetImage",
         ]
 
-        Resource = aws_ecr_repository.bookclub.arn
+        Resource = [aws_ecr_repository.bookclub.arn, aws_ecr_repository.bookclub_ai.arn]
       },
 
       {
@@ -92,38 +65,6 @@ resource "aws_iam_policy" "github_actions" {
 
         Action = [
           "ecr:GetAuthorizationToken"
-        ]
-
-        Resource = "*"
-      },
-
-      {
-        Sid    = "ECSRunTaskPassRole"
-        Effect = "Allow"
-
-        Action = [
-          "iam:PassRole"
-        ]
-
-        Resource = aws_iam_role.ecs_task_execution.arn
-
-        Condition = {
-          StringEquals = {
-            "iam:PassedToService" = "ecs-tasks.amazonaws.com"
-          }
-        }
-      },
-
-      {
-        Sid    = "ECSDeployment"
-        Effect = "Allow"
-
-        Action = [
-          "ecs:DescribeServices",
-          "ecs:DescribeTaskDefinition",
-          "ecs:RunTask",
-          "ecs:DescribeTasks",
-          "ecs:UpdateService",
         ]
 
         Resource = "*"
@@ -180,33 +121,6 @@ resource "aws_iam_policy" "github_actions" {
 
         Resource = "${aws_s3_bucket.django_static.arn}/*"
       },
-      # Deploy assets bucket
-
-      {
-        Sid    = "S3DeployAssetsBucket"
-        Effect = "Allow"
-
-        Action = [
-          "s3:ListBucket",
-          "s3:GetBucketLocation"
-        ]
-
-        Resource = aws_s3_bucket.deploy_assets.arn
-      },
-
-      {
-        Sid    = "S3DeployAssetsObjects"
-        Effect = "Allow"
-
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject"
-        ]
-
-        Resource = "${aws_s3_bucket.deploy_assets.arn}/*"
-      },
-
       {
         Sid    = "CloudFrontInvalidation"
         Effect = "Allow"
@@ -214,17 +128,6 @@ resource "aws_iam_policy" "github_actions" {
         Action = [
           "cloudfront:CreateInvalidation",
           "cloudfront:GetDistribution"
-        ]
-
-        Resource = "*"
-      },
-
-      {
-        Sid    = "STSIdentity"
-        Effect = "Allow"
-
-        Action = [
-          "sts:GetCallerIdentity"
         ]
 
         Resource = "*"

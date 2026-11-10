@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 
 from pgvector.django import CosineDistance
+from django.db import connection,  transaction
 
 from library.models import Book
 from ai.models import BookEmbedding
@@ -64,15 +65,6 @@ class RecommendationService:
             len(recommendations),
         )
 
-        for candidate in recommendations:
-            print(
-                f"{candidate.book.title[:40]:40}"
-                f"{candidate.debug.get('similarity', 0):8.3f}"
-                f"{candidate.debug.get('shared_genres', 0):8}"
-                f"{candidate.debug.get('genre_bonus', 0):8.3f}"
-                f"{candidate.score:8.3f}"
-            )
-
         return [
             candidate.book
             for candidate in recommendations
@@ -83,28 +75,37 @@ class RecommendationService:
         self,
         book: Book,
         embedding: list[float],
-        candidate_limit: int = 100,
+        candidate_limit: int = 50,
     ) -> list[RecommendationCandidate]:
         """
         Retrieve the most semantically similar books.
         """
-        embeddings = list(
-            BookEmbedding.objects
-            .filter(
-                embedding_type=BookEmbedding.EmbeddingType.SUMMARY_NO_TITLE,
-            )
-            .exclude(
-                book=book,
-            )
-            .select_related("book")
-            .annotate(
-                distance=CosineDistance(
-                    "embedding",
-                    embedding,
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SET LOCAL hnsw.ef_search = %s",
+                    [60],
                 )
+
+            embeddings = list(
+                BookEmbedding.objects
+                .filter(
+                    embedding_type=BookEmbedding.EmbeddingType.SUMMARY_NO_TITLE,
+                )
+                .exclude(
+                    book=book,
+                )
+                .select_related("book")
+                .prefetch_related("book__genres")
+                .annotate(
+                    distance=CosineDistance(
+                        "embedding",
+                        embedding,
+                    )
+                )
+                .order_by("distance")[:candidate_limit]
             )
-            .order_by("distance")[:candidate_limit]
-        )
+        
         candidates = []
 
         for item in embeddings:
@@ -145,7 +146,11 @@ class RecommendationService:
             for genre in book.genres.all()
         }
 
+        examined = 0
+
         for candidate in candidates:
+            examined += 1
+
             if not self._same_language(book, candidate):
                 continue
 
@@ -157,7 +162,7 @@ class RecommendationService:
 
             if self._has_seen_author(candidate, seen_authors):
                 continue
-            
+
             recommendations.append(candidate)
 
             if candidate.book.series_id is not None:
@@ -174,8 +179,16 @@ class RecommendationService:
             if len(recommendations) == limit:
                 break
 
+        logger.info(
+            "Recommendation filtering: "
+            "examined=%d available=%d returned=%d "
+            "language=%d collection=%d series=%d author=%d",
+            examined,
+            len(candidates),
+            len(recommendations),
+        )
 
-        return recommendations
+        return recommendations    
     
     def _is_collection(
         self,

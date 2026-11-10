@@ -16,26 +16,19 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  id-token: write
   contents: read
 
 env:
   IMAGE_TAG: ${{ github.sha }}
   AWS_REGION: eu-west-3
   ECR_REPOSITORY: bookclub
-  ECS_CLUSTER: bookclub
-  ECS_SERVICE: bookclub
+  ECR_AI_REPOSITORY: bookclub-ai
   DJANGO_STATIC_BUCKET: sinan-bookclub-static
   VITE_API_URL: https://api.sinanerbezci.com/api
 
 jobs:
-
-  # --------------------------------------------------
-  # Backend checks
-  # --------------------------------------------------
-
   backend:
-    name: Backend
+    name: Backend Checks
     runs-on: ubuntu-latest
 
     defaults:
@@ -53,7 +46,7 @@ jobs:
 
       - name: Install CI dependencies
         run: |
-          pip install -r requirements-ci.txt
+          pip install -r requirements/django.txt
 
       - name: Check Django setup
         env:
@@ -61,15 +54,13 @@ jobs:
           DJANGO_SETTINGS_MODULE: mysite.settings.production
           DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          REDIS_URL: redis://localhost:6379/0
+          CELERY_QUEUE_URL: dummy
         run: |
           python manage.py check
 
-  # --------------------------------------------------
-  # Frontend checks
-  # --------------------------------------------------
-
   frontend:
-    name: Frontend
+    name: Frontend Checks
     runs-on: ubuntu-latest
 
     defaults:
@@ -103,56 +94,175 @@ jobs:
     name: Detect Changes
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: read
+
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-      deployment: ${{ steps.filter.outputs.deployment }}
+      backend: ${{ steps.filter.outputs.backend == 'true' || github.event_name == 'workflow_dispatch' }}
+      frontend: ${{ steps.filter.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' }}
+      ai: ${{ steps.filter.outputs.ai == 'true' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show changed files
+        if: github.event_name == 'push'
+        run: |
+          echo "Before: ${{ github.event.before }}"
+          echo "After:  ${{ github.sha }}"
+          echo
+
+          git diff --name-status \
+            "${{ github.event.before }}" \
+            "${{ github.sha }}"
 
       - name: Detect changed paths
+        if: github.event_name != 'workflow_dispatch'
         id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
             backend:
-              - 'bookclub/**'
+              - 'bookclub/ai/**'
+              - 'bookclub/library/**'
+              - 'bookclub/mysite/**'
+              - 'bookclub/manage.py'
+              - 'bookclub/Dockerfile'
+              - 'bookclub/requirements/django.txt'
+              - 'bookclub/.dockerignore'
+              - '.github/workflows/ci.yml'
+
+            ai:
+              - 'bookclub/ai_service/**'
+              - 'bookclub/requirements/ai.txt'
+              - 'bookclub/Dockerfile.ai'
+              - 'bookclub/.dockerignore'
+              - '.github/workflows/ci.yml'
 
             frontend:
               - 'frontend/**'
 
-            deployment:
-              - '.github/workflows/**'
-  # --------------------------------------------------
-  # Deploy backend + static files
-  # --------------------------------------------------
 
-  deploy:
-    name: Deploy Backend
+  validate-backend-image:
+    name: Validate Backend Image
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
 
     needs:
       - backend
-      - frontend
       - changes
 
     if: |
-      github.ref == 'refs/heads/main' &&
-      (
-        needs.changes.outputs.backend == 'true' ||
-        needs.changes.outputs.deployment == 'true' ||
-        github.event_name == 'workflow_dispatch'
-      )
+      github.event_name == 'pull_request' &&
+      needs.changes.outputs.backend == 'true'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ----------------------------------------------
-      # AWS
-      # ----------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Django image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bookclub
+          file: ./bookclub/Dockerfile
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: bookclub:pr-backend
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Scan Django image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: bookclub:pr-backend
+          version: v0.74.0
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+
+  validate-ai-image:
+    name: Validate AI Image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    needs:
+      - changes
+
+    if: |
+      github.event_name == 'pull_request' &&
+      needs.changes.outputs.ai == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build AI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./bookclub
+          file: ./bookclub/Dockerfile.ai
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: bookclub:pr-ai
+          cache-from: type=gha,scope=ai
+          cache-to: type=gha,mode=max,scope=ai
+
+      - name: Scan AI image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: bookclub:pr-ai
+          version: v0.74.0
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    needs:
+      - backend
+      - changes
+
+
+    if: |
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      ) &&
+      (
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.outputs.backend == 'true'
+
+    steps:
+      - name: Checkout application repository
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -163,42 +273,42 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      # ----------------------------------------------
-      # Backend Docker image
-      # ----------------------------------------------
 
-      - name: Build and push backend image
+      - name: Build Django image
         uses: docker/build-push-action@v6
         with:
           context: ./bookclub
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          push: false
+          load: true
+          platforms: linux/amd64
+          tags: bookclub:ci-backend
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
-      # ----------------------------------------------
-      # nginx Docker image
-      # ----------------------------------------------
 
-      - name: Build and push nginx image
-        uses: docker/build-push-action@v6
+      - name: Scan Django image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          context: ./bookclub
-          file: ./bookclub/nginx/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:nginx
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:nginx-${{ env.IMAGE_TAG }}
-          cache-from: type=gha,scope=nginx
-          cache-to: type=gha,mode=max,scope=nginx
-      # ----------------------------------------------
-      # Django static files
-      # ----------------------------------------------
+          scan-type: image
+          image-ref: bookclub:ci-backend
+          version: v0.74.0
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+      - name: Tag and push Django image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker tag bookclub:ci-backend \
+            "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+          docker push \
+            "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -208,7 +318,7 @@ jobs:
       - name: Install CI dependencies
         working-directory: ./bookclub
         run: |
-          pip install -r requirements-ci.txt
+          pip install -r requirements/django.txt
 
       - name: Collect Django static files
         working-directory: ./bookclub
@@ -217,6 +327,8 @@ jobs:
           DJANGO_SETTINGS_MODULE: mysite.settings.production
           DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
           DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+          REDIS_URL: redis://localhost:6379/0
+          CELERY_QUEUE_URL: dummy
         run: |
           python manage.py collectstatic --noinput
 
@@ -226,119 +338,416 @@ jobs:
             bookclub/staticfiles/ \
             s3://${{ env.DJANGO_STATIC_BUCKET }}/ \
             --delete
-      # ----------------------------------------------
-      # Django database migrations
-      # ----------------------------------------------
 
-      - name: Run Django migrations
+  build-ai:
+    name: Build AI workload
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+    needs:
+      - changes
+
+    if: |
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      ) &&
+      (
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.outputs.ai == 'true'
+
+    steps:
+    - name: Checkout application repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::796973519136:role/github-actions-bookclub
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+
+    - name: Build AI image
+      uses: docker/build-push-action@v6
+      with:
+        context: ./bookclub
+        file: ./bookclub/Dockerfile.ai
+        push: false
+        load: true
+        platforms: linux/amd64
+        tags: bookclub:ci-ai
+        cache-from: type=gha,scope=ai
+        cache-to: type=gha,mode=max,scope=ai
+
+    - name: Scan AI image with Trivy
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        scan-type: image
+        image-ref: bookclub:ci-ai
+        version: v0.74.0
+        format: table
+        severity: HIGH,CRITICAL
+        ignore-unfixed: true
+        exit-code: '1'
+
+    - name: Tag and push AI image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        docker tag bookclub:ci-ai \
+          "$ECR_REGISTRY/$ECR_AI_REPOSITORY:$IMAGE_TAG"
+
+        docker push \
+          "$ECR_REGISTRY/$ECR_AI_REPOSITORY:$IMAGE_TAG"
+
+  create-deployment-pr:
+    name: Create Deployment PR
+    runs-on: ubuntu-latest
+
+    needs:
+      - changes
+      - build-backend
+      - build-ai
+
+    if: |
+      always() &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      ) &&
+      (
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.result == 'success' &&
+      (
+        needs.changes.outputs.backend == 'true' ||
+        needs.changes.outputs.ai == 'true'
+      ) &&
+      (
+        needs.changes.outputs.backend != 'true' ||
+        needs.build-backend.result == 'success'
+      ) &&
+      (
+        needs.changes.outputs.ai != 'true' ||
+        needs.build-ai.result == 'success'
+      )
+
+    steps:
+      - name: Create deployment repository token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.BOOKCLUB_DEPLOYMENT_APP_ID }}
+          private-key: ${{ secrets.BOOKCLUB_DEPLOYMENT_PRIVATE_KEY }}
+          owner: SinanErbezci
+          repositories: bookclub-deployment
+
+      - name: Checkout deployment repository
+        uses: actions/checkout@v4
+        with:
+          repository: SinanErbezci/bookclub-deployment
+          token: ${{ steps.app-token.outputs.token }}
+          path: deployment
+
+      - name: Check existing deployment PR
+        id: deployment-pr
+        working-directory: ./deployment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          set -e
+          set -euo pipefail
 
-          echo "Getting network configuration from ECS service..."
+          BRANCH="deploy/${IMAGE_TAG}"
 
-          NETWORK_CONFIG=$(aws ecs describe-services \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --services "${{ env.ECS_SERVICE }}" \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'services[0].networkConfiguration' \
-            --output json)
+          EXISTING_PR=$(gh pr list \
+            --repo SinanErbezci/bookclub-deployment \
+            --head "$BRANCH" \
+            --state all \
+            --json number \
+            --jq '.[0].number // empty')
 
-          echo "$NETWORK_CONFIG"
-
-          echo "Starting migration task..."
-
-          TASK_ARN=$(aws ecs run-task \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --task-definition bookclub \
-            --launch-type FARGATE \
-            --platform-version LATEST \
-            --network-configuration "$NETWORK_CONFIG" \
-            --overrides '{
-              "containerOverrides": [
-                {
-                  "name": "web",
-                  "command": [
-                    "python",
-                    "manage.py",
-                    "migrate",
-                    "--noinput"
-                  ]
-                }
-              ]
-            }' \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'tasks[0].taskArn' \
-            --output text)
-
-          echo "Migration task: $TASK_ARN"
-
-          aws ecs wait tasks-stopped \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --tasks "$TASK_ARN" \
-            --region "${{ env.AWS_REGION }}"
-
-          EXIT_CODE=$(aws ecs describe-tasks \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --tasks "$TASK_ARN" \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'tasks[0].containers[?name==`web`].exitCode | [0]' \
-            --output text)
-
-          echo "Migration exit code: $EXIT_CODE"
-
-          if [ "$EXIT_CODE" != "0" ]; then
-            echo "Database migration failed."
-            exit 1
+          if [ -z "$EXISTING_PR" ]; then
+            echo "No existing deployment PR."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          echo "Database migration completed successfully."
+          PR_STATE=$(gh pr view "$EXISTING_PR" \
+            --repo SinanErbezci/bookclub-deployment \
+            --json state \
+            --jq '.state')
 
-      # ----------------------------------------------
-      # ECS deployment
-      # ----------------------------------------------
+          case "$PR_STATE" in
+            OPEN)
+              echo "Deployment PR #${EXISTING_PR} already open."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              ;;
+            MERGED)
+              echo "Deployment PR #${EXISTING_PR} already merged."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              ;;
+            CLOSED)
+              echo "::error::Deployment PR #${EXISTING_PR} closed without merging."
+              exit 1
+              ;;
+            *)
+              echo "::error::Unexpected PR state: ${PR_STATE}"
+              exit 1
+              ;;
+          esac
 
-      - name: Force ECS deployment
+      - name: Prepare deployment branch
+        if: steps.deployment-pr.outputs.proceed == 'true'
+        working-directory: ./deployment
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+
         run: |
-          aws ecs update-service \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --service "${{ env.ECS_SERVICE }}" \
-            --force-new-deployment \
-            --region "${{ env.AWS_REGION }}"
+          set -euo pipefail
 
-      - name: Wait for ECS deployment
+          BRANCH="deploy/${IMAGE_TAG}"
+
+          git config user.name "BookClub Deployment Bot"
+          git config user.email "bookclub-deployment-bot@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "Existing deployment branch found: $BRANCH"
+
+            git fetch origin "$BRANCH"
+            git switch -c "$BRANCH" --track "origin/$BRANCH"
+          else
+            echo "Creating new deployment branch: $BRANCH"
+            git switch -c "$BRANCH"
+          fi
+
+      - name: Update image tags
+        if: steps.deployment-pr.outputs.proceed == 'true'
+        working-directory: ./deployment
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          AI_CHANGED: ${{ needs.changes.outputs.ai }}
         run: |
-          aws ecs wait services-stable \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --services "${{ env.ECS_SERVICE }}" \
-            --region "${{ env.AWS_REGION }}"
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
 
-      - name: Check ECS service
+          path = Path(
+              "k8s/applications/bookclub/overlays/production/kustomization.yaml"
+          )
+
+          text = path.read_text()
+
+          if os.environ["BACKEND_CHANGED"] == "true":
+              pattern = (
+                  r"(- name: bookclub-django\s*"
+                  r"newName: [^\n]+\s*"
+                  r"newTag: )([^\n]+)"
+              )
+
+              text, count = re.subn(
+                  pattern,
+                  rf"\g<1>{os.environ['IMAGE_TAG']}",
+                  text,
+                  count=1,
+              )
+
+              if count != 1:
+                  raise SystemExit(
+                      "Could not find the bookclub-django image entry."
+                  )
+
+          if os.environ["AI_CHANGED"] == "true":
+              pattern = (
+                  r"(- name: bookclub-ai-service\s*"
+                  r"newName: [^\n]+\s*"
+                  r"newTag: )([^\n]+)"
+              )
+
+              text, count = re.subn(
+                  pattern,
+                  rf"\g<1>{os.environ['IMAGE_TAG']}",
+                  text,
+                  count=1,
+              )
+
+              if count != 1:
+                  raise SystemExit(
+                      "Could not find the bookclub-ai-service image entry."
+                  )
+
+          path.write_text(text)
+          PY
+
+          echo "Resulting image configuration:"
+          grep -A3 "name: bookclub-django" \
+            k8s/applications/bookclub/overlays/production/kustomization.yaml
+          grep -A3 "name: bookclub-ai-service" \
+            k8s/applications/bookclub/overlays/production/kustomization.yaml
+
+
+
+      - name: Commit and push deployment changes
+        if: steps.deployment-pr.outputs.proceed == 'true'
+        working-directory: ./deployment
+        env:
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          aws ecs describe-services \
-            --cluster "${{ env.ECS_CLUSTER }}" \
-            --services "${{ env.ECS_SERVICE }}" \
-            --region "${{ env.AWS_REGION }}" \
-            --query 'services[0].{Status:status,Desired:desiredCount,Running:runningCount,Pending:pendingCount}'
+          set -euo pipefail
 
-  # --------------------------------------------------
-  # Frontend deployment
-  # --------------------------------------------------
+          BRANCH="deploy/${IMAGE_TAG}"
+          FILE="k8s/applications/bookclub/overlays/production/kustomization.yaml"
+
+          git add "$FILE"
+
+          if git diff --cached --quiet; then
+            echo "No image-tag changes detected."
+          else
+            git commit -m "Deploy BookClub ${IMAGE_TAG}"
+            git push origin "$BRANCH"
+          fi
+
+
+      
+      - name: Create deployment PR
+        if: steps.deployment-pr.outputs.proceed == 'true'
+        working-directory: ./deployment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          AI_CHANGED: ${{ needs.changes.outputs.ai }}
+        run: |
+          set -euo pipefail
+          BRANCH="deploy/${IMAGE_TAG}"
+
+          if [ "$BACKEND_CHANGED" = "true" ] && [ "$AI_CHANGED" = "true" ]; then
+            TITLE="Deploy Django + AI ${IMAGE_TAG}"
+            BODY="## Deployment
+
+          Update Django and AI service images to:
+
+          \`${IMAGE_TAG}\`
+
+          Both images have already been built and pushed to Amazon ECR.
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          elif [ "$BACKEND_CHANGED" = "true" ]; then
+            TITLE="Deploy Django ${IMAGE_TAG}"
+            BODY="## Deployment
+
+          Update the Django image to:
+
+          \`${IMAGE_TAG}\`
+
+          The image has already been built and pushed to Amazon ECR.
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          elif [ "$AI_CHANGED" = "true" ]; then
+            TITLE="Deploy AI service ${IMAGE_TAG}"
+            BODY="## Deployment
+
+          Update the AI service image to:
+
+          \`${IMAGE_TAG}\`
+
+          The image has already been built and pushed to Amazon ECR.
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          else
+            TITLE="Deploy BookClub ${IMAGE_TAG}"
+            BODY="## Deployment
+
+          Update the BookClub application images to:
+
+          \`${IMAGE_TAG}\`
+
+          After this PR is merged, Argo CD will reconcile the production environment.
+          "
+          fi
+
+          # Find an existing PR for this deployment branch.
+          EXISTING_PR=$(gh pr list \
+            --repo SinanErbezci/bookclub-deployment \
+            --head "$BRANCH" \
+            --state all \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "$EXISTING_PR" ]; then
+            PR_STATE=$(gh pr view "$EXISTING_PR" \
+              --repo SinanErbezci/bookclub-deployment \
+              --json state \
+              --jq '.state')
+
+            case "$PR_STATE" in
+              OPEN)
+                echo "Deployment PR #${EXISTING_PR} is already open."
+                echo "Skipping duplicate PR creation."
+                ;;
+
+              MERGED)
+                echo "Deployment PR #${EXISTING_PR} was already merged."
+                echo "Deployment request already completed."
+                ;;
+
+              CLOSED)
+                echo "::error::Deployment PR #${EXISTING_PR} was closed without merging."
+                echo "Manual review is required before retrying."
+                exit 1
+                ;;
+
+              *)
+                echo "::error::Unexpected PR state: ${PR_STATE}"
+                exit 1
+                ;;
+            esac
+          else
+            gh pr create \
+              --repo SinanErbezci/bookclub-deployment \
+              --base main \
+              --head "$BRANCH" \
+              --title "$TITLE" \
+              --body "$BODY"
+          fi
+
 
   frontend-deploy:
     name: Deploy Frontend
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
 
     needs:
       - frontend
       - changes
 
     if: |
-      github.ref == 'refs/heads/main' &&
       (
-        needs.changes.outputs.frontend == 'true' ||
-        needs.changes.outputs.deployment == 'true' ||
+        github.event_name == 'push' ||
         github.event_name == 'workflow_dispatch'
-      )
+      ) &&
+      (
+        github.ref == 'refs/heads/main'
+      ) &&
+      needs.changes.outputs.frontend == 'true'
 
     steps:
       - name: Checkout code

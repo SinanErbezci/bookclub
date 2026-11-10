@@ -36,3 +36,8 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
+variable "project_name" {
+  description = "Project name used for AWS resource naming"
+  type        = string
+  default     = "bookclub"
+}
