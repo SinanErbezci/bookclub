@@ -292,7 +292,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
-          image-ref: bookclub:pr-backend
+          image-ref: bookclub:ci-backend
           version: v0.74.0
           format: table
           severity: HIGH,CRITICAL
@@ -393,7 +393,7 @@ jobs:
       uses: aquasecurity/trivy-action@v0.36.0
       with:
         scan-type: image
-        image-ref: bookclub:pr-backend
+        image-ref: bookclub:ci-ai
         version: v0.74.0
         format: table
         severity: HIGH,CRITICAL
