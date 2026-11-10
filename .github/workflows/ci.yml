@@ -459,11 +459,60 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: deployment
 
+      - name: Check existing deployment PR
+        id: deployment-pr
+        working-directory: ./deployment
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          set -euo pipefail
+
+          BRANCH="deploy/${IMAGE_TAG}"
+
+          EXISTING_PR=$(gh pr list \
+            --repo SinanErbezci/bookclub-deployment \
+            --head "$BRANCH" \
+            --state all \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -z "$EXISTING_PR" ]; then
+            echo "No existing deployment PR."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PR_STATE=$(gh pr view "$EXISTING_PR" \
+            --repo SinanErbezci/bookclub-deployment \
+            --json state \
+            --jq '.state')
+
+          case "$PR_STATE" in
+            OPEN)
+              echo "Deployment PR #${EXISTING_PR} already open."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              ;;
+            MERGED)
+              echo "Deployment PR #${EXISTING_PR} already merged."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              ;;
+            CLOSED)
+              echo "::error::Deployment PR #${EXISTING_PR} closed without merging."
+              exit 1
+              ;;
+            *)
+              echo "::error::Unexpected PR state: ${PR_STATE}"
+              exit 1
+              ;;
+          esac
 
       - name: Prepare deployment branch
+        if: steps.deployment-pr.outputs.proceed == 'true'
         working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
+
         run: |
           set -euo pipefail
 
@@ -483,6 +532,7 @@ jobs:
           fi
 
       - name: Update image tags
+        if: steps.deployment-pr.outputs.proceed == 'true'
         working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
@@ -550,6 +600,7 @@ jobs:
 
 
       - name: Commit and push deployment changes
+        if: steps.deployment-pr.outputs.proceed == 'true'
         working-directory: ./deployment
         env:
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
@@ -571,6 +622,7 @@ jobs:
 
       
       - name: Create deployment PR
+        if: steps.deployment-pr.outputs.proceed == 'true'
         working-directory: ./deployment
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -578,6 +630,7 @@ jobs:
           BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
           AI_CHANGED: ${{ needs.changes.outputs.ai }}
         run: |
+          set -euo pipefail
           BRANCH="deploy/${IMAGE_TAG}"
 
           if [ "$BACKEND_CHANGED" = "true" ] && [ "$AI_CHANGED" = "true" ]; then
@@ -628,7 +681,7 @@ jobs:
           "
           fi
 
-
+          # Find an existing PR for this deployment branch.
           EXISTING_PR=$(gh pr list \
             --repo SinanErbezci/bookclub-deployment \
             --head "$BRANCH" \
@@ -637,7 +690,33 @@ jobs:
             --jq '.[0].number // empty')
 
           if [ -n "$EXISTING_PR" ]; then
-            echo "Deployment PR #${EXISTING_PR} already exists."
+            PR_STATE=$(gh pr view "$EXISTING_PR" \
+              --repo SinanErbezci/bookclub-deployment \
+              --json state \
+              --jq '.state')
+
+            case "$PR_STATE" in
+              OPEN)
+                echo "Deployment PR #${EXISTING_PR} is already open."
+                echo "Skipping duplicate PR creation."
+                ;;
+
+              MERGED)
+                echo "Deployment PR #${EXISTING_PR} was already merged."
+                echo "Deployment request already completed."
+                ;;
+
+              CLOSED)
+                echo "::error::Deployment PR #${EXISTING_PR} was closed without merging."
+                echo "Manual review is required before retrying."
+                exit 1
+                ;;
+
+              *)
+                echo "::error::Unexpected PR state: ${PR_STATE}"
+                exit 1
+                ;;
+            esac
           else
             gh pr create \
               --repo SinanErbezci/bookclub-deployment \
