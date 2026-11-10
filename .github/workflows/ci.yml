@@ -243,7 +243,7 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
       - name: Scan Django image with Trivy
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: image
           image-ref: bookclub:ci-backend
