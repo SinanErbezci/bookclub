@@ -8,6 +8,41 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
 
+  values = [
+    yamlencode({
+      configs = {
+        cm = {
+          url = "https://localhost:8080"
+
+          "dex.config" = yamlencode({
+            connectors = [
+              {
+                type = "github"
+                id   = "github"
+                name = "GitHub"
+
+                config = {
+                  clientID     = "$argocd-github-oauth:clientID"
+                  clientSecret = "$argocd-github-oauth:clientSecret"
+                }
+              }
+            ]
+          })
+        }
+        
+        rbac = {
+          "policy.default" = "role:none"
+
+          "policy.csv" = <<-EOT
+            g, sinanerbezci@hotmail.com, role:admin
+          EOT
+
+          "scopes" = "[groups, email]"
+        }
+      }
+    })
+  ]
+
   depends_on = [
     aws_eks_node_group.bookclub,
   ]
