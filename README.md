@@ -57,51 +57,47 @@ The AI layer provides semantic search, book recommendations, AI-generated book s
 
 ## Architecture
 ### System Architecture
+
 ```mermaid
-
-
 flowchart TB
-    Users["Users / Browser"]
+    Users["Users"]
 
-    Users -->|Web App| Frontend["React Frontend<br/>CloudFront + S3"]
-    Users -->|API Requests| ALB
+    Users -->|Frontend| Frontend["React<br/>S3 + CloudFront"]
+    Users -->|API| ALB
 
     subgraph VPC["AWS VPC"]
-        direction TB
-
         subgraph Public["Public Subnets"]
-            ALB["Application Load Balancer"]
+            ALB["ALB"]
         end
 
         subgraph Private["Private Subnets"]
-            subgraph EKS["Amazon EKS · 2 × t3.medium Nodes"]
-                direction TB
+            subgraph EKS["Amazon EKS"]
+                direction LR
 
-                subgraph App["Application Workloads"]
+                subgraph App["Workloads"]
                     direction LR
-                    Django["Django REST API"]
-                    AI["FastAPI AI Service"]
-                    Celery["Celery Worker<br/>Celery Beat"]
+                    Django["Django API"]
+                    AI["FastAPI"]
+                    Celery["Celery"]
                 end
 
-                Monitoring["Observability Stack<br/>Prometheus · Grafana · Alertmanager"]
+                Monitoring["Monitoring"]
             end
 
-            Redis[("ElastiCache Redis<br/>Application Cache")]
+            Redis[("Redis Cache")]
         end
     end
 
     ALB --> Django
     Django --> AI
-    Django --> DB[("Neon PostgreSQL<br/>pgvector")]
-    Django -->|Caching| Redis
+    Django --> DB[("Neon PostgreSQL")]
+    Django -->|Cache| Redis
 
-    Celery <-->|Tasks| SQS["Amazon SQS<br/>Celery Task Queue"]
-    SQS -.->|Failed Messages| DLQ["Amazon SQS<br/>Dead-Letter Queue"]
+    Celery <--> SQS["SQS Queue"]
+    SQS -.-> DLQ["SQS DLQ"]
 
-    Monitoring -.->|Metrics Collection| App
-    Monitoring -.->|Alert Notifications| Slack["Slack"]
-
+    Monitoring -.->|Metrics| App
+    Monitoring -.->|Alerts| Slack["Slack"]
 
 ```
 
@@ -222,69 +218,16 @@ The OpenAI request is made only when the explanation is requested. Generated exp
 
 ## Technology Stack
 
-### Frontend
-- React
-- TypeScript
-- Vite
-- React Router
-- Bootstrap
-- Font Awesome
-
-### Backend
-- Python
-- Django
-- Django REST Framework
-- FastAPI (AI Service)
-- Gunicorn
-- WhiteNoise
-
-### Database & Search
-- PostgreSQL (Neon)
-- pgvector
-- PostgreSQL Full-Text Search
-- PostgreSQL Trigram Similarity
-
-### AI
-- OpenAI `gpt-4.1-mini`
-- OpenAI Batch API
-- Ollama
-- Qwen3 4B / 8B
-- Sentence Transformers
-- `BAAI/bge-small-en-v1.5`
-- tiktoken
-
-### Asynchronous Processing & Caching
-- Celery & Celery Beat
-- Amazon ElastiCache (Redis)
-- Amazon SQS (Dead-Letter Queue)
-- Django Cache Framework
-
-### Infrastructure & DevOps
-- Amazon EKS (Kubernetes)
-- Amazon EC2
-- AWS Application Load Balancer
-- Amazon ECR
-- Amazon S3 & CloudFront
-- Amazon VPC
-- AWS IAM & EKS Pod Identity
-- AWS Systems Manager Parameter Store
-- AWS CloudWatch
-- Terraform
-- Docker
-- GitHub Actions
-- Argo CD
-- Kustomize & Helm
-- External Secrets Operator
-- ExternalDNS
-- AWS Load Balancer Controller
-- Cloudflare
-
-### Monitoring & Observability
-- Prometheus
-- Grafana
-- Alertmanager
-- Prometheus Operator
-- kube-prometheus-stack
+| Category | Technologies |
+|---|---|
+| **Frontend** | React, TypeScript, Vite, React Router, Bootstrap, Font Awesome |
+| **Backend** | Python, Django, Django REST Framework, FastAPI, Gunicorn, WhiteNoise |
+| **Database & Search** | PostgreSQL (Neon), pgvector, PostgreSQL Full-Text Search, Trigram Similarity |
+| **AI** | OpenAI (`gpt-4.1-mini`, Batch API), Ollama, Qwen3 4B/8B, Sentence Transformers, `BAAI/bge-small-en-v1.5`, tiktoken |
+| **Async & Caching** | Celery, Celery Beat, ElastiCache Redis, Amazon SQS (Task Queue & DLQ), Django Cache Framework |
+| **AWS Infrastructure** | EKS, EC2, ALB, ECR, S3, CloudFront, VPC, IAM, EKS Pod Identity, SSM Parameter Store, CloudWatch |
+| **DevOps & GitOps** | Terraform, Docker, GitHub Actions, Argo CD, Kustomize, Helm, External Secrets Operator, ExternalDNS, AWS Load Balancer Controller, Cloudflare |
+| **Monitoring & Observability** | Prometheus, Grafana, Alertmanager, Prometheus Operator, kube-prometheus-stack |
 
 ## Monitoring & Observability
 
