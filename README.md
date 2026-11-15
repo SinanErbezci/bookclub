@@ -242,9 +242,19 @@ The monitoring stack is deployed and managed through **Argo CD and Helm**, with 
 
 ### Grafana Dashboard
 
-<!-- Add Grafana dashboard screenshot here -->
+The custom BookClub Grafana dashboard provides visibility into application health, HTTP request rates, error rates, latency percentiles, Kubernetes resource utilization, and PostgreSQL query performance.
+
+#### Application Monitoring
+
+<p align="center">
+  <img src="docs/images/application_dashboard.png" alt="Application Overview Dashboard">
+</p>
 
 ## Infrastructure Lifecycle
+
+<p align="center">
+  <img src="docs/images/k8s_database_dashboard.png" alt="Kubernetes and Database Dashboard">
+</p>
 
 BookClub's AWS infrastructure is managed using **Terraform**, with the `production_enabled` variable controlling the lifecycle of production resources.
 
