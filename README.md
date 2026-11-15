@@ -250,11 +250,14 @@ The custom BookClub Grafana dashboard provides visibility into application healt
   <img src="docs/images/application_dashboard.png" alt="Application Overview Dashboard">
 </p>
 
-## Infrastructure Lifecycle
+
+#### Kubernetes and Database Monitorinbg
 
 <p align="center">
   <img src="docs/images/k8s_database_dashboard.png" alt="Kubernetes and Database Dashboard">
 </p>
+
+## Infrastructure Lifecycle
 
 BookClub's AWS infrastructure is managed using **Terraform**, with the `production_enabled` variable controlling the lifecycle of production resources.
 
