@@ -218,7 +218,7 @@ kubectl delete prometheus "$PROMETHEUS_NAME" \
 
 echo "Waiting for Prometheus StatefulSet to disappear..."
 
-deadline=$((SECONDS + KUBECTL_TIMEOUT))
+deadline=$((SECONDS + ${KUBECTL_TIMEOUT%s}))
 
 while (( SECONDS < deadline )); do
     if ! kubectl get statefulset \

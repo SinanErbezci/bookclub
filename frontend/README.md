@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# BookClub — React Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The BookClub frontend is a single-page application built with **React 19, TypeScript, and Vite**. It provides the interface for discovering books, searching, managing personal lists, writing reviews, and exploring AI-powered recommendations.
 
-## Available Scripts
+The application communicates with the Django REST API and uses React Router for client-side navigation, CSS Modules for component styling, and Bootstrap for shared UI styling.
 
-In the project directory, you can run:
+For the complete project architecture and features, see the [main BookClub README](../README.md).
 
-### `npm start`
+## Project Structure
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+| Directory | Responsibility |
+|---|---|
+| `src/api/` | API client and endpoint-specific request functions |
+| `src/components/` | Reusable UI components, including book cards, navigation, search, and recommendations |
+| `src/context/` | Authentication and toast notification contexts |
+| `src/features/` | Feature-specific components, including reviews |
+| `src/pages/` | Route-level pages for browsing, books, authors, genres, search, and user profiles |
+| `src/styles/` | Global styles |
+| `src/types/` | TypeScript interfaces and types |
+| `src/assets/` | Images, icons, and other application assets |
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Local Development
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 22
+- npm
+- Django backend running locally
 
-### `npm run build`
+### 1. Install Dependencies
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+From the `frontend/` directory:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm ci
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Configure the API URL
 
-### `npm run eject`
+Create a `.env.local` file inside `frontend/`:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```dotenv
+VITE_API_URL=http://localhost:8000/api
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+This configures the frontend to communicate with the local Django backend.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 3. Start the Development Server
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+The Django backend must be running for API-dependent functionality. AI-powered features also require the corresponding backend services.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Available Commands
 
-### Code Splitting
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Build the production application into `dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run TypeScript type checking |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## API Integration & Authentication
 
-### Analyzing the Bundle Size
+API requests are handled through a shared client in `src/api/client.ts`, with endpoint-specific functions organized under `src/api/`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+BookClub uses Django session-based authentication with credentialed requests and CSRF protection.
 
-### Making a Progressive Web App
+The API client fetches CSRF tokens for state-changing requests and caches them in memory to avoid unnecessary network calls. Tokens are invalidated after authentication changes.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Deployment
 
-### Advanced Configuration
+The frontend is deployed as a static application using **Amazon S3 and CloudFront**.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+GitHub Actions validates the frontend, builds the Vite application, uploads the generated assets to S3, and invalidates the CloudFront cache.
 
-### Deployment
+Deployment configuration is maintained in the main repository's GitHub Actions workflow.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Related Documentation
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [Main BookClub README](../README.md) — Features, architecture, and AI implementation
+- [Django Backend](../bookclub/README.md) — REST API and local backend setup
+- [Infrastructure](../infra/README.md) — AWS infrastructure and Terraform
