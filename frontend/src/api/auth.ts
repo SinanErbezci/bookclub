@@ -1,5 +1,4 @@
-import { apiFetch } from "./client";
-import type {
+import { apiFetch, invalidateCsrfToken } from "./client";import type {
   LoginData,
   SignupData,
 } from "../types/auth";
@@ -13,6 +12,8 @@ export async function loginUser(
     body: JSON.stringify(data),
   });
 
+  invalidateCsrfToken();
+
   return getCurrentUser();
 }
 
@@ -24,17 +25,21 @@ export async function signupUser(
     body: JSON.stringify(data),
   });
 
+  invalidateCsrfToken();
+
   return getCurrentUser();
-}
-
-export async function getCurrentUser(): Promise<User | null> {
-  const data = await apiFetch<MeResponse>("/me/");
-
-  return data.user;
 }
 
 export async function logoutUser(): Promise<void> {
   await apiFetch<void>("/logout/", {
     method: "POST",
   });
+
+  invalidateCsrfToken();
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const data = await apiFetch<MeResponse>("/me/");
+
+  return data.user;
 }
