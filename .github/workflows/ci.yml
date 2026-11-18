@@ -31,6 +31,31 @@ jobs:
     name: Backend Checks
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: bookclub
+          POSTGRES_USER: bookclub
+          POSTGRES_PASSWORD: bookclub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U bookclub -d bookclub"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     defaults:
       run:
         working-directory: ./bookclub
@@ -58,6 +83,16 @@ jobs:
           CELERY_QUEUE_URL: dummy
         run: |
           python manage.py check
+
+      
+      - name: Run Django API tests
+        env:
+          DJANGO_SETTINGS_MODULE: mysite.settings.development
+          DJANGO_SECRET_KEY: ci-test-only-secret-key
+          DEV_DATABASE_URL: postgresql://bookclub:bookclub@localhost:5432/bookclub
+        run: |
+          python manage.py test library.tests -v 2
+
 
   frontend:
     name: Frontend Checks
