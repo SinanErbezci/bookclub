@@ -171,7 +171,7 @@ The production recommendation pipeline uses the generated summary without the ti
 
 We also experimented with running LLMs locally using Ollama. We tested Qwen3 4B and 8B models and benchmarked them against OpenAI's `gpt-4.1-mini`.
 
-The local models produced good-quality summaries during experimentation. On our NVIDIA GTX 1060, Qwen3 4B averaged 5.6 seconds per book, while the 8B model averaged 9.7 seconds per book. However, generating summaries for the entire catalog would still take too long at this scale, so we chose the OpenAI Batch API for large-scale processing
+The local models produced good-quality summaries during experimentation. On our NVIDIA GTX 1060, Qwen3 4B averaged 5.6 seconds per book, while the 8B model averaged 9.7 seconds per book. However, generating summaries for the entire catalog would still take too long at this scale, so we chose the OpenAI Batch API for large-scale processing.
 
 ### 4. Large-Scale Summary Generation with OpenAI Batch API
 
@@ -251,7 +251,7 @@ The custom BookClub Grafana dashboard provides visibility into application healt
 </p>
 
 
-#### Kubernetes and Database Monitorinbg
+#### Kubernetes and Database Monitoring
 
 <p align="center">
   <img src="docs/images/k8s_database_dashboard.png" alt="Kubernetes and Database Dashboard">
