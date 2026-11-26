@@ -29,18 +29,17 @@ README has [system and CI/CD diagrams](../README.md#architecture) and
   [`CSRFAPIView`, `LoginAPIView`, `SignupAPIView`, `LogoutAPIView`, and `MeAPIView`](../bookclub/library/views.py).
   Token bootstrap ensures a CSRF cookie. Login and signup establish a Django
   session. Signup creates system lists and queues the welcome task after commit.
-  Login and signup use `AllowAny` and have no explicit view-level CSRF decorator.
-  When changing enforcement, check the resolved views, DRF's default session
-  authentication, and Django's CSRF middleware.
+  Django validates CSRF on login and signup before either handler runs.
+  Both endpoints allow anonymous callers and rotate the CSRF cookie on success.
 - **Settings and tests.** [Base settings](../bookclub/mysite/settings/base.py)
   configure credentialed CORS and Django's CSRF middleware.
-  [Development](../bookclub/mysite/settings/development.py) allows all CORS
-  origins and sets an explicit CSRF trusted origin.
+  [Development](../bookclub/mysite/settings/development.py) allows credentialed
+  CORS and trusts CSRF requests from the frontend at `http://localhost:5173`.
   [Production](../bookclub/mysite/settings/production.py) uses explicit origin
   lists and secure `SameSite=None` session and CSRF cookies.
-  [`SignupTests`](../bookclub/library/tests.py) cover session identity, system
-  lists, and deferred welcome email. Use the [isolated suite](#validation)
-  to check endpoint regressions.
+  [`AuthCSRFTests`](../bookclub/library/tests.py) cover rejected requests,
+  session identity, token rotation, system lists, and deferred welcome email.
+  Use the [isolated suite](#validation) to check endpoint regressions.
 
 ## Search and AI
 

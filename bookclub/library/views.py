@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.db import  transaction
 from django.contrib.auth import authenticate,login, logout, get_user_model
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -57,6 +57,8 @@ class CSRFAPIView(APIView):
         return JsonResponse({
             "csrfToken": get_token(request)})
 
+# DRF's outer callback is exempt, so enforce CSRF on dispatch.
+@method_decorator(csrf_protect, name="dispatch")
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
     throttle_scope = "login"
@@ -96,6 +98,7 @@ class MeAPIView(APIView):
             }
         })
 
+@method_decorator(csrf_protect, name="dispatch")
 class SignupAPIView(APIView):
     permission_classes = [AllowAny]
     throttle_scope = "signup"
