@@ -30,10 +30,10 @@ CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
-REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update({
     "anon": "10000/day",
     "user": "100000/day",
-}
+})
 
 REDIS_URL = "redis://localhost:6379/0"
 

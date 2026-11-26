@@ -37,7 +37,7 @@ README has [system and CI/CD diagrams](../README.md#architecture) and
   CORS and trusts CSRF requests from the frontend at `http://localhost:5173`.
   [Production](../bookclub/mysite/settings/production.py) uses explicit origin
   lists and secure `SameSite=None` session and CSRF cookies.
-  [`AuthCSRFTests`](../bookclub/library/tests.py) cover rejected requests,
+  [`AuthCSRFTests`](../bookclub/library/tests/test_auth_csrf.py) cover rejected requests,
   session identity, token rotation, system lists, and deferred welcome email.
   Use the [isolated suite](#validation) to check endpoint regressions.
 
@@ -49,6 +49,7 @@ README has [system and CI/CD diagrams](../README.md#architecture) and
 - **Semantic search.** [SemanticDiscovery](../frontend/src/components/SemanticDiscovery/SemanticDiscovery.tsx)
   calls [`semanticSearch`](../frontend/src/api/search.ts), which sends
   `GET /api/search/semantic/` to [`SemanticSearchAPIView`](../bookclub/library/search_views.py).
+  The view accepts an integer `limit` from 1 to 50 and defaults to 10.
   [`SemanticSearchService.search`](../bookclub/ai/services/semantic_search.py)
   calls [`AIClient.embed_query`](../bookclub/ai/services/ai_client.py).
   The client sends the text to [FastAPI's `POST /embed`](../bookclub/ai_service/app.py)
@@ -60,7 +61,7 @@ README has [system and CI/CD diagrams](../README.md#architecture) and
 - **Stored vectors and tests.** [`generate_embeddings`](../bookclub/ai/management/commands/generate_embeddings.py)
   uses [`EmbeddingService`](../bookclub/ai/services/embeddings.py) to create
   stored vectors. Keep the query model compatible with those vectors.
-  [`SearchTests`](../bookclub/library/tests.py) run PostgreSQL search with
+  [`SearchTests`](../bookclub/library/tests/test_search.py) run PostgreSQL search with
   stubbed query embeddings.
 
 ## Configuration and deployment
@@ -95,11 +96,12 @@ and the [backend test runbook](../bookclub/README.md#running-the-backend-tests)
 for prerequisites and cleanup. The [test launcher](../bookclub/run_backend_tests.py)
 uses [`stage_test_context.py`](../bookclub/stage_test_context.py) and
 [test Compose](../bookclub/docker-compose.test.yml) to run Django's system
-check and the [library](../bookclub/library/tests.py) and [AI](../bookclub/ai/tests.py)
+check and the [library](../bookclub/library/tests/) and [AI](../bookclub/ai/tests.py)
 tests against disposable PostgreSQL.
 [Launcher regressions](../bookclub/test_backend_launcher.py) use standard-library
 mocks. The [CI workflow](../.github/workflows/ci.yml) runs the Django system
-check and frontend lint, typecheck, and build checks.
+check, discovers the library tests with `python manage.py test library.tests -v 2`,
+and runs frontend lint, typecheck, and build checks.
 
 **Historical validation.** The completed
 [backend testing plan](plans/backend-testing.md#validation-results) records prior

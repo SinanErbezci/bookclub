@@ -64,6 +64,23 @@ kubectl label secret bookclub-deployment-repo \
 
 echo "Argo CD repository credential created."
 
+
+echo "Waiting for External Secrets Operator..."
+
+kubectl rollout status deployment/external-secrets \
+  -n external-secrets --timeout=300s
+
+kubectl rollout status deployment/external-secrets-webhook \
+  -n external-secrets --timeout=300s
+
+kubectl rollout status deployment/external-secrets-cert-controller \
+  -n external-secrets --timeout=300s
+
+kubectl wait \
+  --for=condition=Established \
+  crd/clustersecretstores.external-secrets.io \
+  --timeout=300s
+
 echo "Creating Argo CD Application..."
 
 kubectl apply -f - <<EOF

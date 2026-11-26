@@ -158,12 +158,21 @@ class SemanticSearchAPIView(APIView):
                 status=400,
             )
 
-        limit = int(
-            request.query_params.get(
-                "limit",
-                10,
+
+        try:
+            limit = int(request.query_params.get("limit", 10))
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "limit must be an integer."},
+                status=400,
             )
-        )
+
+        if not 1 <= limit <= 50:
+            return Response(
+                {"detail": "limit must be between 1 and 50."},
+                status=400,
+            )
+
 
         from ai.services.semantic_search import SemanticSearchService
 
