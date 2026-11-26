@@ -1,0 +1,12 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+
+COPY requirements/django.txt requirements/django.txt
+RUN pip install --no-cache-dir -r requirements/django.txt
+
+COPY manage.py .
+COPY mysite/ mysite/
+COPY library/ library/
+COPY ai/ ai/

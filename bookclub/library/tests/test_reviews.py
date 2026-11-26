@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
-from django.test import override_settings
+from django.db import IntegrityError, transaction
+from django.test import TestCase, override_settings
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 from library.models import Author, Book, Review
 
@@ -134,3 +137,49 @@ class ReviewAPITests(APITestCase):
         self.book.refresh_from_db()
         self.assertEqual(self.book.num_ratings, 2)
         self.assertEqual(float(self.book.rating), 4.0)
+
+
+class ReviewTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        author = Author.objects.create(name="Sam Rivera")
+        cls.book = Book.objects.create(
+            author=author, title="The Quiet Coast", source="test", source_row_id="1"
+        )
+        cls.reader = User.objects.create_user(username="reader", email="reader@example.test")
+        cls.other = User.objects.create_user(username="other", email="other@example.test")
+
+    def test_review_updates_rating_and_rejects_duplicates_and_foreign_edits(self):
+        client = APIClient()
+        client.force_login(self.reader)
+        payload = {
+            "book": self.book.pk,
+            "rating": 4,
+            "content": "A thoughtful story about coastal life.",
+        }
+        response = client.post("/api/reviews/", payload, format="json")
+        self.assertEqual(response.status_code, 201)
+        review_id = response.json()["id"]
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.rating, Decimal("4.0"))
+        self.assertEqual(self.book.num_ratings, 1)
+
+        duplicate = client.post("/api/reviews/", payload, format="json")
+        self.assertEqual(duplicate.status_code, 400)
+        client.force_login(self.other)
+        denied = client.patch(f"/api/reviews/{review_id}/", {"rating": 1}, format="json")
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(Review.objects.get(pk=review_id).rating, 4)
+        self.assertEqual(Review.objects.filter(book=self.book).count(), 1)
+
+    def test_database_enforces_one_review_per_user_and_book(self):
+        values = {
+            "book": self.book,
+            "user": self.reader,
+            "rating": 4,
+            "text": "A thoughtful story about coastal life.",
+        }
+        Review.objects.create(**values)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Review.objects.create(**values)

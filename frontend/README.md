@@ -1,4 +1,4 @@
-# BookClub — React Frontend
+# BookClub frontend
 
 The BookClub frontend is a single-page application built with **React 19, TypeScript, and Vite**. It provides the interface for discovering books, searching, managing personal lists, writing reviews, and exploring AI-powered recommendations.
 
@@ -19,43 +19,28 @@ For the complete project architecture and features, see the [main BookClub READM
 | `src/types/` | TypeScript interfaces and types |
 | `src/assets/` | Images, icons, and other application assets |
 
-## Local Development
+## Local development
 
-### Prerequisites
+Use Node 22.12 or later in the Node 22 series to match
+[CI](../.github/workflows/ci.yml) and the [locked Vite version](package-lock.json).
+From `frontend/`, install dependencies and start Vite with the
+[local Django API](../bookclub/README.md#setting-up-the-development-environment).
 
-- Node.js 22
-- npm
-- Django backend running locally
-
-### 1. Install Dependencies
-
-From the `frontend/` directory:
-
-```bash
+```sh
 npm ci
+VITE_API_URL=http://localhost:8000/api npm run dev -- --host localhost --port 5173 --strictPort
 ```
 
-### 2. Configure the API URL
+Open `http://localhost:5173`, Django's trusted CSRF origin in development. To use
+another API host, set `VITE_API_URL` to its base URL, including `/api`. You can
+also put `VITE_API_URL=http://localhost:8000/api` in `frontend/.env.local`
+and omit the inline variable. AI features require the corresponding backend
+services.
 
-Create a `.env.local` file inside `frontend/`:
+## Commands and validation
 
-```dotenv
-VITE_API_URL=http://localhost:8000/api
-```
-
-This configures the frontend to communicate with the local Django backend.
-
-### 3. Start the Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-The Django backend must be running for API-dependent functionality. AI-powered features also require the corresponding backend services.
-
-## Available Commands
+See [AGENTS.md](../AGENTS.md#development-and-validation-commands) for the
+frontend checks and [package.json](package.json) for the scripts.
 
 | Command | Description |
 |---|---|
@@ -71,7 +56,11 @@ API requests are handled through a shared client in `src/api/client.ts`, with en
 
 BookClub uses Django session-based authentication with credentialed requests and CSRF protection.
 
-The API client fetches CSRF tokens for state-changing requests and caches them in memory to avoid unnecessary network calls. Tokens are invalidated after authentication changes.
+The API client fetches and caches a CSRF token for state-changing requests.
+It clears the token after successful login, signup, and logout, and after a
+`403`. The next write fetches a fresh token. See the
+[authentication flow](../docs/architecture.md#authentication-and-csrf) for
+cookie and origin settings.
 
 ## Deployment
 
@@ -79,7 +68,7 @@ The frontend is deployed as a static application using **Amazon S3 and CloudFron
 
 GitHub Actions validates the frontend, builds the Vite application, uploads the generated assets to S3, and invalidates the CloudFront cache.
 
-Deployment configuration is maintained in the main repository's GitHub Actions workflow.
+See the [GitHub Actions workflow](../.github/workflows/ci.yml) for deployment configuration.
 
 ## Related Documentation
 

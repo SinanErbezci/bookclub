@@ -1,0 +1,32 @@
+services:
+  tests:
+    build:
+      context: ${BOOKCLUB_TEST_CONTEXT:?Stage the backend test context first}
+      dockerfile: Dockerfile.test
+    environment:
+      BOOKCLUB_TEST_CONTAINER: "1"
+      DJANGO_SETTINGS_MODULE: mysite.settings.test
+    depends_on:
+      test-db:
+        condition: service_healthy
+    command: ["sh", "-ec", "python manage.py check && python manage.py test --noinput"]
+    networks: [testing]
+
+  test-db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: bookclub_test_bootstrap
+      POSTGRES_USER: bookclub_test
+      POSTGRES_PASSWORD: bookclub_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "bookclub_test", "-d", "bookclub_test_bootstrap"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks: [testing]
+
+networks:
+  testing:
+    internal: true
