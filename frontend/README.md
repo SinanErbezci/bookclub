@@ -1,70 +1,26 @@
-# Getting Started with Create React App
+# BookClub frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The React and TypeScript app uses Vite. Use Node 22.12 or later in the
+Node 22 series to match [CI](../.github/workflows/ci.yml) and the
+[locked Vite version](package-lock.json).
 
-## Available Scripts
+## Local development
 
-In the project directory, you can run:
+From `frontend/`, install dependencies and start Vite against the
+[local Django API](../bookclub/README.md#setting-up-the-development-environment).
 
-### `npm start`
+```sh
+npm ci
+VITE_API_URL=http://localhost:8000/api npm run dev -- --host localhost --port 5173 --strictPort
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Open `http://localhost:5173` to match Django's development CSRF trusted origin.
+If you use a different API host, set `VITE_API_URL` to its base URL including
+`/api`. See the [authentication flow](../docs/architecture.md#authentication-and-csrf)
+for cookie and origin settings.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Validation
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Run the frontend checks listed in
+[AGENTS.md](../AGENTS.md#development-and-validation-commands).
+The [package scripts](package.json) define lint, typecheck, and build.

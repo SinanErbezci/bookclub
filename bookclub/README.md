@@ -32,39 +32,46 @@ versions. The execution plan records the versions observed during validation.
 
 ## Setting up the development environment
 
-1. Clone the repository
+1. From `bookclub/`, create a Python 3.12 virtual environment and install
+   the Django dependencies.
 
-```bash
-git clone ...
-```
+   ```sh
+   python3.12 -m venv .venv
+   source .venv/bin/activate
+   python -m pip install -r requirements/django.txt
+   ```
 
-2. Create `.env`
+2. Start the local PostgreSQL service. Wait for it to accept connections.
+   Start a separate local Redis instance on port 6379 for the Django cache
+   and Celery configuration.
 
-```bash
-cp .env.example .env
-```
+   ```sh
+   docker compose up -d db
+   ```
 
-3. Install dependencies
+3. Create `.env` alongside `manage.py`. Set `DJANGO_SECRET_KEY` to a
+   development-only key and `DEV_DATABASE_URL` to the local PostgreSQL
+   connection URL. Use the database name, user, password, and published port
+   from [docker-compose.yml](docker-compose.yml). [Base settings](mysite/settings/base.py)
+   load the file, and [development settings](mysite/settings/development.py)
+   select the development database and Redis connections.
 
-```bash
-pip install -r requirements.txt
-```
+4. Apply migrations to the local database and start Django.
 
-4. Start PostgreSQL
+   ```sh
+   python manage.py migrate
+   python manage.py runserver localhost:8000
+   ```
 
-```bash
-docker compose up -d
-```
+Migrations create the schema and search extensions. To populate the catalog
+from a local CSV, see the [catalog import command](library/management/commands/import_books_csv.py).
+For semantic search, use a running [embedding service](ai_service/app.py) and
+stored catalog embeddings. Django reads the service base URL from
+`AI_SERVICE_URL`. See [Search and AI](../docs/architecture.md#search-and-ai)
+for the source paths.
 
-5. Restore the development database
-
-```bash
-docker cp bookclub.dump <container>:/tmp/bookclub.dump
-
-docker compose exec db pg_restore \
-    -U bookclub \
-    -d bookclub \
-    --clean \
-    --if-exists \
-    /tmp/bookclub.dump
-```
+The development profile replaces the base throttle rates and omits rates for
+scoped routes such as login, signup, and search. Use the
+[isolated backend suite](#running-the-backend-tests) for regression checks on
+those routes. See [base](mysite/settings/base.py) and
+[development](mysite/settings/development.py) settings.
