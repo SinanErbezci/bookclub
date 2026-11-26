@@ -2,65 +2,66 @@
 
 ## When to use a plan
 
-Write a plan when the user requests one, the work spans dependent milestones or
+Write a plan if the user asks for one, the work spans dependent milestones or
 sessions, or a change needs explicit compatibility, isolation, or recovery
-checks. A small, well-understood fix or documentation edit usually needs only
-the normal checks in `AGENTS.md`.
+checks. For small, well-understood fixes or documentation edits, the usual checks
+in [AGENTS.md](AGENTS.md) are generally enough.
 
-Keep one living plan per effort in `docs/plans/<short-name>.md`. Obtain user
-approval of the initial plan before substantial implementation unless the user
-has explicitly delegated planning and implementation together. Seek renewed
-approval for material scope or architectural changes where applicable.
+Keep one plan per effort in `docs/plans/<short-name>.md` and update it as work
+progresses. Get user approval for the initial plan before substantial
+implementation unless the user explicitly delegated planning and implementation
+together. Get renewed approval for material scope or architecture changes where
+applicable.
 
-Follow `AGENTS.md` and all applicable permission and security rules. A plan
-grants no authority. Existing restrictions on Git, external services,
-infrastructure, and deployment still apply. Identify steps that require
-separate authorization and obtain it before proceeding.
+Follow [AGENTS.md](AGENTS.md) and all applicable permission and security rules.
+A plan grants no authority. Git, external service, infrastructure, and
+deployment restrictions still apply. Identify steps that require separate
+authorization and get it before proceeding.
 
 ## Required sections
 
-A fresh agent should be able to resume safely from the plan and its repository
-references alone. Include the relevant paths, constraints, decisions, and
-evidence the agent would otherwise need from prior conversation.
+Give a fresh agent enough context to resume safely using only the plan and its
+repository references. Include relevant paths, constraints, decisions, and
+evidence.
 
-- **Status and handoff.** Record the last verified milestone, current blockers,
-  any partial changes or resources left running, and the next safe action.
-- **Objective, context, and scope.** State the intended outcome, relevant
-  paths and existing behavior, constraints, and explicit non-goals. Record
-  material scope changes and any required approval.
-- **Milestones and acceptance criteria.** Order milestones by dependency and
-  track them with checkboxes. Define observable outcomes, including
-  compatibility, failure behavior, and cleanup where relevant. Check off
-  milestones when their evidence is recorded.
+- **Status and handoff.** Record the last verified milestone, blockers, partial
+  changes, any resources still running, and the next safe action.
+- **Objective, context, and scope.** State the intended outcome, relevant paths,
+  current behavior, constraints, and what is out of scope. Record material
+  scope changes and any required approval.
+- **Milestones and acceptance criteria.** Order milestones by dependency and use
+  checkboxes. Define observable outcomes. Cover compatibility, failure behavior,
+  and cleanup where relevant. Check off each milestone after recording its
+  evidence.
 - **Discoveries and decisions.** Date findings that change the approach, scope,
-  or risk. Record the evidence, the decision and rationale, and the effect on
-  remaining work. Preserve failed attempts and revised decisions.
-- **Safety and recovery.** Identify targets, data and secrets boundaries,
-  preflight checks, stop conditions, and scoped cleanup or rollback. Use local
-  stubs, dummy settings, and disposable resources where applicable. On failure,
-  record what ran, what may have changed, and what remains unknown. Diagnose
-  with the smallest safe reproduction and verify preconditions before retrying
-  within authorization. Keep secrets out of the plan and logs.
-- **Validation and evidence.** Map acceptance criteria to checks. Record the
-  working directory, exact commands, relevant prerequisites or versions, and
-  actual outcomes, including exit status where useful. Distinguish source
-  inspection, local validation, and live verification. Explain skipped or
-  blocked checks and rerun affected checks after fixes.
-- **Independent review and remediation.** Define the scope of independent
-  review when the user or engineering rules require it or when risk warrants
-  it, such as changes to isolation or recovery. Use an authorized review
-  channel. Record findings, dispositions, fixes, rerun results, and re-review
-  of material fixes. Mark unavailable required review as pending.
+  or risk. Record the evidence, what you decided and why, and how it affects
+  the remaining work. Keep failed attempts and revised decisions in the plan.
+- **Safety and recovery.** Identify targets, data and secret boundaries, preflight
+  checks, stop conditions, and scoped cleanup or rollback. Use local stubs,
+  dummy settings, and disposable resources where applicable. If a step fails,
+  record what ran, what may have changed, and what remains unknown.
+  Diagnose with the smallest safe reproduction. Before retrying, verify
+  preconditions and stay within your authorization. Keep secrets out of the
+  plan and logs.
+- **Validation and evidence.** Match each acceptance criterion to a check.
+  Record the working directory, exact commands, relevant prerequisites or
+  versions, and actual results. Include exit status where useful. Distinguish
+  source inspection, local validation, and live verification. Explain skipped
+  or blocked checks and rerun affected checks after fixes.
+- **Independent review and remediation.** Define the review scope when the user
+  or engineering rules require independent review, or when risk warrants it,
+  such as for changes to isolation or recovery. Use an authorized review
+  channel. Record findings, their status, fixes, rerun results, and re-review
+  of material fixes. Mark required review as pending if it is unavailable.
 
 ## Updating and closing
 
 Update the plan after milestones, material findings, failed checks, and review.
-Close it as complete once the agreed acceptance criteria are satisfied,
-required validation passes, material review blockers are resolved, and
-applicable cleanup is verified. Summarize affected components and any migration
-or deployment implications. Record non-blocking improvements and unrelated
-discoveries as follow-up work.
+Mark it complete once the agreed acceptance criteria are met, required checks
+pass, material review blockers are resolved, and applicable cleanup is verified.
+Summarize affected components and any migration or deployment implications.
+Record non-blocking improvements and unrelated discoveries as follow-up work.
 
-If a step cannot safely continue, stop that step and continue independent work
-within scope. If the effort is blocked, paused, or canceled, record why, what
-remains incomplete, any residual state, and what would allow work to resume.
+If a step cannot continue safely, stop that step and continue independent work
+within scope. If the effort is blocked, paused, or canceled, record why, what's
+incomplete, what state remains, and what would let work resume.
